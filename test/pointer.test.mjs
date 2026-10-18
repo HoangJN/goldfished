@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, readdirSync, existsSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, readdirSync, existsSync, lstatSync, symlinkSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { POINTERS, detect } from '../src/agents/pointers.mjs';
@@ -71,7 +71,8 @@ test('pointer wording, tracked skip, shared override and commit', t => {
   const existing = { 'AGENTS.md': '# Shared instructions\n' };
   const changes = plan({ ...base, agents: [], existing, tracked: { 'AGENTS.md': true }, shared: true });
   assert.equal(changes[0].after, existing['AGENTS.md'] + '\n' + pointer(false) + '\n');
-  apply(changes);
+  writeFileSync(join(base.top, 'AGENTS.md'), existing['AGENTS.md']);
+  assert.deepEqual(apply(changes), []);
   assert.equal(readFileSync(join(base.top, 'AGENTS.md'), 'utf8'), changes[0].after);
 });
 
@@ -83,23 +84,25 @@ test('append, replace in place, create and repeat leave the expected bytes', t =
   assert.equal(changes.find(change => change.path === 'AGENTS.md').after, prefix + pointer() + suffix);
   assert.equal(changes.find(change => change.path === 'CLAUDE.md').after, '# Team\n\n' + pointer() + '\n');
   assert.equal(changes.find(change => change.path === 'GEMINI.md').after, pointer() + '\n');
-  apply(changes);
+  for (const [path, bytes] of Object.entries(existing)) writeFileSync(join(base.top, path), bytes);
+  assert.deepEqual(apply(changes), []);
   const next = plan({ ...base, agents: ['claude-code', 'cursor', 'gemini'], existing: written(changes) });
   assert.ok(next.every(change => change.before === change.after));
   apply(next);
   for (const { path, after } of changes) assert.equal(readFileSync(join(base.top, path), 'utf8'), after);
 });
 
-test('init then removal restores line endings, missing newline and non-ASCII bytes', t => {
+test('removal preserves line endings and non-ASCII bytes, including the final user line break', t => {
   const base = repo(t);
   const originals = ['', '# Team\n', '# Team\r\nKeep this.\r\n', '# Team without a final newline', '# Café\n日本語\n', '# Two blank lines\n\n\n', '# Café sans fin: été'];
   for (const original of originals) {
+    writeFileSync(join(base.top, 'AGENTS.md'), original);
     const changes = plan({ ...base, agents: [], existing: { 'AGENTS.md': original } });
-    apply(changes);
+    assert.deepEqual(apply(changes), []);
     const installed = readFileSync(join(base.top, 'AGENTS.md'), 'utf8');
     const removal = removePlan({ ...base, existing: { 'AGENTS.md': installed } });
     apply(removal);
-    assert.deepEqual(readFileSync(join(base.top, 'AGENTS.md')), Buffer.from(original));
+    assert.deepEqual(readFileSync(join(base.top, 'AGENTS.md')), Buffer.from(original && !original.endsWith('\n') ? original + '\n' : original));
     assert.deepEqual(removePlan({ ...base, existing: { 'AGENTS.md': original } }), []);
   }
 });
@@ -169,7 +172,8 @@ test('a .clinerules file gets a shared block and round trips', t => {
   const cline = changes.find(change => change.path === '.clinerules');
   assert.equal(cline.kind, 'block');
   assert.equal(cline.after, original + '\r\n' + pointer() + '\n');
-  apply(changes);
+  writeFileSync(join(base.top, '.clinerules'), original);
+  assert.deepEqual(apply(changes), []);
   const next = plan({ ...base, agents: ['cline'], existing: written(changes) });
   assert.ok(next.every(change => change.before === change.after));
   apply(removePlan({ ...base, existing: written(changes) }));
@@ -187,4 +191,75 @@ test('apply creates parents, leaves skipped files alone and leaves no temporary 
   apply(skipped);
   assert.equal(readFileSync(join(base.top, 'AGENTS.md'), 'utf8'), changes[0].after);
   assert.ok(readdirSync(base.top, { recursive: true }).every(path => !path.endsWith('.tmp')));
+});
+
+test('removal keeps user text and line breaks directly beside marker blocks', t => {
+  const base = repo(t), path = 'AGENTS.md';
+  for (const [before, after] of [['A\n' + pointer() + 'B\n', 'A\nB\n'], ['# Mine\n' + pointer(), '# Mine\n'], ['A\r\n' + pointer() + '\r\nB\r\n', 'A\r\nB\r\n']]) {
+    writeFileSync(join(base.top, path), before);
+    const removal = removePlan({ ...base, existing: { [path]: before } });
+    assert.equal(removal[0].after, after);
+    assert.deepEqual(apply(removal), []);
+    assert.equal(readFileSync(join(base.top, path), 'utf8'), after);
+  }
+  const created = plan({ ...base, agents: [] })[0].after;
+  const edited = '# Mine\n' + created + 'My rule.\n';
+  writeFileSync(join(base.top, path), edited);
+  const removal = removePlan({ ...base, existing: { [path]: edited }, recorded: { [path]: hash(created) } });
+  assert.deepEqual(apply(removal), []);
+  assert.equal(readFileSync(join(base.top, path), 'utf8'), '# Mine\nMy rule.\n');
+  const blockOnly = removePlan({ ...base, existing: { [path]: created }, recorded: { [path]: hash(created) } });
+  writeFileSync(join(base.top, path), created);
+  assert.equal(blockOnly[0].after, null);
+  assert.deepEqual(apply(blockOnly), []);
+  assert.ok(!existsSync(join(base.top, path)));
+});
+
+test('orphan and repeated markers are left unchanged after two plans and removal', t => {
+  const base = repo(t), path = 'AGENTS.md';
+  for (const markers of [begin + '\nstale\nUser rules here\n', end + '\n', begin + '\n' + begin + '\n' + end + '\n', end + '\n' + begin]) {
+    const before = '# Team\n' + markers, reason = `goldfished's markers in ${path} are broken; fix or remove them by hand`;
+    writeFileSync(join(base.top, path), before);
+    for (let pass = 0; pass < 2; pass++) {
+      const changes = plan({ ...base, agents: [], existing: { [path]: readFileSync(join(base.top, path), 'utf8') } });
+      assert.equal(changes[0].skipped, reason);
+      assert.equal(changes[0].after, before);
+      assert.deepEqual(apply(changes), []);
+    }
+    const removal = removePlan({ ...base, existing: { [path]: before } });
+    assert.equal(removal[0].left, reason);
+    assert.deepEqual(apply(removal), []);
+    assert.equal(readFileSync(join(base.top, path), 'utf8'), before);
+  }
+});
+
+test('apply preserves a symlink and writes each real destination once', t => {
+  const base = repo(t), before = '# Team\n';
+  writeFileSync(join(base.top, 'AGENTS.md'), before);
+  try { symlinkSync('AGENTS.md', join(base.top, 'CLAUDE.md'), 'file'); }
+  catch (error) { if (['EPERM', 'EACCES', 'ENOTSUP'].includes(error.code)) { t.skip('The OS refused to create a symlink.'); return; } throw error; }
+  const changes = plan({ ...base, agents: ['claude-code'], existing: { 'AGENTS.md': before, 'CLAUDE.md': before } });
+  const reports = apply(changes);
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].path, 'CLAUDE.md');
+  assert.match(reports[0].left, /same real file/);
+  assert.ok(lstatSync(join(base.top, 'CLAUDE.md')).isSymbolicLink());
+  assert.equal(readFileSync(join(base.top, 'CLAUDE.md'), 'utf8'), changes[0].after);
+  const linked = plan({ ...base, agents: ['claude-code'], commit: true, existing: written(changes), tracked: { 'AGENTS.md': true } });
+  assert.deepEqual(apply(linked), []);
+  assert.ok(lstatSync(join(base.top, 'CLAUDE.md')).isSymbolicLink());
+  assert.equal(readFileSync(join(base.top, 'AGENTS.md'), 'utf8'), linked[1].after);
+});
+
+test('apply reports changed, newly created and deleted files without overwriting them', t => {
+  const base = repo(t), path = 'AGENTS.md';
+  for (const [before, disk] of [['# Before\n', '# Changed\n'], [null, '# Arrived later\n'], ['# Before\n', null]]) {
+    const changes = plan({ ...base, agents: [], existing: before === null ? {} : { [path]: before } });
+    if (disk === null) rmSync(join(base.top, path), { force: true }); else writeFileSync(join(base.top, path), disk);
+    const reports = apply(changes);
+    assert.equal(reports.length, 1);
+    assert.equal(reports[0].path, path);
+    assert.match(reports[0].left, /bytes on disk/);
+    assert.equal(existsSync(join(base.top, path)) ? readFileSync(join(base.top, path), 'utf8') : null, disk);
+  }
 });

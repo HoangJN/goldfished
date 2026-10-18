@@ -1,5 +1,5 @@
-import { mkdirSync, writeFileSync, renameSync, rmSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync, realpathSync, lstatSync, renameSync, rmSync } from 'node:fs';
+import { basename, dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { block, hash } from './card.mjs';
 import { POINTERS } from './agents/pointers.mjs';
@@ -13,24 +13,34 @@ const targets = existing => POINTERS.map(target => target.agent === 'cline' && t
   ? { ...target, target: '.clinerules', kind: 'block', header: '' } : target);
 const atRoot = (changes, top) => Object.defineProperty(changes, root, { value: top });
 
-function span(text) {
-  const start = text.indexOf(begin), finish = text.indexOf(end, start + begin.length);
-  return start < 0 || finish < 0 ? null : [start, finish + end.length];
+const broken = path => `goldfished's markers in ${path} are broken; fix or remove them by hand`;
+function spans(text) {
+  const ranges = [];
+  let start = null;
+  for (const match of text.matchAll(/<!-- goldfished:(?:begin|end)\b[^\r\n]*?-->/g)) {
+    if (match[0] === begin && start === null) start = match.index;
+    else if (match[0] === end && start !== null) { ranges.push([start, match.index + end.length]); start = null; }
+    else return null;
+  }
+  return start === null ? ranges : null;
 }
 
-function insert(before, text) {
-  const range = span(before ?? '');
-  if (range) return before.slice(0, range[0]) + text + before.slice(range[1]);
+function insert(before, text, ranges) {
+  if (ranges.length) {
+    for (const [start, finish] of ranges.toReversed()) before = before.slice(0, start) + text + before.slice(finish);
+    return before;
+  }
   if (!before) return text + '\n';
-  const terminated = before.endsWith('\n');
-  const separator = terminated ? before.endsWith('\r\n') ? '\r\n' : '\n' : '\n\n';
-  return before + separator + text + (terminated ? '\n' : '');
+  const separator = before.endsWith('\n') ? before.endsWith('\r\n') ? '\r\n' : '\n' : '\n\n';
+  return before + separator + text + '\n';
 }
 
 export function plan({ top, agents, shared, commit, existing, tracked, recorded, card, trusted }) {
   const changes = targets(existing).filter(({ agent }) => agent === 'all' || agents.includes(agent)).map(({ target: path, kind, header }) => {
     const before = existing[path] ?? null;
     const change = { path, before, after: before, kind };
+    const ranges = kind === 'block' ? spans(before ?? '') : [];
+    if (ranges === null) return { ...change, skipped: broken(path) };
     if ((tracked[path] === true || tracked[path] === null) && !shared) {
       return { ...change, skipped: `${path} is shared with your team (tracked by git). Skipped; use --shared to add the pointer there too.` };
     }
@@ -39,7 +49,7 @@ export function plan({ top, agents, shared, commit, existing, tracked, recorded,
       const { text } = block(card, { kind: 'inline', budget: 6000, maxChars: 6000, trusted: trusted && !commit });
       change.after = header + text;
     } else {
-      change.after = insert(before, [begin, "## The user's card", pointer + (tracked[path] || tracked[path] === null || commit ? '' : propose), end].join('\n'));
+      change.after = insert(before, [begin, "## The user's card", pointer + (tracked[path] || tracked[path] === null || commit ? '' : propose), end].join('\n'), ranges);
     }
     return change;
   });
@@ -57,29 +67,50 @@ export function removePlan({ top, existing, recorded }) {
         ...(matches ? {} : { left: `${path} was left because its content does not match what goldfished last wrote.` }) });
       continue;
     }
-    const range = span(before);
-    if (!range) continue;
-    let prefix = before.slice(0, range[0]), suffix = before.slice(range[1]);
-    const terminated = /^\r?\n/.test(suffix);
-    prefix = prefix.replace(terminated ? /\r?\n$/ : /\r?\n\r?\n$/, '');
-    suffix = suffix.replace(/^\r?\n/, '');
-    changes.push({ path, before, after: prefix + suffix, kind });
+    const ranges = spans(before);
+    if (ranges === null) { changes.push({ path, before, after: before, kind, left: broken(path) }); continue; }
+    if (!ranges.length) continue;
+    let after = before;
+    for (const [start, finish] of ranges.toReversed()) {
+      let prefix = after.slice(0, start);
+      const suffix = after.slice(finish).replace(/^\r?\n/, '');
+      if (!suffix) prefix = prefix.replace(/(^|\n)[\t ]*\r?\n$/, '$1');
+      after = prefix + suffix;
+    }
+    changes.push({ path, before, after: !after && Object.hasOwn(recorded, path) ? null : after, kind });
   }
   return atRoot(changes, top);
 }
 
 export function apply(changes) {
+  const reports = [], written = new Set();
   for (const { path, before, after, skipped, left } of changes) {
     if (skipped || left || before === after) continue;
-    const file = resolve(changes[root] ?? '.', path);
-    if (after === null) { rmSync(file, { force: true }); continue; }
-    mkdirSync(dirname(file), { recursive: true });
-    const temporary = `${file}.${randomUUID()}.tmp`;
+    let file = resolve(changes[root] ?? '.', path), temporary;
     try {
+      try { file = realpathSync(file); }
+      catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+        if (lstatSync(file, { throwIfNoEntry: false })?.isSymbolicLink()) throw new Error('the link has no real file');
+        mkdirSync(dirname(file), { recursive: true });
+        file = resolve(realpathSync(dirname(file)), basename(file));
+      }
+      if (written.has(file)) { reports.push({ path, left: `${path} was left because another change reaches the same real file.` }); continue; }
+      let bytes = null;
+      try { bytes = readFileSync(file); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+      if (before === null ? bytes !== null : bytes === null || !bytes.equals(Buffer.from(before, 'utf8'))) {
+        reports.push({ path, left: `${path} was left because its bytes on disk no longer match the plan.` }); continue;
+      }
+      if (after === null) { rmSync(file, { force: true }); written.add(file); continue; }
+      temporary = `${file}.${randomUUID()}.tmp`;
       writeFileSync(temporary, after, { encoding: 'utf8', flag: 'wx' });
       renameSync(temporary, file);
+      written.add(file);
+    } catch ({ message }) {
+      reports.push({ path, left: `${path} was left: ${message}` });
     } finally {
-      rmSync(temporary, { force: true });
+      if (temporary) rmSync(temporary, { force: true });
     }
   }
+  return reports;
 }
