@@ -1,0 +1,5 @@
+1
+out:
+
+err:
+goldfished: --dir needs --agent, because each agent keeps its files somewhere different.
