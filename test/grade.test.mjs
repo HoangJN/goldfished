@@ -133,3 +133,119 @@ test('audit returns an original eighty-character window with the most shared wor
   assert.equal(bestMatch('missing', '.'.repeat(100)), '.'.repeat(80));
   assert.equal(bestMatch('missing', ''), '');
 });
+
+// Invented: edge restrictions fit even the short band.
+const restrictions = [
+  'Never let a red fox sit by a blue cup on a low box.',
+  'Only let a tan dog lie by a red pot on a dry mat.',
+];
+// Invented: small words extend a request without adding long-word evidence.
+const tail = ' Let the red bar and the blue dot stay as they are in view all day.';
+const guardCases = [];
+for (const [band, repeat] of [['short', 0], ['mid', 1], ['long', 6]]) {
+  for (const message of restrictions.map(text => text + tail.repeat(repeat))) {
+    // Invented: a lost edge restriction used to pass as a small trim.
+    guardCases.push({ guard: 'meaning', band, label: 'reworded', message, summary: message.replace(/^\w+ /, ''), _synthetic: true });
+  }
+  // Invented: the restriction and its run survive together.
+  const intact = restrictions[0] + tail.repeat(repeat);
+  guardCases.push({ guard: 'meaning', band, label: 'kept', message: intact, summary: intact, _synthetic: true });
+}
+for (const [band, repeat] of [['short', 1], ['mid', 3], ['long', 14]]) {
+  for (const [message, summary] of [
+    // Invented: the action changes, but the small-word instruction survives.
+    ['Keep the last used blue pin.', 'The blue pin must stay as it was last used.'],
+    // Invented: a second short instruction uses no words over four letters.
+    ['Keep the new oak box shut.', 'The oak box must stay shut as a new item.'],
+  ]) guardCases.push({ guard: 'short', band, label: 'reworded', message: (message + ' ').repeat(repeat).trim(), summary, _synthetic: true });
+  // Invented: an intact small-word request remains kept in every band.
+  const intact = 'Keep the last used blue pin. '.repeat(repeat).trim();
+  guardCases.push({ guard: 'short', band, label: 'kept', message: intact, summary: intact, _synthetic: true });
+}
+for (const [band, repeat] of [['short', 0], ['mid', 1], ['long', 6]]) {
+  for (const [message, summary] of [
+    // Invented: four opening words lead to a different instruction.
+    ['Keep the silver marker fixed.', 'Keep the silver marker sketch near the chapter title.'],
+    // Invented: a different opening has the same false evidence.
+    ['Place the golden compass upright.', 'Place the golden compass sketch above the lesson text.'],
+  ]) guardCases.push({ guard: 'near', band, label: 'gone', message: message + tail.repeat(repeat), summary, _synthetic: true });
+  // Invented: a three-word fragment still supplies the original word rule.
+  const message = 'Preserve copper lantern markings. '.repeat(repeat * 4 + 1).trim();
+  const summary = 'Copper lantern markings should remain intact.';
+  guardCases.push({ guard: 'near', band, label: 'reworded', message, summary, _synthetic: true });
+}
+for (const [i, row] of guardCases.entries()) test(`${row.guard} guard ${row.band}: ${i + 1}`, () => {
+  const length = [...row.message].length;
+  assert.equal(row._synthetic, true);
+  assert.ok(row.band === 'short' ? length >= 20 && length <= 60 : row.band === 'mid' ? length > 60 && length <= 300 : length > 300 && length <= 1500);
+  assert.equal(score(row.message, prepare(row.summary)).label, row.label);
+});
+
+// Invented: each listed meaning word belongs to an instruction of its own.
+const clauses = [
+  ['not', 'The register must not discard an unread entry.'],
+  ['never', 'The register must never discard an unread entry.'],
+  ['no', 'Keep no unread entries in the discard pile.'],
+  ['unless', 'Keep an unread entry unless its owner releases it.'],
+  ['only', 'Discard an unread entry only with its owner present.'],
+  ['except', 'Keep every entry except those its owner releases.'],
+  ['without', 'Keep the entry without changing its original heading.'],
+  ['until', 'Keep an unread entry until its owner releases it.'],
+  ['before', 'Check each entry before discarding its original heading.'],
+  ['after', 'Check each entry after restoring its original heading.'],
+  ['if', 'Discard an unread entry if its owner releases it.'],
+  ["don't", "Please don't discard an unread entry from the register."],
+  ['mustn\u2019t', 'We mustn\u2019t discard an unread entry from the register.'],
+];
+for (const [word, clause] of clauses) test(`meaning run survives: ${word}`, () => {
+  // Invented: enough independent instructions remain for a near quotation.
+  const message = observatory + ' ' + clause + ' ' + observatory;
+  const missing = observatory + ' ' + clause.replace(word, '') + ' ' + observatory;
+  const elsewhere = missing + ' ' + word + ' belongs to another note.';
+  assert.equal(score(message, prepare('Request: ' + message)).label, 'kept');
+  assert.equal(score(message, prepare(missing)).label, 'reworded');
+  assert.equal(score(message, prepare(elsewhere)).label, 'reworded');
+});
+
+test('every occurrence of a meaning word needs its own surviving run', () => {
+  // Invented: one copy survives elsewhere, while the other loses its context.
+  const message = observatory + ' Never discard entries. Never reset headings. ' + observatory;
+  assert.equal(score(message, prepare(message.replace('Never reset headings.', 'Reset headings.'))).label, 'reworded');
+  // Invented: an ordinary word ending in nt is not a contraction.
+  const ordinary = 'Paint a red fox by a blue cup on a low box at dawn.';
+  assert.equal(score(ordinary, prepare(ordinary.replace('Paint ', ''))).label, 'kept');
+});
+
+test('a meaning word needs the whole short phrase when there are fewer than five words', () => {
+  // Invented: punctuation and quote changes leave the short instruction intact.
+  assert.equal(score('Never drop this', prepare('We said: NEVER drop this.')).label, 'kept');
+  // Invented: keeping only the action cannot restore the lost restriction.
+  assert.equal(score('Never drop this', prepare('Drop this.')).label, 'gone');
+});
+
+test('near runs inside sentences do not earn word overlap alone', () => {
+  // Invented: the shared four words occur inside a later sentence.
+  const message = 'Keep the silver marker fixed.';
+  const summary = 'The guide has a new title. Please keep the silver marker sketch near that title.';
+  assert.equal(score(message, prepare(summary)).label, 'gone');
+  // Invented: punctuation cannot turn a shared run into independent evidence.
+  assert.equal(score(message, prepare('Please keep, the silver marker sketch near that title.')).label, 'gone');
+  // Invented: a run cannot cross a sentence boundary to erase independent words.
+  const separate = 'The silver. Marker must stay fixed.';
+  assert.equal(score(message, prepare(separate)).label, 'reworded');
+});
+
+test('the longest near run wins over an earlier shorter match', () => {
+  // Invented: both openings share words; the later one contains the longer run.
+  const message = 'Place the golden compass upright.';
+  const summary = 'Place the golden object here. Later place the golden compass sketch above the title.';
+  assert.equal(score(message, prepare(summary)).label, 'gone');
+});
+
+test('every invented short case stays gone against unrelated prose', () => {
+  // Invented: the bakery mural supplies no surviving instruction from the cases.
+  const index = prepare('The bakery mural depicts a cheerful otter.');
+  for (const row of [...cases, ...guardCases].filter(row => row.band === 'short')) {
+    assert.equal(score(row.message, index).label, 'gone', row.message);
+  }
+});

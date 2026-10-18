@@ -1,5 +1,6 @@
 const normalise = text => text.toLowerCase().replace(/['"`*\u2018\u2019\u201c\u201d]/g, '').replace(/\s+/g, ' ').trim();
 const words = text => text.match(/[\p{L}\p{N}_]+/gu) ?? [];
+const meaning = word => /^(?:not|never|no|unless|only|except|without|until|before|after|if)$/.test(word);
 export const GRADER = { id: 'G2', threshold: 0.9 };
 function hash(run) {
   let h = 2166136261;
@@ -73,22 +74,38 @@ export function prepare(visibleText) {
     positions.get(word).push(i);
     if (i >= 4) shingles.add(hash(tokens.slice(i - 4, i + 1)));
   }
-  return { positions, shingles, substrings: substringIndex(normal) };
+  const nearRuns = new Set();
+  for (const sentence of normalise(visibleText.replace(/[\r\n]/g, '.')).split(/[.!?]+/)) {
+    const sentenceWords = words(sentence);
+    for (let i = 0; i <= sentenceWords.length - 4; i++) nearRuns.add(hash(sentenceWords.slice(i, i + 4)));
+  }
+  return { positions, shingles, substrings: substringIndex(normal), nearRuns };
 }
 
 export function score(text, index) {
   const normal = normalise(text), tokens = words(normal);
+  const contractions = new Set(Array.from(text.toLowerCase().matchAll(/[\p{L}\p{N}_]+n[\u0027\u2019]t\b/gu), ([word]) => normalise(word)));
   if (!tokens.length) return { label: 'gone', score: 0 };
   let value;
+  const covered = new Uint8Array(tokens.length);
   if (tokens.length < 5) value = contains(index.substrings, normal) ? 1 : 0;
   else {
     let present = 0;
-    for (let i = 0; i <= tokens.length - 5; i++) if (index.shingles.has(hash(tokens.slice(i, i + 5)))) present++;
+    for (let i = 0; i <= tokens.length - 5; i++) if (index.shingles.has(hash(tokens.slice(i, i + 5)))) {
+      present++;
+      covered.fill(1, i, i + 5);
+    }
     value = present / (tokens.length - 4);
   }
-  const significant = tokens.filter(word => word.length > 4);
+  // With no five-word quotation, four is the longest near miss.
+  const start = value > 0 ? -1 : tokens.findIndex((_, i) => i + 4 <= tokens.length && index.nearRuns.has(hash(tokens.slice(i, i + 4))));
+  const remaining = tokens.filter((_, i) => start < 0 || i < start || i >= start + 4);
+  const significant = remaining.filter(word => word.length > 4);
   const overlap = significant.length >= 3 && significant.filter(word => index.positions.has(word)).length / significant.length >= 0.6;
-  return { label: value >= GRADER.threshold ? 'kept' : value >= 0.4 || overlap ? 'reworded' : 'gone', score: value };
+  const shared = remaining.filter(word => index.positions.has(word)).length;
+  const shortOverlap = shared >= 3 && shared / remaining.length >= 0.6;
+  const guarded = tokens.some((word, i) => (meaning(word) || contractions.has(word)) && !(tokens.length < 5 ? value === 1 : covered[i]));
+  return { label: value >= GRADER.threshold ? guarded ? 'reworded' : 'kept' : value >= 0.4 || overlap || shortOverlap ? 'reworded' : 'gone', score: value };
 }
 
 export function bestMatch(text, visibleText) {
