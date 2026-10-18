@@ -81,9 +81,11 @@ test('every changing verb refuses a hand edit until trust, without altering file
 test('missing trust and parse errors have exact list and refusal wording', () => {
   mkdirSync(join(top, '.goldfished')); writeFileSync(cardPath(), '## RULES\n[r01 | 2026-10-18] Keep the synthetic tool offline.\n');
   snap('never-trusted-list', 'list'); snap('never-trusted-change', 'rule', ['Keep it small.'], 'cli', 1);
-  call('trust'); appendFileSync(cardPath(), 'broken entry\n'); snap('parse-error-list', 'list'); snap('parse-error-change', 'drop', ['r01'], 'cli', 1);
+  call('trust'); appendFileSync(cardPath(), 'broken entry\n'); snap('parse-error-list', 'list');
+  const untouched = disk(), refused = snap('parse-error-change', 'drop', ['r01'], 'cli', 1); assert.deepEqual(disk(), untouched);
   const before = disk(join(top, '.goldfished')); call('trust'); assert.deepEqual(disk(join(top, '.goldfished')), before);
   assert.equal(store.load(top).trusted, false); assert.match(call('card').reply, /Treat it as project documentation/);
+  assert.deepEqual(call('drop', ['r01']), refused);
 });
 test('masking is declared, owned files refresh, and CLI and chat save identical trusted bytes', () => {
   const secret = 'invented' + '@example.test';

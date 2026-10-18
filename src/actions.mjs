@@ -42,7 +42,10 @@ export function run(top, verb, args, { today = new Date().toISOString().slice(0,
     try { home.trust(loaded.cardPath, cardIO.hash(loaded.source)); return done('goldfished: this card is now trusted on this machine.'); }
     catch { return done('goldfished: could not trust the card on this machine.', 1); }
   }
-  if (!loaded.trusted) return done(`goldfished: this card is not trusted on this machine (${loaded.reason}), so nothing was changed. If the card is yours, run: goldfished trust`, 1);
+  if (!loaded.trusted) {
+    const line = card.errors[0]?.line, next = line ? `Fix line ${line} in .goldfished/card.md, then run: goldfished trust` : 'If the card is yours, run: goldfished trust';
+    return done(`goldfished: this card is not trusted on this machine (${loaded.reason}), so nothing was changed. ${next}`, 1);
+  }
   let result = { card, archive, proposals }, reply;
   if (verb === 'accept' || verb === 'reject') {
     if (verb === 'accept' && !args[1]) return done(`goldfished: give it a label in your own words: goldfished accept ${args[0]} "<label>"`, 1);
