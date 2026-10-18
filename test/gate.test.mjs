@@ -8,6 +8,7 @@ import {
   checkBinaryMarkers,
   checkFile,
   checkHistory,
+  checkLabels,
   checkImageMetadata,
   checkInvisible,
   parseDenylist,
@@ -273,6 +274,41 @@ function tempRepo() {
 }
 
 const commit = (dir, ...more) => git(dir, {}, 'commit', '-q', '--allow-empty', ...more);
+
+test('labels: no tag passes, a sealed change fails, the newest version becomes the baseline', () => {
+  const dir = tempRepo(), folder = join(dir, 'test', 'labels');
+  assert.deepEqual(checkLabels(dir), []);
+  mkdirSync(folder, { recursive: true });
+  const file = join(folder, 'dev.jsonl');
+  writeFileSync(file, '{"id":"one","label":"kept","_synthetic":true}\n');
+  assert.deepEqual(checkLabels(dir), []);
+  git(dir, {}, 'add', 'test/labels');
+  commit(dir, '-m', 'Seal labels');
+  git(dir, {}, 'tag', 'labels-v1');
+  assert.deepEqual(checkLabels(dir), []);
+  const added = join(folder, 'extra.jsonl');
+  writeFileSync(added, '{"id":"two","label":"gone","_synthetic":true}\n');
+  assert.deepEqual(checkLabels(dir), ['test/labels differs from labels-v1']);
+  git(dir, {}, 'add', 'test/labels');
+  assert.equal(checkLabels(dir).length, 1);
+  rmSync(added);
+  git(dir, {}, 'add', '--all', 'test/labels');
+  assert.deepEqual(checkLabels(dir), []);
+  writeFileSync(file, '{"id":"one","label":"gone","_synthetic":true}\n');
+  assert.deepEqual(checkLabels(dir), ['test/labels differs from labels-v1']);
+  git(dir, {}, 'add', 'test/labels');
+  assert.equal(checkLabels(dir).length, 1);
+  commit(dir, '-m', 'Seal new labels');
+  git(dir, {}, 'tag', 'labels-v2');
+  assert.deepEqual(checkLabels(dir), []);
+  writeFileSync(file, '{"id":"one","label":"reworded","_synthetic":true}\n');
+  git(dir, {}, 'add', 'test/labels');
+  commit(dir, '-m', 'Seal tenth labels');
+  git(dir, {}, 'tag', 'labels-v10');
+  assert.deepEqual(checkLabels(dir), []);
+  rmSync(file);
+  assert.deepEqual(checkLabels(dir), ['test/labels differs from labels-v10']);
+});
 
 test('history: an empty repo and a clean commit both pass', () => {
   const dir = tempRepo();
