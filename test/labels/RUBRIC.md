@@ -62,6 +62,11 @@ Bands use the message's character length: short is 20 to 60, mid is 61 to
 shared-run check, lowercase each message, remove punctuation, split on
 whitespace, and compare runs of five words across different messages.
 
+At least 24 long messages exceed 700 characters and at least 12 exceed
+1,100. Summaries have a median length of at least 1,200 characters, with
+at least 40 exceeding 2,000 and none exceeding 4,000. Their surrounding
+account describes other session work rather than repeating the message.
+
 Strata describe the example's main challenge: condition is a dropped
 condition word in a long message; fragment keeps only a quotation fragment;
 exact contains the whole quotation; paraphrase keeps the meaning in other

@@ -25,6 +25,10 @@ function tally(rows, field, values) {
   return Object.fromEntries(values.map(value => [value, rows.filter(({ row }) => row[field] === value).length]));
 }
 
+function lengthOf(value) {
+  return typeof value === 'string' ? [...value].length : 0;
+}
+
 export function check(lines, { count = 160 } = {}) {
   const problems = [];
   const rows = parse(lines, problems);
@@ -72,6 +76,20 @@ export function check(lines, { count = 160 } = {}) {
   for (const stratum of strata.filter(value => value !== 'other')) {
     const found = rows.filter(({ row }) => row.stratum === stratum).length;
     if (found < 16) problems.push(`stratum quota: ${stratum} needs 16, found ${found}`);
+  }
+  for (const [threshold, minimum] of [[700, 24], [1100, 12]]) {
+    const found = rows.filter(({ row }) => row.band === 'long' && lengthOf(row.message) > threshold).length;
+    if (found < minimum) problems.push(`long message quota: over ${threshold} needs ${minimum}, found ${found}`);
+  }
+  const lengths = rows.map(({ row }) => lengthOf(row.summary)).sort((a, b) => a - b);
+  const middle = Math.floor(lengths.length / 2);
+  const median = lengths.length ? (lengths[middle] + lengths[Math.floor((lengths.length - 1) / 2)]) / 2 : 0;
+  if (median < 1200) problems.push(`summary quota: median needs 1200, found ${median}`);
+  const over2000 = lengths.filter(length => length > 2000).length;
+  if (over2000 < 40) problems.push(`summary quota: over 2000 needs 40, found ${over2000}`);
+  for (const { row, at } of rows) {
+    const length = lengthOf(row.summary);
+    if (length > 4000) problems.push(`${row.id || at}: summary quota: maximum 4000, found ${length}`);
   }
   return problems;
 }
