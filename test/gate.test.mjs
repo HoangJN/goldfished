@@ -46,14 +46,49 @@ test('the allow marker exempts its own line only', () => {
   assert.deepEqual(found.map((f) => f.line), [2]);
 });
 
-test('a network import in src is caught, and only in src', () => {
-  const body = "import http from 'node:http';\nconst r = require('child_process');\nawait fetch('x');\n";
-  assert.deepEqual(run('src/a.mjs', body).map((f) => f.line), [1, 2, 3]);
+test('a network import is caught in src, bin and hooks, and nowhere else', () => {
+  const body = "import http from 'node:http';\nconst r = require('child_process');\nawait fetch('x');\nnew WebSocket('y');\n";
+  for (const file of ['src/a.mjs', 'bin/a.mjs', 'hooks/run.mjs']) {
+    assert.deepEqual(run(file, body).map((f) => f.line), [1, 2, 3, 4], file);
+  }
   assert.equal(run('scripts/a.mjs', body).length, 0);
+  assert.equal(run('test/a.test.mjs', body).length, 0);
 });
 
-test('an unprefixed network import is caught', () => {
-  assert.equal(run('src/a.mjs', "import dns from 'dns/promises';\n").length, 1);
+test('every network module is caught, prefixed or not', () => {
+  for (const mod of ['https', 'http2', 'net', 'dns/promises', 'tls', 'dgram', 'worker_threads', 'node:http2']) {
+    assert.equal(run('src/a.mjs', `import x from '${mod}';\n`).length, 1, mod);
+  }
+});
+
+test('child_process is allowed in src/git.mjs alone', () => {
+  const line = "import { spawnSync } from 'node:child_process';\n";
+  assert.equal(run('src/git.mjs', line).length, 0);
+  assert.equal(run('src/git2.mjs', line).length, 1);
+  assert.equal(run('src/git.mjs', "import http from 'node:http';\n").length, 1);
+});
+
+test('the marker does not switch off the network check', () => {
+  assert.equal(run('src/a.mjs', "await fetch('x'); // gate-allow\n").length, 1);
+});
+
+test('the test preload refuses the network', () => {
+  const probe = (code) =>
+    spawnSync(process.execPath, ['--import', new URL('./no-network.mjs', import.meta.url).href, '--input-type=module', '-e', code], {
+      encoding: 'utf8',
+    });
+  const cases = [
+    "await fetch('http://127.0.0.1:9')",
+    "(await import('node:net')).connect(9, '127.0.0.1')",
+    "await (await import('node:dns')).promises.lookup('example.com')",
+    "(await import('node:http')).get('http://127.0.0.1:9')",
+    "new WebSocket('ws://127.0.0.1:9')",
+  ];
+  for (const code of cases) {
+    const r = probe(code);
+    assert.notEqual(r.status, 0, code);
+    assert.match(r.stderr, /network is off in tests/, code);
+  }
 });
 
 test('denylist matches any case, and short all-caps patterns need a word boundary', () => {

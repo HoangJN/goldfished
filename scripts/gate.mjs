@@ -61,16 +61,26 @@ export function checkSecrets(text) {
   });
 }
 
-const NET_IMPORT = /(?:\bfrom\s*|\brequire\s*\(\s*|\bimport\s*\(\s*|\bimport\s+)(['"])(?:node:)?(?:http|https|net|dns|tls|child_process)(?:\/[^'"]*)?\1/; // gate-allow
+const IMPORT_OF = (names) =>
+  new RegExp(`(?:\\bfrom\\s*|\\brequire\\s*\\(\\s*|\\bimport\\s*\\(\\s*|\\bimport\\s+)(['"])(?:node:)?(?:${names})(?:\\/[^'"]*)?\\1`);
+const NET_IMPORT = IMPORT_OF('http|https|http2|net|dns|tls|dgram|worker_threads');
+const PROCESS_IMPORT = IMPORT_OF('child_process');
 const FETCH_CALL = /\bfetch\s*\(/; // gate-allow
+const WEBSOCKET = /\bWebSocket\b/; // gate-allow
+export const NETWORK_DIRS = ['src/', 'bin/', 'hooks/'];
+export const PROCESS_FILE = 'src/git.mjs';
 
-export function checkNetwork(text) {
-  return scanLines(text, (line) => {
-    const hits = [];
-    if (NET_IMPORT.test(line)) hits.push('network or process module in src/');
-    if (FETCH_CALL.test(line)) hits.push('fetch call in src/');
-    return hits;
+// The one check a marker cannot switch off. A tool that promises it never phones home keeps the promise on every line.
+export function checkNetwork(text, file = 'src/') {
+  const out = [];
+  text.split(/\r?\n/).forEach((line, i) => {
+    const hit = (reason) => out.push({ line: i + 1, reason });
+    if (NET_IMPORT.test(line)) hit('network module in shipped code');
+    if (PROCESS_IMPORT.test(line) && file !== PROCESS_FILE) hit(`child_process outside ${PROCESS_FILE}`);
+    if (FETCH_CALL.test(line)) hit('fetch call in shipped code');
+    if (WEBSOCKET.test(line)) hit('WebSocket in shipped code');
   });
+  return out;
 }
 
 const WIN_USER_PATH = /[A-Za-z]:[\\/]Users[\\/]/i; // gate-allow
@@ -220,7 +230,7 @@ export function checkFile({ file, text, denylist = [] }) {
   if (!fixture) add('invisible', checkInvisible(text));
   if (!(fixture && isCanary(text))) add('secrets', checkSecrets(text));
   add('provenance', checkPaths(text));
-  if (file.startsWith('src/')) add('no-network', checkNetwork(text));
+  if (NETWORK_DIRS.some((d) => file.startsWith(d))) add('no-network', checkNetwork(text, file));
   if (fixture && file.endsWith('.jsonl') && !isSynthetic(text)) {
     found.push({ check: 'provenance', file, line: 1, reason: 'fixture first line lacks "_synthetic": true' });
   }
@@ -299,7 +309,7 @@ function main() {
   if (testFiles.length === 0) {
     console.log('NOTE tests: no test files under test/, skipped');
   } else {
-    const r = spawnSync(process.execPath, ['--test'], { cwd: root, encoding: 'utf8', maxBuffer: 1 << 28 });
+    const r = spawnSync(process.execPath, ['--import', './test/no-network.mjs', '--test'], { cwd: root, encoding: 'utf8', maxBuffer: 1 << 28 });
     if (r.status !== 0) {
       process.stdout.write(r.stdout ?? '');
       process.stderr.write(r.stderr ?? '');
