@@ -1,1 +1,4 @@
 * text=auto eol=lf
+test/fixtures/**/*crlf* -text
+*.png binary
+*.jpg binary

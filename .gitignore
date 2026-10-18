@@ -3,6 +3,6 @@ node_modules/
 CLAUDE.md
 AGENTS.md
 .mcp.json
-labels/
+/labels/
 *.log
 .DS_Store

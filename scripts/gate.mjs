@@ -82,7 +82,131 @@ export function checkPaths(text) {
   );
 }
 
-export const firstLine = (text) => text.replace(BOM, '').split(/\r?\n/, 1)[0];
+const INVISIBLE = new RegExp(
+  '[' +
+    String.fromCharCode(0x00ad, 0xfeff) +
+    String.fromCharCode(0x200b) + '-' + String.fromCharCode(0x200f) +
+    String.fromCharCode(0x2060) + '-' + String.fromCharCode(0x2064) +
+    String.fromCharCode(0xe000) + '-' + String.fromCharCode(0xf8ff) +
+    ']',
+  'g',
+);
+
+export function checkInvisible(text) {
+  const out = [];
+  text.replace(BOM, '').split(/\r?\n/).forEach((line, i) => {
+    const seen = new Set(line.match(INVISIBLE) ?? []);
+    for (const ch of seen) {
+      const code = ch.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0');
+      out.push({ line: i + 1, reason: `invisible character U+${code}` });
+    }
+  });
+  return out;
+}
+
+// A binary has no lines. One pass over the whole thing, reported at line 0.
+export function checkBinaryMarkers(buf, denylist) {
+  const text = buf.toString('latin1');
+  return denylist.filter((p) => p.re.test(text)).map((p) => ({ line: 0, reason: `denylist pattern "${p.raw}"` }));
+}
+
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+// Whatever is not on this list can carry a note from whoever made the file. It stays out.
+const PNG_CHUNKS = new Set(['IHDR', 'PLTE', 'IDAT', 'IEND', 'tRNS', 'gAMA', 'cHRM', 'sRGB', 'pHYs', 'sBIT', 'bKGD']);
+const BLOCKED_IMAGE_EXT = new Set([
+  'gif', 'webp', 'svg', 'svgz', 'ico', 'cur', 'bmp', 'tif', 'tiff', 'avif', 'heic', 'heif', 'apng', 'jxl', 'jp2',
+]);
+
+function pngProblems(buf) {
+  const out = [];
+  let p = PNG_SIGNATURE.length;
+  let ended = false;
+  while (p < buf.length) {
+    if (p + 12 > buf.length) {
+      out.push({ line: 0, reason: 'image malformed: truncated PNG' });
+      return out;
+    }
+    const len = buf.readUInt32BE(p);
+    const type = buf.toString('latin1', p + 4, p + 8).replace(/[^A-Za-z]/g, '?');
+    if (p + 12 + len > buf.length) {
+      out.push({ line: 0, reason: 'image malformed: truncated PNG' });
+      return out;
+    }
+    if (!PNG_CHUNKS.has(type)) out.push({ line: 0, reason: `image metadata chunk ${type}` });
+    p += 12 + len;
+    if (type === 'IEND') {
+      ended = true;
+      break;
+    }
+  }
+  if (ended && p < buf.length) out.push({ line: 0, reason: 'image has trailing data after IEND' });
+  if (!ended) out.push({ line: 0, reason: 'image malformed: no IEND' });
+  return out;
+}
+
+const JFIF = Buffer.from('JFIF\0', 'latin1');
+const hex = (n) => `0x${n.toString(16).toUpperCase().padStart(2, '0')}`;
+const isRestart = (m) => m >= 0xd0 && m <= 0xd7;
+// SOF0 to SOF15 are 0xC0 to 0xCF, minus DHT (C4), JPG (C8) and DAC (CC).
+const isFrame = (m) => m >= 0xc0 && m <= 0xcf && m !== 0xc4 && m !== 0xc8 && m !== 0xcc;
+
+function jpegProblems(buf) {
+  const out = [];
+  const bad = (reason) => out.push({ line: 0, reason });
+  let p = 2;
+  let ended = false;
+  while (p < buf.length) {
+    if (buf[p] !== 0xff) return [...out, { line: 0, reason: 'image malformed: stray bytes between segments' }];
+    while (buf[p + 1] === 0xff) p++;
+    const m = buf[p + 1];
+    if (m === undefined) break;
+    p += 2;
+    if (m === 0xd9) {
+      ended = true;
+      if (p < buf.length) bad('image has trailing data after EOI');
+      break;
+    }
+    if (m === 0x01 || isRestart(m)) continue;
+    if (p + 2 > buf.length) break;
+    const len = buf.readUInt16BE(p);
+    if (len < 2 || p + len > buf.length) return [...out, { line: 0, reason: 'image malformed: truncated JPEG' }];
+    if (m === 0xe0) {
+      if (!buf.subarray(p + 2, p + 2 + JFIF.length).equals(JFIF)) bad('image metadata segment APP0');
+    } else if (m > 0xe0 && m <= 0xef) {
+      bad(`image metadata segment APP${m - 0xe0}`);
+    } else if (m === 0xfe) {
+      bad('image metadata segment COM');
+    } else if (!(m === 0xdb || m === 0xc4 || m === 0xdd || m === 0xda || isFrame(m))) {
+      bad(`image metadata segment ${hex(m)}`);
+    }
+    p += len;
+    if (m === 0xda) {
+      // Scan data. A stuffed FF00 or a restart is still pixels. Any other marker is a segment again.
+      while (p < buf.length) {
+        if (buf[p] !== 0xff) p++;
+        else if (buf[p + 1] === 0 || isRestart(buf[p + 1])) p += 2;
+        else if (buf[p + 1] === 0xff) p++;
+        else break;
+      }
+    }
+  }
+  if (!ended && out.length === 0) bad('image malformed: no EOI');
+  return out;
+}
+
+export function checkImageMetadata(file, buf) {
+  const ext = file.includes('.') ? file.slice(file.lastIndexOf('.') + 1).toLowerCase() : '';
+  if (BLOCKED_IMAGE_EXT.has(ext)) return [{ line: 0, reason: 'image format not allowed, use PNG or JPEG' }];
+  const isPng = buf.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE);
+  const isJpeg = buf.length >= 2 && buf[0] === 0xff && buf[1] === 0xd8;
+  if (ext === 'png' && !isPng) return [{ line: 0, reason: 'image malformed: not a PNG' }];
+  if ((ext === 'jpg' || ext === 'jpeg') && !isJpeg) return [{ line: 0, reason: 'image malformed: not a JPEG' }];
+  if (isPng) return pngProblems(buf);
+  if (isJpeg) return jpegProblems(buf);
+  return [];
+}
+
+export const firstLine =(text) => text.replace(BOM, '').split(/\r?\n/, 1)[0];
 export const isCanary = (text) => /"_canary"\s*:\s*true/.test(firstLine(text));
 export const isSynthetic = (text) => /"_synthetic"\s*:\s*true/.test(firstLine(text));
 
@@ -93,6 +217,7 @@ export function checkFile({ file, text, denylist = [] }) {
 
   add('em-dash', checkEmDash(text));
   add('denylist', checkDenylist(text, denylist));
+  if (!fixture) add('invisible', checkInvisible(text));
   if (!(fixture && isCanary(text))) add('secrets', checkSecrets(text));
   add('provenance', checkPaths(text));
   if (file.startsWith('src/')) add('no-network', checkNetwork(text));
@@ -109,6 +234,47 @@ function git(args, cwd) {
 }
 
 const nul = (out) => out.split('\0').filter(Boolean);
+
+// Every commit reachable from HEAD, judged against the repo's own identity. Notes are history too.
+export function checkHistory(root, denylist = []) {
+  const run = (args) => spawnSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 1 << 28 });
+  // CI has no identity of its own. The workflow pins the one that counts.
+  const pinned = /^(.+) <(.+)>$/.exec(process.env.GOLDFISHED_IDENTITY ?? '');
+  const name = pinned ? pinned[1] : run(['config', 'user.name']).stdout.trim();
+  const email = pinned ? pinned[2] : run(['config', 'user.email']).stdout.trim();
+  if (!name || !email) return ['config git user.name or user.email is not set'];
+
+  const out = [];
+  if (run(['rev-parse', '--verify', '--quiet', 'HEAD']).status === 0) {
+    const log = run(['log', '--format=%H%x00%an%x00%ae%x00%cn%x00%ce%x00%B%x1e']);
+    if (log.status !== 0) throw new Error(`git log failed: ${log.stderr.trim()}`);
+    for (const record of log.stdout.split('\x1e')) {
+      const [sha, an, ae, cn, ce, ...rest] = record.replace(/^\n/, '').split('\0');
+      if (!sha) continue;
+      const short = sha.slice(0, 7);
+      const message = rest.join('\0');
+      const flag = (why) => out.push(`${short} ${why}`);
+      if (an !== name || ae !== email) flag(`author ${an} <${ae}> is not the repo identity`);
+      if (cn !== name || ce !== email) flag(`committer ${cn} <${ce}> is not the repo identity`);
+      if (/^\s*co-authored-by:/im.test(message)) flag('message carries a co-author trailer'); // gate-allow
+      if (/generated with/i.test(message)) flag('message carries a generated-by footer'); // gate-allow
+      for (const p of denylist) if (p.re.test(message)) flag(`message matches denylist pattern "${p.raw}"`);
+    }
+  }
+  const tags = run(['for-each-ref', 'refs/tags', '--format=%(refname:short)%00%(taggername)%00%(taggeremail)%00%(contents)%1e']);
+  for (const record of tags.stdout.split('\x1e')) {
+    const [tag, tn, te, ...rest] = record.replace(/^\n/, '').split('\0');
+    if (!tag) continue;
+    const message = rest.join('\0');
+    const flag = (why) => out.push(`tag ${tag} ${why}`);
+    if (tn && (tn !== name || te !== `<${email}>`)) flag(`tagger ${tn} ${te} is not the repo identity`);
+    if (/^\s*co-authored-by:/im.test(message)) flag('message carries a co-author trailer'); // gate-allow
+    if (/generated with/i.test(message)) flag('message carries a generated-by footer'); // gate-allow
+    for (const p of denylist) if (p.re.test(message)) flag(`message matches denylist pattern "${p.raw}"`);
+  }
+  if (run(['for-each-ref', 'refs/notes']).stdout.trim()) out.push('notes: git notes are present');
+  return out;
+}
 
 function main() {
   const here = dirname(fileURLToPath(import.meta.url));
@@ -156,14 +322,22 @@ function main() {
     }
     if (!st.isFile()) continue;
     const buf = readFileSync(full);
-    if (buf.includes(0)) continue;
     scanned++;
+    for (const f of checkImageMetadata(file, buf)) fail('image', file, f.line, f.reason);
+    if (buf.includes(0)) {
+      for (const f of checkBinaryMarkers(buf, denylist)) fail('binary', file, f.line, f.reason);
+      continue;
+    }
     for (const f of checkFile({ file, text: buf.toString('utf8'), denylist })) {
       fail(f.check, f.file, f.line, f.reason);
     }
   }
 
-  for (const f of failures) console.log(`FAIL ${f.check}: ${f.file}:${f.line} ${f.reason}`);
+  for (const reason of checkHistory(root, denylist)) fail('history', '', 0, reason);
+
+  for (const f of failures) {
+    console.log(f.check === 'history' ? `FAIL history: ${f.reason}` : `FAIL ${f.check}: ${f.file}:${f.line} ${f.reason}`);
+  }
   console.log(
     failures.length === 0
       ? `gate: ok, ${scanned} files scanned`
