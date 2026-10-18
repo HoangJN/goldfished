@@ -1,0 +1,8 @@
+node_modules/
+.claude/
+CLAUDE.md
+AGENTS.md
+.mcp.json
+labels/
+*.log
+.DS_Store

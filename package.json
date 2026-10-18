@@ -1,0 +1,22 @@
+{
+  "name": "goldfished",
+  "version": "0.0.0",
+  "description": "See how much of what you typed survives Claude Code's compaction.",
+  "type": "module",
+  "bin": {
+    "goldfished": "bin/goldfished.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "author": "Jonathan Nguyen",
+  "files": [
+    "bin",
+    "src"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "gate": "node scripts/gate.mjs"
+  }
+}
