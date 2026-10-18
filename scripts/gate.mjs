@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, lstatSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fieldNames } from '../src/agents/claude-code.dialect.mjs';
 
 export const MARKER = 'gate-allow';
 const DASHES = new RegExp('[' + String.fromCharCode(0x2014, 0x2015) + ']');
@@ -220,10 +221,24 @@ export const firstLine =(text) => text.replace(BOM, '').split(/\r?\n/, 1)[0];
 export const isCanary = (text) => /"_canary"\s*:\s*true/.test(firstLine(text));
 export const isSynthetic = (text) => /"_synthetic"\s*:\s*true/.test(firstLine(text));
 
+export function checkFields(file, text) {
+  if (!file.startsWith('src/') || file.endsWith('.dialect.mjs')) return [];
+  const out = [];
+  for (const field of fieldNames) {
+    const name = escapeRe(field);
+    const pattern = new RegExp('([\'"`])' + name + '\\1|\\.\\s*' + name + '(?![\\w$])', 'gu');
+    for (const match of text.matchAll(pattern)) {
+      out.push({ line: text.slice(0, match.index).split(/\r?\n/u).length, reason: `session field ${field} outside a dialect` });
+    }
+  }
+  return out;
+}
+
 export function checkFile({ file, text, denylist = [] }) {
   const found = [];
   const add = (check, list) => list.forEach((f) => found.push({ check, file, ...f }));
   const fixture = file.startsWith('test/fixtures/');
+  add('dialect-fields', checkFields(file, text));
 
   add('em-dash', checkEmDash(text));
   add('denylist', checkDenylist(text, denylist));

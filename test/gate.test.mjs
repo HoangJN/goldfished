@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, test } from 'node:test';
@@ -12,6 +12,7 @@ import {
   checkInvisible,
   parseDenylist,
 } from '../scripts/gate.mjs';
+import { fieldNames } from '../src/agents/claude-code.dialect.mjs';
 
 const scratch = mkdtempSync(join(tmpdir(), 'goldfished-gate-'));
 after(() => rmSync(scratch, { recursive: true, force: true }));
@@ -24,6 +25,33 @@ function run(file, body, denylist = []) {
   writeFileSync(path, body);
   return checkFile({ file, text: readFileSync(path, 'utf8'), denylist });
 }
+
+test('dialect fields planted in source fail in quoted strings and property accesses', () => {
+  const dir = join(scratch, 'src');
+  mkdirSync(dir);
+  const planted = join(dir, 'planted.mjs');
+  for (const field of fieldNames) {
+    for (const body of [`const key = '${field}';`, `record.${field};`, `record?. ${field};`, `record.\n ${field};`,
+      `record["${field}"];`, 'const key = `' + field + '`;']) {
+      writeFileSync(planted, body);
+      const found = checkFile({ file: 'src/planted.mjs', text: readFileSync(planted, 'utf8') });
+      assert.ok(found.some(f => f.check === 'dialect-fields'), body);
+      assert.equal(run('src/planted.dialect.mjs', body).length, 0);
+      assert.equal(run('test/planted.test.mjs', body).length, 0);
+    }
+  }
+  assert.ok(run('src/planted.mjs', "record.uuid; // gate-allow").some(f => f.check === 'dialect-fields'));
+  assert.equal(run('src/planted.mjs', "record.uuidSuffix; const key = 'uuidSuffix';").length, 0);
+});
+
+test('the real source tree keeps dialect fields inside dialect files', () => {
+  const root = new URL('../src/', import.meta.url);
+  for (const relative of readdirSync(root, { recursive: true }).filter(file => file.endsWith('.mjs'))) {
+    const name = relative.replaceAll('\\', '/'), file = 'src/' + name;
+    const found = checkFile({ file, text: readFileSync(new URL(name, root), 'utf8') });
+    assert.deepEqual(found.filter(f => f.check === 'dialect-fields'), [], file);
+  }
+});
 
 test('an em-dash is caught, with its line number', () => {
   const found = run('notes.md', `fine\nbroken ${EM} here\n`);
@@ -109,7 +137,7 @@ test('absolute user paths are caught', () => {
 test('fixtures must say they are synthetic, canaries skip the secret scan', () => {
   const key = `{"_synthetic": true, "_canary": true, "text": "${ANT_KEY}"}\n`;
   assert.equal(run('test/fixtures/c.jsonl', key).length, 0);
-  assert.equal(run('src/c.jsonl', key).length, 1);
+  assert.deepEqual(run('src/c.jsonl', key).map(f => f.check), ['dialect-fields', 'dialect-fields', 'secrets']);
   assert.equal(run('test/fixtures/d.jsonl', '{"text": "plain"}\n').length, 1);
   assert.equal(run('test/fixtures/e.jsonl', '{"_synthetic": true}\n').length, 0);
 });
@@ -225,7 +253,7 @@ test('fixtures may carry invisible characters, other files may not', () => {
   const body = `{"_synthetic": true, "t": "a${bom}b"}\n`;
   assert.equal(checkFile({ file: 'test/fixtures/f.jsonl', text: body }).length, 0);
   const found = checkFile({ file: 'src/f.jsonl', text: body });
-  assert.deepEqual(found.map((f) => f.check), ['invisible']);
+  assert.deepEqual(found.map((f) => f.check), ['dialect-fields', 'invisible']);
 });
 
 function git(dir, env, ...args) {
