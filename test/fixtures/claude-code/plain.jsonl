@@ -1,0 +1,4 @@
+{"_synthetic":true,"note":"Plain session with string and text block content."}
+{"type":"user","uuid":"plain-a","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."}}
+{"type":"user","uuid":"plain-b","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":[{"type":"text","text":"Use amber paint for the eastern gate."}]}}
+{"type":"assistant","uuid":"plain-assistant","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}

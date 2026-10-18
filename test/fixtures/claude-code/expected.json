@@ -1,0 +1,710 @@
+{
+  "_synthetic": true,
+  "fixtures": {
+    "plain.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 2,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "plain-a",
+          "epoch": 0,
+          "labels": []
+        },
+        {
+          "id": "plain-b",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "adjacent.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 2,
+      "rejected": {
+        "summary": 1
+      },
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        }
+      ],
+      "messages": [
+        {
+          "id": "adj-a",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        },
+        {
+          "id": "adj-b",
+          "epoch": 0,
+          "labels": [
+            "gone"
+          ]
+        }
+      ],
+      "drift": false
+    },
+    "summary-four-later.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {
+        "summary": 1
+      },
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        }
+      ],
+      "messages": [
+        {
+          "id": "gap-a",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        }
+      ],
+      "drift": false
+    },
+    "three-compactions.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 2,
+      "rejected": {
+        "summary": 3
+      },
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        },
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        },
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        }
+      ],
+      "messages": [
+        {
+          "id": "three-a",
+          "epoch": 0,
+          "labels": [
+            "kept",
+            "gone",
+            "kept"
+          ]
+        },
+        {
+          "id": "three-b",
+          "epoch": 1,
+          "labels": [
+            "kept",
+            "gone"
+          ]
+        }
+      ],
+      "drift": false
+    },
+    "boundary-without-summary.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {
+        "summary": 1
+      },
+      "compactions": [
+        {
+          "visible": "null",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        },
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        }
+      ],
+      "messages": [
+        {
+          "id": "missing-a",
+          "epoch": 0,
+          "labels": [
+            null,
+            "kept"
+          ]
+        }
+      ],
+      "drift": true
+    },
+    "summary-without-boundary.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {
+        "summary": 1
+      },
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": null,
+          "post": null,
+          "trigger": null
+        }
+      ],
+      "messages": [
+        {
+          "id": "orphan-a",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        }
+      ],
+      "drift": true
+    },
+    "preserved-tail.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 2,
+      "rejected": {
+        "summary": 1
+      },
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        }
+      ],
+      "messages": [
+        {
+          "id": "tail-a",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        },
+        {
+          "id": "tail-b",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        }
+      ],
+      "drift": false
+    },
+    "sdk-session.jsonl": {
+      "sessions": 1,
+      "auto": 1,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {
+        "origin_sdk": 1
+      },
+      "compactions": [],
+      "messages": [
+        {
+          "id": "sdk-a",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "legacy-origin.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 2,
+      "rejected": {
+        "origin_sdk_legacy": 1
+      },
+      "compactions": [],
+      "messages": [
+        {
+          "id": "legacy-a",
+          "epoch": 0,
+          "labels": []
+        },
+        {
+          "id": "legacy-c",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "tool-result.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {
+        "tool_result": 1
+      },
+      "compactions": [],
+      "messages": [
+        {
+          "id": "tool-b",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "slash-command-wrapper.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {
+        "wrapper": 3,
+        "meta": 1
+      },
+      "compactions": [],
+      "messages": [
+        {
+          "id": "wrap-e",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "pasted-brief.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {
+        "pasted": 1
+      },
+      "compactions": [],
+      "messages": [
+        {
+          "id": "paste-a",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "short-replies.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 3,
+      "rejected": {
+        "short": 2
+      },
+      "compactions": [],
+      "messages": [
+        {
+          "id": "short-a",
+          "epoch": 0,
+          "labels": []
+        },
+        {
+          "id": "short-b",
+          "epoch": 0,
+          "labels": []
+        },
+        {
+          "id": "short-c",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "subagent-project": {
+      "sessions": 2,
+      "auto": 0,
+      "sub": 1,
+      "typed": 2,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "main-a",
+          "epoch": 0,
+          "labels": []
+        },
+        {
+          "id": "sub-a",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "forked-project": {
+      "sessions": 2,
+      "auto": 0,
+      "sub": 0,
+      "typed": 2,
+      "rejected": {
+        "summary": 1
+      },
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        }
+      ],
+      "messages": [
+        {
+          "id": "fork-a",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        },
+        {
+          "id": "fork-b",
+          "epoch": 1,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "unknown-and-bad-json.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "bad-a",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": true
+    },
+    "bom-crlf.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {
+        "summary": 1
+      },
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        }
+      ],
+      "messages": [
+        {
+          "id": "crlf-a",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        }
+      ],
+      "drift": false
+    },
+    "secret-canary.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "canary-a",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "manual-trigger.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {
+        "summary": 1
+      },
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": 60000,
+          "post": 9000,
+          "trigger": "manual"
+        }
+      ],
+      "messages": [
+        {
+          "id": "manual-a",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        }
+      ],
+      "drift": false
+    },
+    "truncated-last-line.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "trunc-a",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "newer-request-records.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "new-a",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": true
+    },
+    "ten-unknown-types.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "book-a",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "snake-case-boundary.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {
+        "summary": 1
+      },
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": 80000,
+          "post": 11000,
+          "trigger": "auto"
+        }
+      ],
+      "messages": [
+        {
+          "id": "snake-a",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        }
+      ],
+      "drift": false
+    },
+    "boundary-without-post-tokens.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {
+        "summary": 1
+      },
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": 80000,
+          "post": null,
+          "trigger": "auto"
+        }
+      ],
+      "messages": [
+        {
+          "id": "post-a",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        }
+      ],
+      "drift": false
+    },
+    "spaces-and-dots.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "space-a",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "six-compactions.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {
+        "summary": 6
+      },
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        },
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        },
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        },
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        },
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        },
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        }
+      ],
+      "messages": [
+        {
+          "id": "six-a",
+          "epoch": 0,
+          "labels": [
+            "kept",
+            "gone",
+            "kept",
+            "gone",
+            "kept",
+            "gone"
+          ]
+        }
+      ],
+      "drift": false
+    }
+  },
+  "generated": {
+    "large-line.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {
+        "pasted": 1
+      },
+      "compactions": [],
+      "messages": [
+        {
+          "id": "long-a",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "modified-time.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "old-a",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    }
+  }
+}

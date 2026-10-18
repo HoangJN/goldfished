@@ -1,0 +1,4 @@
+{"_synthetic":true,"note":"Invented renamed conversation records trigger drift."}
+{"type":"user","uuid":"new-a","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."}}
+{"type":"request_v3","uuid":"new-b","message":{"role":"user","content":"Use amber paint for the eastern gate."}}
+{"type":"reply_v3","uuid":"new-c","message":{"role":"assistant","content":"Store the spare rope beside the blue shed."}}
