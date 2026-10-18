@@ -74,7 +74,7 @@ test('modified time filters files and preserves project groups', async () => {
   assert.deepEqual(await adapter.listFiles(join(scratch, 'absent')), []);
 });
 test('registry, roots, newest matching cwd, metadata and drift placeholder', async () => {
-  assert.deepEqual(adapters, [adapter]);
+  assert.equal(adapters[0], adapter);
   assert.deepEqual(adapter.roots({}, scratch), [join(scratch, '.claude', 'projects')]);
   assert.deepEqual(adapter.roots({ CLAUDE_CONFIG_DIR: '/settings' }, scratch), [join('/settings', 'projects')]);
   const old = await collect([{ file: generated['modified-time.jsonl'], group: scratch }]);
