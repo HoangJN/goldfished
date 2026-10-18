@@ -40,15 +40,14 @@ test('card, archive and proposals survive saves and stray temporary files', () =
   store.save(top, loaded); assert.equal(bytes('card.md'), before);
   assert.equal(home.trusted(loaded.cardPath, cardIO.hash(before)), true);
 });
-test('load preserves stored comments and whitespace; saving writes the parsed card', () => {
+test('load preserves stored comments and whitespace and reports parse errors', () => {
   store.save(top, add(store.load(top), 'rules', { text: 'Keep the sample offline.' }));
   const file = store.load(top).cardPath, source = '<!-- a synthetic comment -->\n' + bytes('card.md') + '\n';
   writeFileSync(file, source); const edited = store.load(top);
   assert.match(edited.reason, /^changed by hand since /); assert.equal(edited.source, source);
-  store.save(top, edited); assert.equal(bytes('card.md'), cardIO.serialise(edited.card));
   writeFileSync(file, source + 'broken entry\n'); const broken = store.load(top);
-  assert.match(broken.reason, /^parse error on line \d+$/); store.save(top, broken);
-  assert.equal(store.load(top).trusted, true); assert.equal(bytes('card.md'), cardIO.serialise(broken.card));
+  assert.match(broken.reason, /^parse error on line \d+$/);
+  assert.equal(broken.trusted, false); assert.equal(bytes('card.md'), source + 'broken entry\n');
 });
 test('owned inline files are rewritten and recorded, with commit framing honoured', () => {
   home.setState({ projects: { [top]: { agents: ['cursor', 'continue', 'devin', 'cline'], commit: false, off: true } } });

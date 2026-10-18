@@ -8,6 +8,7 @@ import { META } from './agents/meta.mjs';
 const number = n => n.toLocaleString('en-GB');
 const count = (n, noun) => `${number(n)} ${noun}${n === 1 ? '' : 's'}`;
 const verbs = ['goal', 'rule', 'out', 'edit', 'drop', 'restore', 'accept', 'reject', 'trust', 'list', 'card', 'off', 'on', 'help'];
+const chatVerbs = ['rule', 'goal', 'out', 'list', 'drop', 'restore', 'card', 'accept', 'help', 'off', 'on'];
 const entries = card => [...(card.goal ? [card.goal] : []), ...card.rules, ...card.out];
 function agent(top) {
   return (home.state().projects?.[top]?.agents ?? []).filter(id => META[id]).sort((a, b) => META[a].budget - META[b].budget)[0] ?? 'claude-code';
@@ -19,7 +20,7 @@ function saved(top, card, id) {
 }
 export function run(top, verb, args, { today = new Date().toISOString().slice(0, 10), via = 'cli' } = {}) {
   const done = (reply, code = 0) => ({ reply, code });
-  if (!verbs.includes(verb)) return done(`goldfished: unknown command "${verb}". Try ${via === 'chat' ? 'gf:' : 'goldfished'} help`, 1);
+  if (!(via === 'chat' ? chatVerbs : verbs).includes(verb)) return done(`goldfished: unknown command "${verb}". Try ${via === 'chat' ? 'gf:' : 'goldfished'} help`, 1);
   if (verb === 'help') return done('gf: goal <text>\ngf: out <label> -- <quote>\ngf: list\ngf: drop <id>\ngf: restore <id>\ngf: card\ngf: accept <pN> <label>\ngf: help\ngf: off\ngf: on');
   if (verb === 'off' || verb === 'on') {
     const state = home.state();
@@ -33,13 +34,17 @@ export function run(top, verb, args, { today = new Date().toISOString().slice(0,
   if (verb === 'card') {
     const target = args[0] === '--agent' ? args[1] : agent(top);
     if (!META[target]) return done(`goldfished: unknown agent "${target}".`, 1);
-    const { budget } = META[target], { text } = cardIO.block(card, { trusted: loaded.trusted, budget, maxChars: target === 'claude-code' ? Infinity : 6000, kind: 'resend' });
+    const { budget, rulesFile } = META[target], commit = home.state().projects?.[top]?.commit ?? false;
+    const { text } = cardIO.block(card, { trusted: loaded.trusted && !(rulesFile && commit), budget, maxChars: target === 'claude-code' ? Infinity : 6000, kind: rulesFile ? 'inline' : 'resend' });
     return done(`${text}${count(Buffer.byteLength(text), 'byte')} of ${number(budget)}.`);
   }
-  if (verb !== 'trust' && !loaded.trusted) return done(`goldfished: this card is not trusted on this machine (${loaded.reason}), so nothing was changed. If the card is yours, run: goldfished trust`, 1);
+  if (verb === 'trust') {
+    try { home.trust(loaded.cardPath, cardIO.hash(loaded.source)); return done('goldfished: this card is now trusted on this machine.'); }
+    catch { return done('goldfished: could not trust the card on this machine.', 1); }
+  }
+  if (!loaded.trusted) return done(`goldfished: this card is not trusted on this machine (${loaded.reason}), so nothing was changed. If the card is yours, run: goldfished trust`, 1);
   let result = { card, archive, proposals }, reply;
-  if (verb === 'trust') reply = 'goldfished: this card is now trusted on this machine.';
-  else if (verb === 'accept' || verb === 'reject') {
+  if (verb === 'accept' || verb === 'reject') {
     if (verb === 'accept' && !args[1]) return done(`goldfished: give it a label in your own words: goldfished accept ${args[0]} "<label>"`, 1);
     const taken = proposalIO.take(proposals, args[0]);
     if (taken.refused) return done(taken.refused, 1);
@@ -64,6 +69,12 @@ export function run(top, verb, args, { today = new Date().toISOString().slice(0,
     const raw = text ?? `${label}. User said: "${quote}"`, hidden = (mask(raw, 'card').match(/\[hidden\]/g) ?? []).length - (raw.match(/\[hidden\]/g) ?? []).length;
     return hidden ? [`goldfished: hid ${count(hidden, 'secret')} in ${id} as [hidden].`] : [];
   });
-  const { inlineUpdated } = store.save(top, { ...result, proposals: result.proposals ?? proposals });
-  return done(reply + (inlineUpdated ? ` Updated ${count(inlineUpdated, 'rules file')}.` : '') + notices.map(line => '\n' + line).join(''));
+  try {
+    const { inlineUpdated } = store.save(top, { ...result, proposals: result.proposals ?? proposals });
+    return done(reply + (inlineUpdated ? ` Updated ${count(inlineUpdated, 'rules file')}.` : '') + notices.map(line => '\n' + line).join(''));
+  } catch {
+    let unchanged = false;
+    try { unchanged = store.load(top).source === loaded.source; } catch {}
+    return done(unchanged ? 'goldfished: could not save the card. It is unchanged in .goldfished/card.md.' : 'goldfished: could not finish saving the card. Check .goldfished/card.md before trying again.', 1);
+  }
 }

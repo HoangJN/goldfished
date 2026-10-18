@@ -1,13 +1,4 @@
-# goldfished card
-<!-- Change this with the goldfished command. A hand edit still works, but is flagged until you run: goldfished trust -->
-
-## GOAL
-
-
 ## RULES
 [r01 | 2026-10-18] Keep the synthetic tool offline.
-
-## RULED OUT
-
 broken entry
-not trusted: parse error on line 12. If the card is yours, run: goldfished trust
+not trusted: parse error on line 3. If the card is yours, run: goldfished trust

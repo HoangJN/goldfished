@@ -35,7 +35,7 @@ export function load(top) {
 export function save(top, { card, archive, proposals }) {
   const dir = join(top, '.goldfished'), source = mask(cardIO.serialise(card), 'card');
   mkdirSync(dir, { recursive: true });
-  for (const [name, text] of [['card.md', source], ['archive.md', mask(archiveText(archive), 'card')], ['proposed.md', proposalIO.serialise(proposals)]]) {
+  for (const [name, text] of [['archive.md', mask(archiveText(archive), 'card')], ['proposed.md', proposalIO.serialise(proposals)], ['card.md', source]]) {
     const temp = join(dir, `.${name}.${randomUUID()}.tmp`);
     try { writeFileSync(temp, text, { encoding: 'utf8', flag: 'wx' }); renameSync(temp, join(dir, name)); }
     finally { rmSync(temp, { force: true }); }
