@@ -8,6 +8,8 @@ const today = '2026-10-18', empty = () => ({ goal: null, rules: [], out: [], err
 const example = readFileSync(new URL('./snapshots/card/spec-example.txt', import.meta.url), 'utf8');
 const seed = { _synthetic: true, value: 609 };
 const random = () => { seed.value = (Math.imul(seed.value, 1664525) + 1013904223) >>> 0; return seed.value / 4294967296; };
+const labelParts = ['Cache', 'café', '魚', '🐟', '"', "'", '.', ' ', 'file'];
+const randomLabel = () => Array.from({ length: 1 + Math.floor(random() * 6) }, () => labelParts[Math.floor(random() * labelParts.length)]).join('');
 const runBlock = (card, opts = {}) => block(card, { trusted: true, budget: 6000, maxChars: 6000, kind: 'resend', ...opts });
 
 test('SPEC example is byte-exact, with four block snapshots', () => {
@@ -74,7 +76,7 @@ test('200 seeded cards round-trip and pack whole entries within both caps', () =
     const card = empty();
     card.goal = { id: 'g01', date: today, text: 'Deliver 魚 🐟'.repeat(1 + Math.floor(random() * 40)) };
     for (let i = 0, length = n === 0 ? 200 : Math.floor(random() * 30); i < length; i++) card.rules.push({ id: `r${String(i + 1).padStart(2, '0')}`, date: today, text: i === 0 ? '🐟'.repeat(1500) : `Rule ${i} café\n${'魚 🐟'.repeat(1 + Math.floor(random() * 80))}` });
-    for (let i = 0; i < Math.floor(random() * 9); i++) card.out.push({ id: `x0${i + 1}`, date: today, label: 'Cache', quote: 'Keep it simple 🐟' });
+    for (let i = 0; i < Math.floor(random() * 9); i++) card.out.push({ id: `x0${i + 1}`, date: today, label: randomLabel(), quote: 'Keep it simple 🐟' });
     assert.deepEqual(parse(serialise(card)), card);
     const result = runBlock(card), ids = [...(card.goal ? [card.goal] : []), ...card.out, ...card.rules].map(entry => entry.id);
     assert.ok(Buffer.byteLength(result.text) <= 6000); assert.ok([...result.text].length <= 6000);
@@ -114,9 +116,43 @@ test('packing skips oversized rules, reserves 200 bytes and honours maxChars', (
   const budget = Buffer.byteLength(baseline.text) + 200;
   const packed = runBlock(card, { budget });
   assert.deepEqual(packed.shown, ['r02']); assert.deepEqual(packed.left, ['r01']);
+  matchSnapshot('card', 'resend-trusted-overflow', packed.text);
+  assert.ok(packed.text.includes('Small\n\ngoldfished: 1 of 2 entries'));
+  assert.ok(packed.text.includes('to see them.\nBEFORE YOUR NEXT ACTION'));
   const characterCapped = runBlock(card, { budget: 9500, maxChars: 1200 });
   assert.deepEqual(characterCapped.shown, ['r02']); assert.ok([...characterCapped.text].length <= 1200);
   assert.throws(() => runBlock(card, { budget: 1 }), RangeError);
+});
+
+for (const [goal, rules, out, what] of [
+  [false, false, false, ''], [true, false, false, 'GOAL'], [false, true, false, 'RULES'], [false, false, true, 'RULED OUT'],
+  [true, true, false, 'GOAL'], [true, false, true, 'GOAL and RULED OUT'], [false, true, true, 'RULES and RULED OUT'], [true, true, true, 'GOAL and RULED OUT']
+]) test(`BEFORE sections: goal=${goal}, rules=${rules}, out=${out}`, () => {
+  const exampleCard = parse(example), card = { ...empty(), goal: goal ? exampleCard.goal : null, rules: rules ? exampleCard.rules : [], out: out ? exampleCard.out : [] };
+  for (const kind of ['resend', 'inline']) {
+    const { text } = runBlock(card, { kind });
+    if (!what) assert.equal(text, '');
+    else { assert.ok(text.includes(`check it against ${what}. If it ${goal ? 'does not serve the goal' : 'breaks a rule'}`)); assert.ok(/\n\nBEFORE /.test(text)); }
+  }
+});
+
+for (const [name, label] of [['LF', 'Cache\nservice'], ['CR', 'Cache\rservice'], ['CRLF', 'Cache\r\nservice'], ['NEL', 'Cache\u0085service'], ['LS', 'Cache\u2028service'], ['PS', 'Cache\u2029service'], ['quote marker', 'Cache. User said: "no']]) {
+  test(`add and edit refuse a label containing ${name} without changing the card or archive`, () => {
+    const state = add(empty(), [], 'out', { label: 'Cache', quote: 'No service' }, today), before = serialise(state.card), saved = JSON.stringify(state.archive);
+    assert.deepEqual(add(state.card, state.archive, 'out', { label, quote: 'No service' }, today), { refused: `goldfished: a label must be one line and cannot contain '. User said: "'. Nothing was changed.` });
+    assert.deepEqual(edit(state.card, state.archive, state.id, { label, quote: 'No service' }, today), { refused: `goldfished: a label must be one line and cannot contain '. User said: "'. Nothing was changed.` });
+    if (name !== 'quote marker') assert.deepEqual(edit(state.card, state.archive, state.id, `${label}. User said: "No service"`, today), { refused: `goldfished: a label must be one line and cannot contain '. User said: "'. Nothing was changed.` });
+    assert.equal(serialise(state.card), before); assert.equal(JSON.stringify(state.archive), saved);
+  });
+}
+
+test('a quote may contain the label marker in both forms of edit', () => {
+  const quote = 'Keep the words . User said: "no" exactly.', state = add(empty(), [], 'out', { label: 'Cache', quote }, today);
+  assert.deepEqual(parse(serialise(state.card)), state.card);
+  for (const text of [{ label: 'Other', quote }, `Other. User said: "${quote}"`]) {
+    const changed = edit(state.card, state.archive, state.id, text, today);
+    assert.equal(changed.card.out[0].quote, quote); assert.deepEqual(parse(serialise(changed.card)), changed.card);
+  }
 });
 
 test('empty sections, missing goal and all untrusted causes use the exact framing', () => {

@@ -7,10 +7,13 @@ const count = text => Array.from(text).length;
 const entries = card => [...(card.goal ? [card.goal] : []), ...card.rules, ...card.out];
 const ordered = list => [...list].sort((a, b) => BigInt(a.id.slice(1)) < BigInt(b.id.slice(1)) ? -1 : 1);
 const words = ({ text, label, quote }) => text ?? `${label}. User said: "${quote}"`;
-const outFields = text => /^(.*?)\. User said: "([\s\S]*)"$/.exec(text);
+const outFields = text => /^(.*?)\. User said: "([\s\S]*)"$/s.exec(text);
+const invalidLabel = label => /[\r\n\u0085\u2028\u2029]/u.test(label) || label.includes('. User said: "');
+const labelRefusal = () => ({ refused: `goldfished: a label must be one line and cannot contain '. User said: "'. Nothing was changed.` });
 const refusal = (subject, size, limit, unit = 'characters') => ({ refused: `goldfished: that ${subject} is ${size} ${unit}; the limit is ${limit}. Nothing was changed. Shorten it, in your own words.` });
 function cap(card, section, entry, extra = 0) {
   const { text, label, quote } = entry;
+  if (section === 'out' && invalidLabel(label)) return labelRefusal();
   const size = section === 'out' ? count(label) + count(quote) : count(text);
   const limit = section === 'goal' ? 600 : section === 'out' ? 200 : 1500;
   if (size > limit) return refusal(section === 'goal' ? 'goal' : section === 'out' ? 'ruled out entry' : 'rule', size, limit);
@@ -23,7 +26,7 @@ export function parse(source) {
   const finish = () => {
     if (!entry) return;
     const text = body.join('\n'), parts = section === 'out' && outFields(text);
-    if (section === 'out' && !parts) card.errors.push({ line: entry.line, reason: 'Expected a label and user quote.' });
+    if (section === 'out' && (!parts || invalidLabel(parts[1]))) card.errors.push({ line: entry.line, reason: 'Expected a one-line label and user quote.' });
     else {
       const value = { id: entry.id, date: entry.date, ...(parts ? { label: parts[1], quote: parts[2] } : { text }) };
       if (entries(card).some(item => item.id === value.id) || (section === 'goal' && card.goal)) card.errors.push({ line: entry.line, reason: 'Duplicate entry.' });
@@ -61,11 +64,11 @@ export function add(card, archive, section, fields, today) {
   return { card: { ...card, [section]: section === 'goal' ? entry : [...card[section], entry] }, archive: section === 'goal' && card.goal ? [...archive, { section, entry: card.goal, reason: 'replaced', date: today }] : [...archive], id };
 }
 
-/** text is the full entry text, including label and quote for out entries. */
+/** text is the full entry text, or {label,quote} for an out entry. */
 export function edit(card, archive, id, text, today) {
   const section = Object.keys(titles).find(key => (key === 'goal' ? card.goal?.id === id : card[key].some(item => item.id === id)));
   if (!section) return { refused: `goldfished: ${id} was not found.` };
-  const parts = section === 'out' && outFields(text);
+  const parts = section === 'out' && (typeof text === 'string' ? outFields(text) : [null, text.label, text.quote]);
   if (section === 'out' && !parts) return { refused: 'goldfished: give the ruled out entry a label and user quote.' };
   const entry = { id, date: today, ...(parts ? { label: parts[1], quote: parts[2] } : { text }) };
   const refused = cap(card, section, entry);
@@ -97,14 +100,14 @@ const untrusted = "goldfished: the card below came from the project folder but w
 export function block(card, { trusted, budget, kind, maxChars = Infinity }) {
   if (!entries(card).length) return { text: '', shown: [], left: [] };
   trusted = trusted && !card.errors?.length;
-  const what = [card.goal && 'GOAL', card.out.length && 'RULED OUT'].filter(Boolean).join(' and ') || 'RULES';
+  const what = [card.goal ? 'GOAL' : card.rules.length && 'RULES', card.out.length && 'RULED OUT'].filter(Boolean).join(' and ');
   const before = `BEFORE ${kind === 'inline' ? 'EACH' : 'YOUR NEXT'} ACTION: check it against ${what}. If it ${card.goal ? 'does not serve the goal' : 'breaks a rule'} or touches something ruled out, stop and ask the user one question. Where the work stands is not on this card: read the files and any plan in the repo before trusting the summary's account of them.`;
   const chosen = { rules: [], out: [] }, left = [];
   const render = overflow => [trusted ? kind === 'inline' ? inline : resend : untrusted,
     card.goal && `GOAL (set ${card.goal.date})\n${words(card.goal)}`,
     chosen.rules.length && `RULES\n${chosen.rules.map(entry => `[${entry.id} | ${entry.date}] ${words(entry)}`).join('\n')}`,
     chosen.out.length && `RULED OUT (decided against; do not propose again unless the user raises it)\n${chosen.out.map(entry => `[${entry.id} | ${entry.date}] ${words(entry)}`).join('\n')}`,
-    overflow, trusted && before].filter(Boolean).join('\n\n') + '\n';
+    [overflow, trusted && before].filter(Boolean).join('\n')].filter(Boolean).join('\n\n') + '\n';
   const fits = text => Buffer.byteLength(text, 'utf8') + 200 <= budget && count(text) + 200 <= maxChars;
   if (!fits(render(''))) throw new RangeError('The budget cannot fit the framing, goal and overflow reserve.');
   for (const section of ['out', 'rules']) for (const entry of ordered(card[section])) {
