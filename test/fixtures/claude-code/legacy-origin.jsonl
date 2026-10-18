@@ -1,0 +1,4 @@
+{"_synthetic":true,"note":"Absent turnOrigin uses legacy SDK fields; explicit human wins."}
+{"type":"user","uuid":"legacy-a","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."}}
+{"type":"user","uuid":"legacy-b","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Use amber paint for the eastern gate."},"promptSource":"sdk"}
+{"type":"user","uuid":"legacy-c","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Store the spare rope beside the blue shed."},"promptSource":"sdk","turnOrigin":"human"}

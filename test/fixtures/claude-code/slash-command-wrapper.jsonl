@@ -1,0 +1,6 @@
+{"_synthetic":true,"note":"All wrapper prefixes and meta records are rejected in order."}
+{"type":"user","uuid":"wrap-a","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"<command-name>/status</command-name>"}}
+{"type":"user","uuid":"wrap-b","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Caveat: this is a local command response."}}
+{"type":"user","uuid":"wrap-c","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"[Request interrupted by operator]"}}
+{"type":"user","uuid":"wrap-d","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."},"isMeta":true}
+{"type":"user","uuid":"wrap-e","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Use amber paint for the eastern gate."}}

@@ -1,0 +1,4 @@
+{"_synthetic":true,"note":"Replies below twenty characters are short; twenty counts."}
+{"type":"user","uuid":"short-a","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Yes."}}
+{"type":"user","uuid":"short-b","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"NNNNNNNNNNNNNNNNNNN"}}
+{"type":"user","uuid":"short-c","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"TTTTTTTTTTTTTTTTTTTT"}}

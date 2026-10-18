@@ -1,0 +1,4 @@
+{"_synthetic":true,"note":"Original history copied by a fork."}
+{"type":"user","uuid":"fork-a","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."}}
+{"type":"system","subtype":"compact_boundary","uuid":"fork-c","timestamp":"2026-01-01T11:00:00Z","sessionId":"tide","compactMetadata":{"trigger":"auto","preTokens":120000,"postTokens":21000}}
+{"type":"user","uuid":"fork-s","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."},"isCompactSummary":true}
