@@ -1,0 +1,3 @@
+{"_synthetic":true,"note":"Automated exec session; typed events are inventoried but the session is not graded."}
+{"timestamp":"2026-01-05T12:00:00Z","type":"session_meta","payload":{"id":"copper-kettle","cwd":"/srv/work/copper-kettle","cli_version":"0.1.0","originator":"codex_exec","source":"exec"}}
+{"timestamp":"2026-01-05T12:00:00Z","type":"event_msg","payload":{"type":"user_message","message":"Keep the copper kettle beside the pantry."}}

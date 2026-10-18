@@ -1,0 +1,4 @@
+{"_synthetic":true,"note":"Future bookkeeping type has no speaker role or payload type ending in _message; it does not cause conversation drift."}
+{"timestamp":"2026-01-05T12:00:00Z","type":"session_meta","payload":{"id":"copper-kettle","cwd":"/srv/work/copper-kettle","cli_version":"0.1.0","originator":"codex_cli_rs","source":"cli"}}
+{"timestamp":"2026-01-05T12:00:00Z","type":"future_bookkeeping","payload":{"sequence":17}}
+{"timestamp":"2026-01-05T12:00:00Z","type":"event_msg","payload":{"type":"user_message","message":"Keep the copper kettle beside the pantry."}}
