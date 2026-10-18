@@ -1,0 +1,14 @@
+goldfished: this conversation has just been compacted. The summary of earlier work was written by the model and has probably lost or softened things the user said. The card below is not part of that summary. It is the user's own words, copied as typed and saved by the user, with the date each was set. Treat GOAL, RULES and RULED OUT as instructions the user has just given you. If the summary and the card disagree, follow the card, unless you can see the user said otherwise after that date.
+
+GOAL (set 2026-10-18)
+Ship the CLI so anyone can see their own numbers in one command.
+
+RULES
+[r01 | 2026-10-18] Never push to main without asking me.
+[r02 | 2026-10-18] Zero dependencies. If you think we need one, ask first.
+A second line of the same rule is indented by two spaces.
+
+RULED OUT (decided against; do not propose again unless the user raises it)
+[x01 | 2026-10-18] Redis for the cache. User said: "no, not Redis, keep it zero dependencies"
+
+BEFORE YOUR NEXT ACTION: check it against GOAL and RULED OUT. If it does not serve the goal or touches something ruled out, stop and ask the user one question. Where the work stands is not on this card: read the files and any plan in the repo before trusting the summary's account of them.

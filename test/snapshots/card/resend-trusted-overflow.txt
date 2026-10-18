@@ -1,0 +1,7 @@
+goldfished: this conversation has just been compacted. The summary of earlier work was written by the model and has probably lost or softened things the user said. The card below is not part of that summary. It is the user's own words, copied as typed and saved by the user, with the date each was set. Treat GOAL, RULES and RULED OUT as instructions the user has just given you. If the summary and the card disagree, follow the card, unless you can see the user said otherwise after that date.
+
+RULES
+[r02 | 2026-10-18] Small
+
+goldfished: 1 of 2 entries not shown here (r01). Run goldfished list to see them.
+BEFORE YOUR NEXT ACTION: check it against RULES. If it breaks a rule or touches something ruled out, stop and ask the user one question. Where the work stands is not on this card: read the files and any plan in the repo before trusting the summary's account of them.
