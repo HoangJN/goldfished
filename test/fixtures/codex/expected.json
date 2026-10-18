@@ -1,0 +1,300 @@
+{
+  "_synthetic": true,
+  "fixtures": {
+    "sessions/2026/01/05/rollout-plain.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 2,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "3",
+          "epoch": 0,
+          "labels": []
+        },
+        {
+          "id": "6",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "sessions/2026/01/05/rollout-large-meta.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "3",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "sessions/2026/01/05/rollout-one-compaction.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 2,
+      "rejected": {},
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": null,
+          "post": null,
+          "trigger": null
+        }
+      ],
+      "messages": [
+        {
+          "id": "3",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        },
+        {
+          "id": "4",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        }
+      ],
+      "drift": false
+    },
+    "sessions/2026/01/05/rollout-three-compactions.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 2,
+      "rejected": {},
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": null,
+          "post": null,
+          "trigger": null
+        },
+        {
+          "visible": "found",
+          "pre": null,
+          "post": null,
+          "trigger": null
+        },
+        {
+          "visible": "null",
+          "pre": null,
+          "post": null,
+          "trigger": null
+        }
+      ],
+      "messages": [
+        {
+          "id": "3",
+          "epoch": 0,
+          "labels": [
+            "kept",
+            "kept",
+            null
+          ]
+        },
+        {
+          "id": "4",
+          "epoch": 0,
+          "labels": [
+            "kept",
+            "gone",
+            null
+          ]
+        }
+      ],
+      "drift": false
+    },
+    "sessions/2026/01/05/rollout-exec.jsonl": {
+      "sessions": 1,
+      "auto": 1,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "3",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "sessions/2026/01/05/rollout-truncated.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "3",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "sessions/2026/01/05/rollout-future-record.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "4",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "sessions/2026/01/05/rollout-crlf.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": null,
+          "post": null,
+          "trigger": null
+        }
+      ],
+      "messages": [
+        {
+          "id": "3",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        }
+      ],
+      "drift": false
+    },
+    "sessions/2026/01/05/rollout-secret-canary.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "3",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false
+    },
+    "sessions/2026/01/05/rollout-opaque-with-message.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": null,
+          "post": null,
+          "trigger": null
+        }
+      ],
+      "messages": [
+        {
+          "id": "3",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        }
+      ],
+      "drift": false
+    },
+    "sessions/2026/01/05/rollout-after-compaction.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 2,
+      "rejected": {},
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": null,
+          "post": null,
+          "trigger": null
+        }
+      ],
+      "messages": [
+        {
+          "id": "3",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        },
+        {
+          "id": "5",
+          "epoch": 1,
+          "labels": []
+        }
+      ],
+      "drift": false
+    }
+  },
+  "generated": {
+    "sessions/2026/01/06/rollout-large-compacted.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 2,
+      "rejected": {},
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": null,
+          "post": null,
+          "trigger": null
+        }
+      ],
+      "messages": [
+        {
+          "id": "3",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        },
+        {
+          "id": "4",
+          "epoch": 0,
+          "labels": [
+            "gone"
+          ]
+        }
+      ],
+      "drift": false
+    }
+  }
+}

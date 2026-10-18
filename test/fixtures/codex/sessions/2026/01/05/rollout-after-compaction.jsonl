@@ -1,0 +1,5 @@
+{"_synthetic":true,"note":"Readable replacement_history keeps the first message; a later user event starts epoch one and has no later compaction."}
+{"timestamp":"2026-01-05T12:00:00Z","type":"session_meta","payload":{"id":"copper-kettle","cwd":"/srv/work/copper-kettle","cli_version":"0.1.0","originator":"codex_cli_rs","source":"cli"}}
+{"timestamp":"2026-01-05T12:00:00Z","type":"event_msg","payload":{"type":"user_message","message":"Keep the copper kettle beside the pantry."}}
+{"timestamp":"2026-01-05T12:00:00Z","type":"compacted","payload":{"message":"","replacement_history":[{"type":"message","role":"user","content":[{"type":"input_text","text":"Keep the copper kettle beside the pantry."}]}]}}
+{"timestamp":"2026-01-05T12:00:00Z","type":"event_msg","payload":{"type":"user_message","message":"Paint the garden gate a bright violet."}}
