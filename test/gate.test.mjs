@@ -286,6 +286,14 @@ test('labels: no tag passes, a sealed change fails, the newest version becomes t
   commit(dir, '-m', 'Seal labels');
   git(dir, {}, 'tag', 'labels-v1');
   assert.deepEqual(checkLabels(dir), []);
+  const added = join(folder, 'extra.jsonl');
+  writeFileSync(added, '{"id":"two","label":"gone","_synthetic":true}\n');
+  assert.deepEqual(checkLabels(dir), ['test/labels differs from labels-v1']);
+  git(dir, {}, 'add', 'test/labels');
+  assert.equal(checkLabels(dir).length, 1);
+  rmSync(added);
+  git(dir, {}, 'add', '--all', 'test/labels');
+  assert.deepEqual(checkLabels(dir), []);
   writeFileSync(file, '{"id":"one","label":"gone","_synthetic":true}\n');
   assert.deepEqual(checkLabels(dir), ['test/labels differs from labels-v1']);
   git(dir, {}, 'add', 'test/labels');

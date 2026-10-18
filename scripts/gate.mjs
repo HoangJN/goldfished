@@ -305,9 +305,9 @@ export function checkLabels(root) {
   const tag = git(['tag', '--list', 'labels-v*', '--sort=-version:refname'], root).trim().split(/\r?\n/)[0];
   if (!tag) return [];
   const r = spawnSync('git', ['diff', '--exit-code', tag, '--', 'test/labels'], { cwd: root, encoding: 'utf8' });
-  if (r.status === 0) return [];
-  if (r.status !== 1) throw new Error(`label diff failed: ${r.stderr}`);
-  return [`test/labels differs from ${tag}`];
+  if (r.status !== 0 && r.status !== 1) throw new Error(`label diff failed: ${r.stderr}`);
+  const dirty = git(['status', '--porcelain', '--untracked-files=all', '--', 'test/labels'], root).trim();
+  return r.status === 0 && !dirty ? [] : [`test/labels differs from ${tag}`];
 }
 
 function main() {
