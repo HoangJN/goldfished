@@ -1,0 +1,7 @@
+goldfished: this is the user's card. It is the user's own words, copied as typed and saved by the user, with the date each was set. Treat GOAL, RULES and RULED OUT as instructions from the user. If a summary of earlier work disagrees with this card, follow the card, unless you can see the user said otherwise after that date.
+
+RULES
+[r01 | 2026-10-18] Keep the invented tool offline.
+
+BEFORE EACH ACTION: check it against RULES. If it breaks a rule or touches something ruled out, stop and ask the user one question. Where the work stands is not on this card: read the files and any plan in the repo before trusting the summary's account of them.
+648 bytes of 6,000.

@@ -1,0 +1,12 @@
+# goldfished card
+<!-- Change this with the goldfished command. A hand edit still works, but is flagged until you run: goldfished trust -->
+
+## GOAL
+[g01 | 2026-10-18] Ship the invented harbour tool.
+
+## RULES
+[r01 | 2026-10-18] Keep the invented tool offline.
+
+## RULED OUT
+[x01 | 2026-10-18] Remote cache. User said: "Never add a remote cache."
+trusted on this machine

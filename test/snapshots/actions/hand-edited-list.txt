@@ -1,0 +1,14 @@
+# goldfished card
+<!-- Change this with the goldfished command. A hand edit still works, but is flagged until you run: goldfished trust -->
+
+## GOAL
+[g01 | 2026-10-18] Ship the invented tool.
+  added by hand
+
+## RULES
+
+
+## RULED OUT
+
+not trusted: changed by hand since 2026-10-18. If the card is yours, run: goldfished trust
+p1  "Never add a remote cache."  (Cachechoice)  from: "The synthetic user said: never add a remote cache."
