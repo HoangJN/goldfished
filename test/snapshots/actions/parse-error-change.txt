@@ -1,0 +1,1 @@
+goldfished: this card is not trusted on this machine (parse error on line 3), so nothing was changed. Fix line 3 in .goldfished/card.md, then run: goldfished trust

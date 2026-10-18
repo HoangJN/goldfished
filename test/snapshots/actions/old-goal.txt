@@ -1,0 +1,1 @@
+goldfished: goal set (g02). The old goal is in .goldfished/archive.md.
