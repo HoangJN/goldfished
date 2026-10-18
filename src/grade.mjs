@@ -1,7 +1,6 @@
 const normalise = text => text.toLowerCase().replace(/['"`*\u2018\u2019\u201c\u201d]/g, '').replace(/\s+/g, ' ').trim();
 const words = text => text.match(/[\p{L}\p{N}_]+/gu) ?? [];
-const meaning = word => /^(?:not|never|no|unless|only|except|without|until|before|after|if)$/.test(word);
-export const GRADER = { id: 'G2', threshold: 0.9 };
+export const GRADER = { id: 'G3', threshold: 0.9 };
 function hash(run) {
   let h = 2166136261;
   for (const word of run) {
@@ -11,7 +10,7 @@ function hash(run) {
   return h >>> 0;
 }
 function substringIndex(symbols) {
-  // Short messages need exact lookup without another lap through the summary.
+  // Runs need word boundaries, not another lap through the summary.
   const capacity = symbols.length * 2 + 1;
   const head = new Uint32Array(capacity), link = new Uint32Array(capacity), length = new Uint32Array(capacity);
   const edges = symbols.length * 3 + 1;
@@ -53,16 +52,33 @@ function substringIndex(symbols) {
     }
     last = current;
   }
-  return { head: head.slice(0, states), key: key.slice(0, used + 1), target: target.slice(0, used + 1), next: next.slice(0, used + 1) };
+  return { head: head.slice(0, states), key: key.slice(0, used + 1), target: target.slice(0, used + 1), next: next.slice(0, used + 1),
+    link: link.slice(0, states), length: length.slice(0, states) };
 }
 function step(index, state, symbol) {
   for (let e = index.head[state]; e; e = index.next[e]) if (index.key[e] === symbol) return index.target[e];
   return 0;
 }
-function contains(index, text) {
-  let state = 0;
-  for (let i = 0; i < text.length; i++) { state = step(index, state, text.charCodeAt(i)); if (!state) return false; }
-  return text.length > 0;
+function longestRun(tokens, index) {
+  const query = ' ' + tokens.join(' ') + ' ';
+  const boundaries = [0];
+  let state = 0, length = 0, left = 0, best = 0;
+  for (let i = 0; i < query.length; i++) {
+    const symbol = query.charCodeAt(i);
+    let next = step(index, state, symbol);
+    while (state && !next) {
+      state = index.link[state];
+      length = index.length[state];
+      next = step(index, state, symbol);
+    }
+    state = next;
+    length = next ? length + 1 : 0;
+    if (symbol !== 32 || i === 0) continue;
+    boundaries.push(i);
+    while (boundaries[left] < i - length + 1) left++;
+    best = Math.max(best, boundaries.length - 1 - left);
+  }
+  return best;
 }
 
 export function prepare(visibleText) {
@@ -74,38 +90,30 @@ export function prepare(visibleText) {
     positions.get(word).push(i);
     if (i >= 4) shingles.add(hash(tokens.slice(i - 4, i + 1)));
   }
-  const nearRuns = new Set();
-  for (const sentence of normalise(visibleText.replace(/[\r\n]/g, '.')).split(/[.!?]+/)) {
-    const sentenceWords = words(sentence);
-    for (let i = 0; i <= sentenceWords.length - 4; i++) nearRuns.add(hash(sentenceWords.slice(i, i + 4)));
+  const quotations = new Set();
+  for (const match of visibleText.matchAll(/["\u201c]([^"\u201d]+)["\u201d]|`([^`]+)`/g)) {
+    const quoted = words(normalise(match[1] ?? match[2]));
+    if (quoted.some(word => word.length > 4)) quotations.add(hash(quoted));
   }
-  return { positions, shingles, substrings: substringIndex(normal), nearRuns };
+  return { positions, shingles, runs: substringIndex(' ' + tokens.join(' ') + ' '), quotations };
 }
 
 export function score(text, index) {
   const normal = normalise(text), tokens = words(normal);
-  const contractions = new Set(Array.from(text.toLowerCase().matchAll(/[\p{L}\p{N}_]+n[\u0027\u2019]t\b/gu), ([word]) => normalise(word)));
   if (!tokens.length) return { label: 'gone', score: 0 };
-  let value;
-  const covered = new Uint8Array(tokens.length);
-  if (tokens.length < 5) value = contains(index.substrings, normal) ? 1 : 0;
-  else {
-    let present = 0;
-    for (let i = 0; i <= tokens.length - 5; i++) if (index.shingles.has(hash(tokens.slice(i, i + 5)))) {
-      present++;
-      covered.fill(1, i, i + 5);
-    }
-    value = present / (tokens.length - 4);
-  }
-  // With no five-word quotation, four is the longest near miss.
-  const start = value > 0 ? -1 : tokens.findIndex((_, i) => i + 4 <= tokens.length && index.nearRuns.has(hash(tokens.slice(i, i + 4))));
-  const remaining = tokens.filter((_, i) => start < 0 || i < start || i >= start + 4);
-  const significant = remaining.filter(word => word.length > 4);
+  const value = longestRun(tokens, index.runs) / tokens.length;
+  const significant = tokens.filter(word => word.length > 4);
   const overlap = significant.length >= 3 && significant.filter(word => index.positions.has(word)).length / significant.length >= 0.6;
-  const shared = remaining.filter(word => index.positions.has(word)).length;
-  const shortOverlap = shared >= 3 && shared / remaining.length >= 0.6;
-  const guarded = tokens.some((word, i) => (meaning(word) || contractions.has(word)) && !(tokens.length < 5 ? value === 1 : covered[i]));
-  return { label: value >= GRADER.threshold ? guarded ? 'reworded' : 'kept' : value >= 0.4 || overlap || shortOverlap ? 'reworded' : 'gone', score: value };
+  let quoted = false;
+  for (let i = 0; !quoted && index.quotations.size && i < tokens.length; i++) {
+    let h = 2166136261;
+    for (let j = i; j < tokens.length; j++) {
+      for (let k = 0; k < tokens[j].length; k++) h = Math.imul(h ^ tokens[j].charCodeAt(k), 16777619);
+      h = Math.imul(h ^ 32, 16777619);
+      if (index.quotations.has(h >>> 0)) { quoted = true; break; }
+    }
+  }
+  return { label: value >= GRADER.threshold ? 'kept' : overlap || quoted ? 'reworded' : 'gone', score: value };
 }
 
 export function bestMatch(text, visibleText) {
