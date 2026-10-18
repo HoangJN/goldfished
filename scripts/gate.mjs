@@ -222,7 +222,7 @@ export const isCanary = (text) => /"_canary"\s*:\s*true/.test(firstLine(text));
 export const isSynthetic = (text) => /"_synthetic"\s*:\s*true/.test(firstLine(text));
 
 export function checkFields(file, text) {
-  if (!file.startsWith('src/') || file.endsWith('.dialect.mjs')) return [];
+  if (!file.startsWith('src/') || file.endsWith('.dialect.mjs') || file.endsWith('.hookio.mjs')) return [];
   const out = [];
   for (const field of fieldNames) {
     const name = escapeRe(field);

@@ -45,6 +45,12 @@ test('dialect fields planted in source fail in quoted strings and property acces
   assert.equal(run('src/planted.mjs', "record.uuidSuffix; const key = 'uuidSuffix';").length, 0);
 });
 
+test('a session field name is fine in a hookio file and still fails in any other source file', () => {
+  const body = "const key = 'cwd';";
+  assert.equal(run('src/agents/x.hookio.mjs', body).length, 0);
+  assert.ok(run('src/agents/x.mjs', body).some(f => f.check === 'dialect-fields'));
+});
+
 test('the real source tree keeps dialect fields inside dialect files', () => {
   const root = new URL('../src/', import.meta.url);
   for (const relative of readdirSync(root, { recursive: true }).filter(file => file.endsWith('.mjs'))) {
