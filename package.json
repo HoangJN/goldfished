@@ -1,7 +1,7 @@
 {
   "name": "goldfished",
   "version": "0.0.0",
-  "description": "See how much of what you typed survives Claude Code's compaction.",
+  "description": "How long is your coding agent's memory? Measure what survives compaction, then keep your goal and rules in front of it.",
   "type": "module",
   "bin": {
     "goldfished": "bin/goldfished.mjs"
@@ -13,10 +13,12 @@
   "author": "Jonathan Nguyen",
   "files": [
     "bin",
-    "src"
+    "src",
+    "hooks",
+    ".claude-plugin"
   ],
   "scripts": {
-    "test": "node --test",
+    "test": "node --import ./test/no-network.mjs --test",
     "gate": "node scripts/gate.mjs"
   }
 }
