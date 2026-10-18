@@ -301,6 +301,15 @@ export function checkHistory(root, denylist = []) {
   return out;
 }
 
+export function checkLabels(root) {
+  const tag = git(['tag', '--list', 'labels-v*', '--sort=-version:refname'], root).trim().split(/\r?\n/)[0];
+  if (!tag) return [];
+  const r = spawnSync('git', ['diff', '--exit-code', tag, '--', 'test/labels'], { cwd: root, encoding: 'utf8' });
+  if (r.status !== 0 && r.status !== 1) throw new Error(`label diff failed: ${r.stderr}`);
+  const dirty = git(['status', '--porcelain', '--untracked-files=all', '--', 'test/labels'], root).trim();
+  return r.status === 0 && !dirty ? [] : [`test/labels differs from ${tag}`];
+}
+
 function main() {
   const here = dirname(fileURLToPath(import.meta.url));
   const root = git(['rev-parse', '--show-toplevel'], here).trim();
@@ -359,6 +368,7 @@ function main() {
   }
 
   for (const reason of checkHistory(root, denylist)) fail('history', '', 0, reason);
+  for (const reason of checkLabels(root)) fail('labels', 'test/labels', 0, reason);
 
   for (const f of failures) {
     console.log(f.check === 'history' ? `FAIL history: ${f.reason}` : `FAIL ${f.check}: ${f.file}:${f.line} ${f.reason}`);
