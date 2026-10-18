@@ -1,0 +1,4 @@
+{"_synthetic":true,"note":"Missing postTokens is reported without drift."}
+{"type":"user","uuid":"post-a","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."}}
+{"type":"system","subtype":"compact_boundary","uuid":"post-c","timestamp":"2026-01-01T11:00:00Z","sessionId":"tide","compactMetadata":{"trigger":"auto","preTokens":80000}}
+{"type":"user","uuid":"post-s","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."},"isCompactSummary":true}

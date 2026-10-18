@@ -1,0 +1,7 @@
+{"_synthetic":true,"note":"Summary is four records after its boundary."}
+{"type":"user","uuid":"gap-a","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."}}
+{"type":"system","subtype":"compact_boundary","uuid":"gap-c","timestamp":"2026-01-01T11:00:00Z","sessionId":"tide","compactMetadata":{"trigger":"auto","preTokens":120000,"postTokens":21000}}
+{"type":"assistant","uuid":"gap-1","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"gap-2","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"gap-3","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"user","uuid":"gap-s","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."},"isCompactSummary":true}

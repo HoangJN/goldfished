@@ -1,0 +1,3 @@
+{"_synthetic":true,"note":"Orphan summary counts with unknown sizes and trigger."}
+{"type":"user","uuid":"orphan-a","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."}}
+{"type":"user","uuid":"orphan-s","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."},"isCompactSummary":true}
