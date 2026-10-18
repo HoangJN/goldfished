@@ -40,6 +40,7 @@ async function readSession({ file, group }, tally) {
         value.lineBuckets.forEach((amount, bucket) => { tally.lineBuckets[bucket] = (tally.lineBuckets[bucket] ?? 0) + amount; });
         break;
       }
+      if (value.partial || !value.text.trim()) continue;
       let record;
       try { record = decode(value.text, value.n); } catch { tally.malformed++; continue; }
       if (!record) continue;
@@ -79,7 +80,7 @@ export default {
     const files = (await Promise.all(roots.map(root => listFiles(root, options)))).flat().sort((a, b) => b.mtimeMs - a.mtimeMs);
     for (const file of files) {
       const { session, directory } = await readSession(file, emptyTally());
-      if (directory && normalise(resolve(directory)) === normalise(resolve(cwd)) && !session.sub && !session.auto && session.typed.length) return session.typed.map(message => message.text);
+      if (directory !== undefined && normalise(resolve(directory)) === normalise(resolve(cwd))) return session.typed.map(message => message.text);
     }
     return null;
   },

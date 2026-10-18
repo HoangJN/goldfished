@@ -7,7 +7,7 @@ const stringValue = (text, key) => {
 
 export function decode(text, n) {
   if (/^\s*\{\s*"_synthetic"\s*:\s*true/u.test(text)) return null;
-  const needed = mayNeed(text);
+  const needed = mayNeed(text) || /compact/iu.test(text);
   const record = needed ? JSON.parse(text) : null;
   const get = key => record ? record[key] : stringValue(text, key);
   const kind = get('type') ?? 'unknown';
@@ -23,12 +23,13 @@ export function decode(text, n) {
   else if (Array.isArray(content) && content.some(block => block?.type === 'tool_result')) reason = 'tool_result';
   else if (/^(?:<|Caveat:|\[Request interrupted)/u.test(body)) reason = 'wrapper';
   const boundary = kind === 'system' && record?.subtype === 'compact_boundary';
+  const summary = record?.isCompactSummary === true;
+  const compactLike = /compact/iu.test(kind) || /compact/iu.test(get('subtype') ?? '') || Object.keys(record ?? {}).some(key => /compact/iu.test(key));
   const metadata = record?.compactMetadata ?? record?.compact_metadata ?? {};
   return {
     kind, reason, body, identity: get('uuid') ?? n, directory: typeof get('cwd') === 'string' ? get('cwd') : undefined,
     release: typeof get('version') === 'string' ? get('version') : undefined, ms: Date.parse(get('timestamp')), automated: get('entrypoint') === 'sdk-cli',
-    summary: record?.isCompactSummary === true, boundary,
-    compactLike: /compact/iu.test(text), understood: needed && (kind === 'user' || boundary),
+    summary, boundary, compactLike, understood: compactLike && (boundary || summary),
     sizes: boundary ? { pre: metadata.preTokens ?? metadata.pre_tokens, post: metadata.postTokens ?? metadata.post_tokens, trigger: metadata.trigger } : {},
   };
 }

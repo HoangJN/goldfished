@@ -1,6 +1,6 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile, writeFile, mkdtemp, rm, stat } from 'node:fs/promises';
+import { readFile, writeFile, mkdtemp, rm, stat, utimes } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -122,4 +122,45 @@ test('rejection precedence and metadata on records outside the parsing filter', 
   assert.equal(skipped.counts.skippedLong, 1);
   assert.equal(skipped.counts.lines, 2);
   assert.equal(skipped.counts.rejects.get('tool_result'), 1);
+});
+test('compaction tallies inspect record fields, never message text', async () => {
+  const plain = (await readFile(new URL('plain.jsonl', root), 'utf8')).trim().split('\n');
+  const assistant = plain[3].replace('The kettle is ready.', 'compact the data');
+  const user = plain[1].replace('Keep the harbour timetable in plain text.', 'compact the data');
+  const file = join(scratch, 'compaction-tally.tmp');
+  await writeFile(file, [assistant, user].join('\n') + '\n');
+  const ordinary = await collect([{ file, group: scratch }]);
+  assert.equal(ordinary.counts.compactLike, 0);
+  assert.equal(ordinary.counts.understood, 0);
+  const adjacent = (await readFile(new URL('adjacent.jsonl', root), 'utf8')).trim().split('\n');
+  await writeFile(file, [assistant, user, adjacent[3], adjacent[4], assistant.replaceAll('assistant', 'compact_future')].join('\n') + '\n');
+  const compacted = await collect([{ file, group: scratch }]);
+  assert.equal(compacted.counts.compactLike, 3);
+  assert.equal(compacted.counts.understood, 2);
+});
+test('a partial final line is skipped without a malformed record or type', async () => {
+  const { counts } = await collect(await fixtureFiles('truncated-last-line.jsonl'));
+  assert.equal(counts.malformed, 0);
+  assert.deepEqual([...counts.types], [['user', 1]]);
+  assert.equal(counts.rejects.size, 0);
+});
+test('blank lines reach neither types nor rejection counts', async () => {
+  const file = join(scratch, 'blank.tmp');
+  await writeFile(file, '\n \t\r\n');
+  const { counts } = await collect([{ file, group: scratch }]);
+  assert.equal(counts.lines, 2);
+  assert.equal(counts.malformed, 0);
+  assert.equal(counts.types.size, 0);
+  assert.equal(counts.rejects.size, 0);
+});
+test('the newest matching session returns its empty typed list', async () => {
+  const dir = await mkdtemp(join(scratch, 'newest-'));
+  const plain = (await readFile(new URL('plain.jsonl', root), 'utf8')).trim().split('\n');
+  const sdk = (await readFile(new URL('sdk-session.jsonl', root), 'utf8')).trim().split('\n');
+  const older = join(dir, 'older.jsonl'), newer = join(dir, 'newer.jsonl');
+  await writeFile(older, plain[1] + '\n');
+  await writeFile(newer, JSON.stringify({ ...JSON.parse(sdk[1]), ...JSON.parse(plain[3]) }) + '\n');
+  await utimes(older, new Date('2000-01-01'), new Date('2000-01-01'));
+  await utimes(newer, new Date('2001-01-01'), new Date('2001-01-01'));
+  assert.deepEqual(await adapter.findTyped(decode(plain[1], 2).directory, [dir], {}), []);
 });
