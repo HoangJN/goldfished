@@ -1,0 +1,1 @@
+goldfished: this card is not trusted on this machine (never saved through goldfished on this machine), so nothing was changed. If the card is yours, run: goldfished trust

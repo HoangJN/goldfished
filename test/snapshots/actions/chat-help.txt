@@ -1,0 +1,10 @@
+gf: goal <text>
+gf: out <label> -- <quote>
+gf: list
+gf: drop <id>
+gf: restore <id>
+gf: card
+gf: accept <pN> <label>
+gf: help
+gf: off
+gf: on

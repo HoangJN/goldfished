@@ -1,0 +1,3 @@
+## RULES
+[r01 | 2026-10-18] Keep the synthetic tool offline.
+not trusted: never saved through goldfished on this machine. If the card is yours, run: goldfished trust

@@ -1,0 +1,1 @@
+goldfished: unknown command "lst". Try gf: help
