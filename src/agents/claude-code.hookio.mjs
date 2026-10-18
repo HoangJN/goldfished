@@ -23,7 +23,7 @@ export const proved = {
   P3: true,
   P5: true,
   P6: true,
-  'P6-auto': false,
+  'P6-auto': true,
   P8: true,
   P9: true,
   P10: true,

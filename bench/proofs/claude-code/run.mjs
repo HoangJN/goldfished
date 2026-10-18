@@ -112,6 +112,14 @@ function transcriptTail(file, n = 14) {
   return readFileSync(file, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l)).slice(-n).map((r) => [r.type, r.subtype, r.attachment?.type, r.isCompactSummary ? 'summary' : '', r.message?.role].filter(Boolean).join('/'));
 }
 
+// Made-up notes, about 95,000 characters, different for each part. Nothing in them is real.
+const notes = (n) => {
+  const w = 'amber basalt cedar dune ember fjord garnet harbour iris juniper kestrel lantern meadow nectar orchard pebble quartz reed saffron thistle umber velvet willow yarrow zephyr'.split(' ');
+  let x = n * 7919;
+  const pick = () => w[(x = (x * 1103515245 + 12345) % 2147483648) % w.length];
+  return Array.from({ length: 1000 }, (_, i) => `Note ${n}.${i}: the ${pick()} ${pick()} keeps the ${pick()} queue behind the ${pick()} ${pick()} gate until ${pick()} signs off.`).join(' ');
+};
+
 const seed = (label) => claude(label, { prompt: `Remember the code word MARIGOLD. The rest of this message is filler, ignore it.
 ${filler()}
 Reply with the single word noted.`, specs: both, persist: true, extra: ['--max-turns', '1'] });
@@ -176,22 +184,29 @@ const proofs = {
     const t = second.probes.find((p) => p.stdin.includes('transcript_path'));
     if (t) console.log('   transcript tail:', transcriptTail(JSON.parse(t.stdin).transcript_path).join(' | '));
   },
-  // P6, auto half: resume the p9 session with the auto-compaction line set very low, so the next turn compacts by itself.
-  p6auto(pct = '1', win) {
-    const id = show('p6-seed', seed('p6-seed')).sessionId;
+  // P6, auto half: one session resumed turn after turn, each with a long invented paste, the auto-compaction line set low. Stops at the first compaction or after `turns`.
+  p6auto(pct = '50', turns = '4') {
     const specs = [
       ...both,
       { tag: 'pre', event: 'PreCompact', mode: 'log' },
       { tag: 'post', event: 'PostCompact', mode: 'log' },
       { tag: 'ctx', event: 'SessionStart', matcher: 'compact', mode: 'say', args: ['GFCTX the card code word is PELICAN'] },
     ];
-    const run = show('p6-auto', claude('p6-auto', { prompt: 'What is the card code word in your context? Answer with the word only, or NONE.', specs, persist: true, resume: id, env: { CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: pct, ...(win ? { CLAUDE_CODE_AUTO_COMPACT_WINDOW: win } : {}) }, extra: ['--debug-file', `${OUT}/p6-auto.debug.txt`] }));
-    console.log('   order:', run.probes.map((p) => `${p.tag}:${p.event}:${JSON.parse(p.stdin).source ?? JSON.parse(p.stdin).trigger ?? ''}`).join(' > '));
-    console.log('   boundary events:', run.events.filter((e) => e.subtype === 'compact_boundary').map((e) => JSON.stringify(e.compact_metadata ?? {})));
-    const text = run.events.filter((e) => e.type === 'assistant').flatMap((e) => e.message.content).filter((c) => c.type === 'text').map((c) => c.text).join(' ');
-    console.log('   model said:', JSON.stringify(text));
-    const t = run.probes.find((p) => p.stdin.includes('transcript_path'));
-    if (t) console.log('   transcript tail:', transcriptTail(JSON.parse(t.stdin).transcript_path, 12).join(' | '));
+    let id;
+    for (let n = 1; n <= Number(turns); n++) {
+      const prompt = `Invented project notes, part ${n}. Ignore the content.\n${notes(n)}\nIf a card code word is in your context, reply with it alone, otherwise reply NONE.`;
+      const run = show(`p6b-${n}`, claude(`p6b-${n}`, { prompt, specs, persist: true, resume: id, env: { CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: pct, CLAUDE_CODE_AUTO_COMPACT_WINDOW: '100000' }, extra: ['--debug-file', `${OUT}/p6b-${n}.debug.txt`] }));
+      id = run.sessionId ?? id;
+      const u = run.events.find((e) => e.type === 'result')?.usage;
+      console.log('   input tokens:', u && u.input_tokens + u.cache_creation_input_tokens + u.cache_read_input_tokens);
+      console.log('   order:', run.probes.map((x) => `${x.tag}:${x.event}:${JSON.parse(x.stdin).source ?? JSON.parse(x.stdin).trigger ?? ''}`).join(' > '));
+      console.log('   model said:', JSON.stringify(run.events.filter((e) => e.type === 'assistant').flatMap((e) => e.message.content).filter((c) => c.type === 'text').map((c) => c.text).join(' ')));
+      if (run.probes.some((x) => x.tag === 'post' || x.tag === 'ctx')) {
+        const t = run.probes.find((x) => x.stdin.includes('transcript_path'));
+        console.log('   transcript tail:', transcriptTail(JSON.parse(t.stdin).transcript_path, 16).join(' | '));
+        break;
+      }
+    }
   },
   // P11: node is not on PATH, so every hook fails to start. What does the run show? The hook is the one in hooks.json, exec form.
   p11() {
