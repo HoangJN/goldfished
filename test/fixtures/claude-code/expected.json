@@ -504,7 +504,7 @@
           "labels": []
         }
       ],
-      "drift": true
+      "drift": false
     },
     "newer-request-records.jsonl": {
       "sessions": 1,
