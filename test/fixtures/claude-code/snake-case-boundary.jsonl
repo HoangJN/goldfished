@@ -1,0 +1,4 @@
+{"_synthetic":true,"note":"Snake-case token size aliases."}
+{"type":"user","uuid":"snake-a","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."}}
+{"type":"system","subtype":"compact_boundary","uuid":"snake-c","timestamp":"2026-01-01T11:00:00Z","sessionId":"tide","compactMetadata":{"trigger":"auto","pre_tokens":80000,"post_tokens":11000}}
+{"type":"user","uuid":"snake-s","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."},"isCompactSummary":true}

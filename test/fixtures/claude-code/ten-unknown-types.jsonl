@@ -1,0 +1,101 @@
+{"_synthetic":true,"note":"Thirty of one hundred records use ten unknown types without speaker roles."}
+{"type":"user","uuid":"book-a","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."}}
+{"type":"harbour_bookkeeping_0","uuid":"bookkeeping-0"}
+{"type":"harbour_bookkeeping_1","uuid":"bookkeeping-1"}
+{"type":"harbour_bookkeeping_2","uuid":"bookkeeping-2"}
+{"type":"harbour_bookkeeping_3","uuid":"bookkeeping-3"}
+{"type":"harbour_bookkeeping_4","uuid":"bookkeeping-4"}
+{"type":"harbour_bookkeeping_5","uuid":"bookkeeping-5"}
+{"type":"harbour_bookkeeping_6","uuid":"bookkeeping-6"}
+{"type":"harbour_bookkeeping_7","uuid":"bookkeeping-7"}
+{"type":"harbour_bookkeeping_8","uuid":"bookkeeping-8"}
+{"type":"harbour_bookkeeping_9","uuid":"bookkeeping-9"}
+{"type":"harbour_bookkeeping_0","uuid":"bookkeeping-10"}
+{"type":"harbour_bookkeeping_1","uuid":"bookkeeping-11"}
+{"type":"harbour_bookkeeping_2","uuid":"bookkeeping-12"}
+{"type":"harbour_bookkeeping_3","uuid":"bookkeeping-13"}
+{"type":"harbour_bookkeeping_4","uuid":"bookkeeping-14"}
+{"type":"harbour_bookkeeping_5","uuid":"bookkeeping-15"}
+{"type":"harbour_bookkeeping_6","uuid":"bookkeeping-16"}
+{"type":"harbour_bookkeeping_7","uuid":"bookkeeping-17"}
+{"type":"harbour_bookkeeping_8","uuid":"bookkeeping-18"}
+{"type":"harbour_bookkeeping_9","uuid":"bookkeeping-19"}
+{"type":"harbour_bookkeeping_0","uuid":"bookkeeping-20"}
+{"type":"harbour_bookkeeping_1","uuid":"bookkeeping-21"}
+{"type":"harbour_bookkeeping_2","uuid":"bookkeeping-22"}
+{"type":"harbour_bookkeeping_3","uuid":"bookkeeping-23"}
+{"type":"harbour_bookkeeping_4","uuid":"bookkeeping-24"}
+{"type":"harbour_bookkeeping_5","uuid":"bookkeeping-25"}
+{"type":"harbour_bookkeeping_6","uuid":"bookkeeping-26"}
+{"type":"harbour_bookkeeping_7","uuid":"bookkeeping-27"}
+{"type":"harbour_bookkeeping_8","uuid":"bookkeeping-28"}
+{"type":"harbour_bookkeeping_9","uuid":"bookkeeping-29"}
+{"type":"assistant","uuid":"book-0","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-1","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-2","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-3","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-4","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-5","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-6","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-7","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-8","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-9","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-10","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-11","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-12","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-13","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-14","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-15","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-16","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-17","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-18","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-19","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-20","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-21","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-22","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-23","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-24","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-25","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-26","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-27","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-28","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-29","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-30","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-31","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-32","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-33","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-34","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-35","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-36","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-37","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-38","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-39","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-40","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-41","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-42","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-43","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-44","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-45","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-46","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-47","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-48","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-49","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-50","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-51","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-52","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-53","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-54","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-55","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-56","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-57","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-58","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-59","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-60","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-61","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-62","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-63","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-64","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-65","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-66","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-67","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}
+{"type":"assistant","uuid":"book-68","parentUuid":null,"timestamp":"2026-01-01T10:30:00Z","sessionId":"tide","message":{"role":"assistant","content":[{"type":"text","text":"The kettle is ready."}]}}

@@ -1,0 +1,3 @@
+{"_synthetic":true,"note":"SDK entrypoint marks an automated session even with human origin."}
+{"type":"user","uuid":"sdk-a","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."},"entrypoint":"sdk-cli","turnOrigin":"human"}
+{"type":"user","uuid":"sdk-b","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Use amber paint for the eastern gate."},"entrypoint":"sdk-cli","turnOrigin":"sdk"}

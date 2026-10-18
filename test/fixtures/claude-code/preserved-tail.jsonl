@@ -1,0 +1,7 @@
+{"_synthetic":true,"note":"Tail repeats one uuid and one normalised text with a new uuid."}
+{"type":"user","uuid":"tail-a","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."}}
+{"type":"user","uuid":"tail-b","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Use amber paint for the eastern gate."}}
+{"type":"system","subtype":"compact_boundary","uuid":"tail-c","timestamp":"2026-01-01T11:00:00Z","sessionId":"tide","compactMetadata":{"trigger":"auto","preTokens":120000,"postTokens":21000}}
+{"type":"user","uuid":"tail-s","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Store the spare rope beside the blue shed."},"isCompactSummary":true}
+{"type":"user","uuid":"tail-a","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Keep the harbour timetable in plain text."}}
+{"type":"user","uuid":"tail-b-copy","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Use amber paint for the eastern gate."}}

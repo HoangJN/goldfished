@@ -1,0 +1,3 @@
+{"_synthetic":true,"note":"Tool result anywhere in the array rejects the user record."}
+{"type":"user","uuid":"tool-a","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":[{"type":"text","text":"Keep the harbour timetable in plain text."},{"type":"tool_result","tool_use_id":"tool-1","content":"Use amber paint for the eastern gate."}]}}
+{"type":"user","uuid":"tool-b","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"tide","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Store the spare rope beside the blue shed."}}

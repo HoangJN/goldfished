@@ -1,0 +1,2 @@
+{"_synthetic":true,"note":"Subagent session is not graded."}
+{"type":"user","uuid":"sub-a","parentUuid":null,"timestamp":"2026-01-01T10:00:00Z","sessionId":"helper","cwd":"D:/work/tide-tables","version":"2.1.7","message":{"role":"user","content":"Use amber paint for the eastern gate."}}
