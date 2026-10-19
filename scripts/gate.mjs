@@ -57,8 +57,10 @@ const SECRET_SHAPES = [
 export function checkSecrets(text) {
   return scanLines(text, (line) => {
     const hits = SECRET_SHAPES.filter(([, re]) => re.test(line)).map(([name]) => `secret shape: ${name}`);
-    for (const run of line.match(/[A-Za-z0-9]{32,}/g) ?? []) {
-      if (/[A-Za-z]/.test(run) && /\d/.test(run)) hits.push('secret shape: long mixed letters and digits');
+    const pin = /^\s*(?:-\s+)?uses:\s+[\w.-]+\/[\w.-]+(?:\/[\w.-]+)*@([a-f0-9]{40})(?=\s|$)/.exec(line);
+    for (const run of line.matchAll(/[A-Za-z0-9]{32,}/g)) {
+      if (pin && run[0] === pin[1] && run.index === pin[0].length - 40) continue;
+      if (/[A-Za-z]/.test(run[0]) && /\d/.test(run[0])) hits.push('secret shape: long mixed letters and digits');
     }
     return hits;
   });
