@@ -1,0 +1,12 @@
+goldfished: this conversation has just been compacted. The summary of earlier work was written by the model and has probably lost or softened things the user said. The card below is not part of that summary. It is the user's own words, copied as typed and saved by the user, with the date each was set. Treat GOAL, RULES and RULED OUT as instructions the user has just given you.
+
+GOAL (set 2026-10-19)
+Build exportkit, the tool that writes the finance team daily export file.
+
+RULES
+[r01 | 2026-10-19] Write every date as ISO 8601, YYYY-MM-DD, never in US style.
+
+RULED OUT (decided against; do not propose again unless the user raises it)
+[x01 | 2026-10-19] a date library. User said: "No date library. We use the built-in Date and nothing else."
+
+BEFORE YOUR NEXT ACTION: check it against GOAL and RULED OUT. If it does not serve the goal or touches something ruled out, stop and ask the user one question. Where the work stands is not on this card: read the files and any plan in the repo before trusting the summary's account of them.
