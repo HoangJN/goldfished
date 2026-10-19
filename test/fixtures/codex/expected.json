@@ -305,6 +305,176 @@
       ],
       "drift": false,
       "cardResent": true
+    },
+    "cx4/sessions/2026/01/07/rollout-exec-typed.jsonl": {
+      "sessions": 1,
+      "auto": 1,
+      "sub": 0,
+      "typed": 3,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "4",
+          "epoch": 0,
+          "labels": []
+        },
+        {
+          "id": "8",
+          "epoch": 0,
+          "labels": []
+        },
+        {
+          "id": "12",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false,
+      "cardResent": false
+    },
+    "cx4/sessions/2026/01/07/rollout-app-resume.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 4,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "4",
+          "epoch": 0,
+          "labels": []
+        },
+        {
+          "id": "7",
+          "epoch": 0,
+          "labels": []
+        },
+        {
+          "id": "10",
+          "epoch": 0,
+          "labels": []
+        },
+        {
+          "id": "14",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false,
+      "cardResent": false
+    },
+    "cx4/sessions/2026/01/07/rollout-both-typed.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 2,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "5",
+          "epoch": 0,
+          "labels": []
+        },
+        {
+          "id": "8",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false,
+      "cardResent": false
+    },
+    "cx4/sessions/2026/01/07/rollout-injected-agents.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "5",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false,
+      "cardResent": false
+    },
+    "cx4/sessions/2026/01/07/rollout-injected-environment.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "5",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false,
+      "cardResent": false
+    },
+    "cx4/sessions/2026/01/07/rollout-injected-combined.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {},
+      "compactions": [],
+      "messages": [
+        {
+          "id": "7",
+          "epoch": 0,
+          "labels": []
+        }
+      ],
+      "drift": false,
+      "cardResent": false
+    },
+    "cx4/sessions/2026/01/07/rollout-history-repeat.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 3,
+      "rejected": {},
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": null,
+          "post": null,
+          "trigger": null
+        }
+      ],
+      "messages": [
+        {
+          "id": "4",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        },
+        {
+          "id": "7",
+          "epoch": 0,
+          "labels": [
+            "kept"
+          ]
+        },
+        {
+          "id": "11",
+          "epoch": 1,
+          "labels": []
+        }
+      ],
+      "drift": false,
+      "cardResent": false
     }
   },
   "generated": {

@@ -119,6 +119,30 @@ test('typed dedupe crosses files while compactions still age each session', asyn
   assert.equal(sessions[1].compactions.length, 1);
 });
 
+test('dual typed forms must agree within a turn, including repeated copies', async t => {
+  const source = await readFile(join(root, 'cx4/sessions/2026/01/07/rollout-both-typed.jsonl'), 'utf8');
+  const file = join(await scratch(t), 'forms.jsonl');
+  const rows = source.trim().split('\n').map(line => JSON.parse(line));
+  rows[4].payload.message = 'Move the linen cupboard into the hall.';
+  await writeFile(file, rows.map(row => JSON.stringify(row)).join('\n') + '\n');
+  const { sessions, counts } = await load([file]);
+  assert.equal(sessions[0].typed.length, 1);
+  assert.equal(counts.malformed, 1);
+  assert.equal(adapter.driftCheck(counts).ok, false);
+  const copies = [rows[0], rows[1], rows[2], rows[3], rows[3], rows[5]];
+  await writeFile(file, copies.map(row => JSON.stringify(row)).join('\n') + '\n');
+  assert.equal((await load([file])).sessions[0].typed.length, 1);
+});
+
+test('only observed metadata values are added to known sources and originators', () => {
+  const meta = (source, originator) => decode(JSON.stringify({ type: 'session_meta', payload: { source, originator } }), 1);
+  assert.deepEqual(meta('vscode', 'gfproof').unknown, []);
+  assert.equal(meta('gfproof', 'vscode').unknown.length, 2);
+  assert.equal(meta('future', 'future').unknown.length, 2);
+  assert.equal(meta('exec', 'codex_exec').automated, true);
+  assert.equal(meta('vscode', 'gfproof').automated, false);
+});
+
 test('dialect scans drift shapes without parsing irrelevant lines', () => {
   const record = decode('{"type":"renamed","payload":{"type":"future_message","role":"user"}}', 1);
   assert.equal(record.conversation, true);

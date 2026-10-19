@@ -2,11 +2,11 @@ import { createHash } from 'node:crypto';
 
 export const fieldNames = [
   '_synthetic', 'type', 'subtype', 'payload', 'role', 'message', 'content', 'text',
-  'timestamp', 'cwd', 'cli_version', 'source', 'originator', 'replacement_history', 'encrypted_content',
+  'timestamp', 'cwd', 'cli_version', 'source', 'originator', 'replacement_history', 'encrypted_content', 'turn_id',
 ];
 
-export const mayNeed = text => /user_message|compacted/u.test(text) ||
-  (/"type"\s*:\s*"response_item"/u.test(text) && /"role"\s*:\s*"developer"/u.test(text));
+export const mayNeed = text => /user_message|compacted|task_started/u.test(text) ||
+  (/"type"\s*:\s*"response_item"/u.test(text) && /"role"\s*:\s*"(?:user|developer)"/u.test(text));
 
 function shape(text) {
   const values = {}, stack = [];
@@ -62,19 +62,26 @@ export function decode(text, n) {
     (record ? Object.keys(record).some(key => /compact/iu.test(key)) : !!fields.compactKey);
   const boundary = kind === 'compacted';
   const validBoundary = boundary && Array.isArray(payload?.replacement_history) && typeof payload?.message === 'string';
-  const typed = kind === 'event_msg' && inner === 'user_message';
-  const invalid = (typed && typeof payload?.message !== 'string') || (boundary && !validBoundary);
+  const eventTyped = kind === 'event_msg' && inner === 'user_message';
+  const userItem = kind === 'response_item' && inner === 'message' && payload?.role === 'user';
+  const userParts = userItem ? readable(payload) : [];
+  const injected = userParts.some(part => /^(?:# AGENTS\.md instructions\b|<environment_context>)/u.test(part));
+  const typed = eventTyped || (userItem && !injected);
+  const body = eventTyped ? payload?.message : userParts.join('\n');
+  const invalid = (typed && (typeof body !== 'string' || (userItem && !userParts.length))) || (boundary && !validBoundary);
   const parts = validBoundary ? payload.replacement_history.flatMap(readable).concat(payload.message ? [payload.message] : []) : [];
   const meta = kind === 'session_meta' ? payload : undefined;
   const unknown = [];
   if (meta) for (const key of ['source', 'originator']) {
-    if (meta[key] !== undefined && !['cli', 'exec', 'codex_cli_rs', 'codex_exec', 'codex_cli'].includes(meta[key])) unknown.push(key + '_' + String(meta[key]));
+    if (meta[key] !== undefined && !['cli', 'exec', 'codex_cli_rs', 'codex_exec', 'codex_cli', ...(key === 'source' ? ['vscode'] : ['gfproof'])].includes(meta[key])) unknown.push(key + '_' + String(meta[key]));
   }
   return {
     kind, conversation, known, compactLike, boundary, invalid, cardResent, understood: validBoundary,
     unfamiliar: /compact/iu.test(kind) && !boundary,
-    identity: n, body: typed && !invalid ? payload.message : undefined,
-    dedupeKey: typed && !invalid ? createHash('sha256').update(JSON.stringify([record.timestamp, payload.message])).digest('hex') : undefined,
+    identity: n, body: typed && !invalid ? body : undefined, form: eventTyped ? 'event' : 'item',
+    turnStart: kind === 'event_msg' && inner === 'task_started', turnEnd: kind === 'event_msg' && inner === 'task_complete',
+    turnKey: typeof payload?.turn_id === 'string' ? payload.turn_id : undefined,
+    dedupeKey: typed && !invalid ? createHash('sha256').update(JSON.stringify([record.timestamp, body])).digest('hex') : undefined,
     directory: typeof meta?.cwd === 'string' ? meta.cwd : undefined,
     release: typeof meta?.cli_version === 'string' ? meta.cli_version : undefined,
     automated: meta?.source === 'exec' || meta?.originator === 'codex_exec', unknown,

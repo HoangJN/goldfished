@@ -34,7 +34,17 @@ async function listFiles(root, { sinceMs = 0 } = {}) {
 async function readSession({ file, group }, tally, seen = new Set()) {
   const session = { key: file, group, project: '', auto: false, sub: false,
     firstMs: null, lastMs: null, versions: [], typed: [], compactions: [], cardResent: false };
-  let directory;
+  let directory, pending, turnKey;
+  const flush = () => {
+    if (pending && !pending.disagrees) {
+      const key = turnKey ?? pending.dedupeKey;
+      if (!seen.has(key)) {
+        seen.add(key);
+        session.typed.push({ id: pending.identity, epoch: pending.epoch, text: pending.body });
+      }
+    }
+    pending = undefined;
+  };
   const checks = driftCounts(tally), reader = readLines(file, { mayNeed });
   tally.files++;
   try {
@@ -50,6 +60,8 @@ async function readSession({ file, group }, tally, seen = new Set()) {
       let record;
       try { record = decode(line, value.n); } catch { tally.malformed++; continue; }
       if (!record) continue;
+      if (record.turnStart || record.turnEnd || record.boundary) flush();
+      if (record.turnStart || record.turnEnd) turnKey = record.turnStart ? record.turnKey : undefined;
       session.cardResent ||= record.cardResent;
       count(tally.types, record.kind);
       for (const unknown of record.unknown) count(tally.types, unknown);
@@ -68,12 +80,19 @@ async function readSession({ file, group }, tally, seen = new Set()) {
         session.lastMs = session.lastMs === null ? record.ms : Math.max(session.lastMs, record.ms);
       }
       if (record.boundary) session.compactions.push({ epoch: session.compactions.length + 1, visible: record.visible });
-      if (record.body !== undefined && !seen.has(record.dedupeKey)) {
-        seen.add(record.dedupeKey);
-        session.typed.push({ id: record.identity, epoch: session.compactions.length, text: record.body });
+      if (record.body !== undefined) {
+        if (pending && (turnKey !== undefined || (pending.form !== record.form && !pending.paired))) {
+          const disagrees = pending.body !== record.body;
+          if (disagrees) tally.malformed++;
+          pending = { ...(record.form === 'event' ? record : pending), epoch: pending.epoch, paired: true, disagrees: pending.disagrees || disagrees };
+        } else {
+          flush();
+          pending = { ...record, epoch: session.compactions.length };
+        }
       }
     }
   } finally { await reader.return(); }
+  flush();
   return { session, directory };
 }
 

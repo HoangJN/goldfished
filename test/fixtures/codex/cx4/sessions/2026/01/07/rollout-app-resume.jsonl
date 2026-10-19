@@ -1,0 +1,15 @@
+{"_synthetic":true,"note":"Invented app-server shape. Three turns followed by one appended resumed turn; one session_meta."}
+{"timestamp":"2026-01-07T12:00:00Z","type":"session_meta","payload":{"cwd":"/srv/work/copper-kettle","cli_version":"0.1.0","source":"vscode","originator":"gfproof"}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"event_msg","payload":{"type":"task_started","turn_id":"app-one"}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"Store the apricot jars on the lower shelf."}]}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"event_msg","payload":{"type":"task_complete"}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"event_msg","payload":{"type":"task_started","turn_id":"app-two"}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"Use a green ribbon for the parcel."}]}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"event_msg","payload":{"type":"task_complete"}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"event_msg","payload":{"type":"task_started","turn_id":"app-three"}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"Close the music room before dusk."}]}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"event_msg","payload":{"type":"task_complete"}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"event_msg","payload":{"type":"thread_settings_applied"}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"event_msg","payload":{"type":"task_started","turn_id":"app-four"}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"Leave the spare key with the baker."}]}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"event_msg","payload":{"type":"task_complete"}}
