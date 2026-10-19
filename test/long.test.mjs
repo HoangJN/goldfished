@@ -11,6 +11,7 @@ import { prepare, score } from '../src/grade.mjs';
 import { foldSession } from '../src/fold.mjs';
 import { combine, curve, span, measurable } from '../src/stats.mjs';
 
+const started = performance.now();
 const load = async path => (await readFile(path, 'utf8')).trim().split('\n').map(JSON.parse);
 const story = await load(new URL('./long/saga-01.story.jsonl', import.meta.url));
 const fateRoot = new URL('./long/fates/', import.meta.url);
@@ -99,7 +100,7 @@ function checkedFold(session, fate) {
 }
 
 test('both agents retain exactly the fate counts through thirty compactions', { timeout: 60000 }, async t => {
-  const started = performance.now(), root = await mkdtemp(join(tmpdir(), 'goldfished-long-'));
+  const root = await mkdtemp(join(tmpdir(), 'goldfished-long-'));
   try {
     for (const adapter of [claude, codex]) {
       const directory = join(root, adapter.id), metadata = new Map();
@@ -134,7 +135,6 @@ test('both agents retain exactly the fate counts through thirty compactions', { 
       }
     }
   } finally { await rm(root, { recursive: true, force: true }); }
-  assert.ok(performance.now() - started < 60000);
 });
 
 test('resumed files dedupe and turns after the last compaction have no ages', async () => {
@@ -146,7 +146,12 @@ test('resumed files dedupe and turns after the last compaction have no ages', as
       const original = await sessions(adapter, directory);
       const second = await render(prefix, fate, { agent: adapter.id, copy: 2, root: directory, resumedCopy: true });
       assert.deepEqual(await readFile(second), await readFile(first));
-      const resumed = await sessions(adapter, directory);
+      const files = await adapter.listFiles(directory);
+      assert.deepEqual(files.map(({ file }) => file).sort(), [first, second].sort());
+      const resumed = [];
+      for await (const session of adapter.sessions(files, tally())) resumed.push(session);
+      assert.equal(resumed.length, 2);
+      assert.deepEqual(resumed.map(({ key }) => key).sort(), [first, second].sort());
       assert.deepEqual(resumed.flatMap(s => s.typed), original.flatMap(s => s.typed));
       const session = original[0], seen = [];
       const fold = foldSession(session, { prepare, score(text, index) { seen.push(text); return score(text, index); } }, { sampleSeed: 1 });
@@ -179,4 +184,8 @@ test('the committed eight-compaction fixture is the binary rendering of f03', as
       for (const run of runs) assert.ok(!tokens.includes(' ' + run + ' '));
     }
   } finally { await rm(root, { recursive: true, force: true }); }
+});
+
+test('the whole long session test file finishes within sixty seconds', () => {
+  assert.ok(performance.now() - started < 60000);
 });
