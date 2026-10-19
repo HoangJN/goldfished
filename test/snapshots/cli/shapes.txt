@@ -2,9 +2,9 @@
 out:
 {
   "agent": "claude-code",
-  "files": 29,
-  "bytes": 41302,
-  "lines": 229,
+  "files": 30,
+  "bytes": 130317,
+  "lines": 262,
   "malformed": 1,
   "skippedLong": 0,
   "types": {
@@ -23,20 +23,20 @@ out:
     "harbour_bookkeeping_9": 3,
     "reply_v3": 1,
     "request_v3": 1,
-    "system": 21,
-    "user": 65
+    "system": 29,
+    "user": 89
   },
   "rejects": {
     "meta": 1,
-    "not_user": 129,
+    "not_user": 137,
     "origin_sdk": 1,
     "origin_sdk_legacy": 1,
-    "summary": 21,
+    "summary": 29,
     "tool_result": 1,
     "wrapper": 3
   },
-  "compactLike": 42,
-  "understood": 42,
+  "compactLike": 58,
+  "understood": 58,
   "lineBuckets": [
     {
       "power": 0,
@@ -64,26 +64,42 @@ out:
     },
     {
       "power": 6,
-      "count": 29
+      "count": 30
     },
     {
       "power": 7,
-      "count": 157
+      "count": 165
     },
     {
       "power": 8,
-      "count": 7
+      "count": 23
     },
     {
       "power": 9,
-      "count": 0
+      "count": 3
     },
     {
       "power": 10,
       "count": 1
+    },
+    {
+      "power": 11,
+      "count": 0
+    },
+    {
+      "power": 12,
+      "count": 1
+    },
+    {
+      "power": 13,
+      "count": 1
+    },
+    {
+      "power": 14,
+      "count": 3
     }
   ],
-  "compactions": 22,
+  "compactions": 30,
   "drift": {
     "ok": true,
     "reasons": [],

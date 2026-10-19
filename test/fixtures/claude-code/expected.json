@@ -730,6 +730,238 @@
       ],
       "drift": false,
       "cardResent": true
+    },
+    "eight-compactions.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 16,
+      "rejected": {
+        "summary": 8,
+        "pasted": 5
+      },
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        },
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        },
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        },
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        },
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        },
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        },
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        },
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        }
+      ],
+      "messages": [
+        {
+          "id": "f03-0-t1",
+          "epoch": 0,
+          "labels": [
+            "gone",
+            "gone",
+            "gone",
+            "gone",
+            "gone",
+            "gone",
+            "gone",
+            "gone"
+          ]
+        },
+        {
+          "id": "f03-0-t2",
+          "epoch": 0,
+          "labels": [
+            "kept",
+            "gone",
+            "gone",
+            "gone",
+            "gone",
+            "gone",
+            "gone",
+            "gone"
+          ]
+        },
+        {
+          "id": "f03-0-t3",
+          "epoch": 1,
+          "labels": [
+            "kept",
+            "gone",
+            "gone",
+            "gone",
+            "gone",
+            "gone",
+            "gone"
+          ]
+        },
+        {
+          "id": "f03-0-t4",
+          "epoch": 1,
+          "labels": [
+            "kept",
+            "gone",
+            "gone",
+            "gone",
+            "gone",
+            "gone",
+            "gone"
+          ]
+        },
+        {
+          "id": "f03-0-t5",
+          "epoch": 2,
+          "labels": [
+            "kept",
+            "gone",
+            "gone",
+            "gone",
+            "gone",
+            "gone"
+          ]
+        },
+        {
+          "id": "f03-0-t6",
+          "epoch": 2,
+          "labels": [
+            "kept",
+            "gone",
+            "gone",
+            "gone",
+            "gone",
+            "gone"
+          ]
+        },
+        {
+          "id": "f03-0-t7",
+          "epoch": 3,
+          "labels": [
+            "gone",
+            "gone",
+            "gone",
+            "gone",
+            "gone"
+          ]
+        },
+        {
+          "id": "f03-0-t8",
+          "epoch": 3,
+          "labels": [
+            "gone",
+            "gone",
+            "gone",
+            "gone",
+            "gone"
+          ]
+        },
+        {
+          "id": "f03-0-t9",
+          "epoch": 4,
+          "labels": [
+            "gone",
+            "gone",
+            "gone",
+            "gone"
+          ]
+        },
+        {
+          "id": "f03-0-t10",
+          "epoch": 4,
+          "labels": [
+            "gone",
+            "gone",
+            "gone",
+            "gone"
+          ]
+        },
+        {
+          "id": "f03-0-t11",
+          "epoch": 5,
+          "labels": [
+            "gone",
+            "gone",
+            "gone"
+          ]
+        },
+        {
+          "id": "f03-0-t12",
+          "epoch": 5,
+          "labels": [
+            "kept",
+            "gone",
+            "gone"
+          ]
+        },
+        {
+          "id": "f03-0-t13",
+          "epoch": 6,
+          "labels": [
+            "gone",
+            "gone"
+          ]
+        },
+        {
+          "id": "f03-0-t14",
+          "epoch": 6,
+          "labels": [
+            "kept",
+            "kept"
+          ]
+        },
+        {
+          "id": "f03-0-t15",
+          "epoch": 7,
+          "labels": [
+            "gone"
+          ]
+        },
+        {
+          "id": "f03-0-t16",
+          "epoch": 7,
+          "labels": [
+            "kept"
+          ]
+        }
+      ],
+      "drift": false,
+      "cardResent": false
     }
   },
   "generated": {
