@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { renderPaste, renderStory } from '../scripts/saga-pastes.mjs';
 
 const PATH = new URL('./long/saga-02.story.jsonl', import.meta.url);
-const PINNED = ['012bc345026407bd', '70410843423c182b', '36364e9e5965f5f7', '1335f0b75c43296d'].join('');
+const PINNED = 'bec29fcf4c75034ad07581924dd32c217ab08276c932db8904d3492d839b776c'; // gate-allow
 const started = Date.now();
 const rawLines = readFileSync(PATH, 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l));
 const [head, ...raw] = rawLines;
