@@ -1,0 +1,6 @@
+goldfished retro   last 47 days   read-only, nothing leaves this machine
+read 4,567 files (876.5 MB) in 19s. not graded: 23 automated sessions, 31
+  subagent files
+
+1 session read, none compacted yet. Nothing has been lost yet.
+Keep your goal and rules in front of your agent: npx goldfished init
