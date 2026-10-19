@@ -47,7 +47,9 @@ Claude Code deletes session files after 30 days by default, so older sessions
 Keep your goal and rules in front of your agent: npx goldfished init
 ```
 
-Offline. Reads your own local session files. Nothing leaves your machine.
+Offline. Reads your own local session files. Nothing leaves your machine. goldfished itself sends nothing; the card is handed to your agent, which sends it to its model like any other prompt.
+
+Claude Code's `cleanupPeriodDays` setting defaults to 30 days, so older session files may no longer be there.
 
 ## What it measures
 
@@ -60,7 +62,11 @@ Coding agents compact long conversations by replacing them with a summary they w
 
 The curve stops at age 6. Each row counts messages that went through exactly that many compactions. Sessions where goldfished re-sent the card are counted apart from the ordinary curve, span and headline. Agents are also counted apart: this compares your sessions, not the tools.
 
-The release gate checks kept versus not kept. Distinguishing reworded from gone remains a stated limit: the three-way labels agreed on 79 in 100 invented examples in the sealed set. The printed labels are kept / partly there / not found. A summary can retain your wording while the agent ignores it.
+Kept is decided by G3, a local word-run match with threshold 0.9 and no model ([src/grade.mjs](src/grade.mjs)). In the sealed run, the grader matched the blind three-way label (kept, reworded or gone) on 79 of 100 invented pairs, and kept versus not kept on 100 of 100. The sealed run gated on kept versus not kept; distinguishing reworded from gone remains a stated limit. The printed labels are kept / partly there / not found. A summary can retain your wording while the agent ignores it. See [TESTED.md](TESTED.md) and the [raw sealed run](bench/runs/2026-10-19-bars.txt). Reproduce it from the repository root:
+
+```sh
+node scripts/bars.mjs test/labels/test.jsonl
+```
 
 Try the invented example without reading any session files:
 
@@ -79,9 +85,9 @@ goldfished rule "Keep the index on this machine."
 goldfished out "Hosted search" --quote "Do not send the index to a hosted service."
 ```
 
-Use `npx goldfished@latest <command>` for each command if goldfished is not installed. Card changes need a terminal. Agents can propose an entry; you accept or reject it. A changed file is not trusted until its fingerprint matches the one recorded on this machine.
+Use `npx goldfished@latest <command>` for each command if goldfished is not installed. Card changes come from you, at a terminal or through the two chat prefixes; agents can only propose. You accept or reject their proposals. A changed file is not trusted until its fingerprint matches the one recorded on this machine.
 
-Where the prompt hooks are proved, `rule: ` and `gf: ` at the start of a message let you write to the card from chat. The hook records your words and blocks that prompt from becoming an agent request. Ordinary prompts pass through. `probe` lets you check whether your own agent keeps the card.
+Where the prompt hooks are proved, `rule: ` at the start of a message saves the rule and still sends your message to the agent unchanged. `gf: ` is answered on screen and never reaches the agent. Ordinary prompts pass through. `probe` lets you check whether your own agent keeps the card.
 
 ## Agents
 
@@ -132,6 +138,6 @@ Node 20 or newer. Windows, macOS and Linux.
 
 The benchmark read 6 GiB in 10.540 s for Claude Code and 24.568 s for Codex, on an Intel(R) Core(TM) Ultra 9 290HX Plus with 63.46 GiB RAM, Windows and Node v24.19.0. These are warm medians on synthetic files, not live transcripts. See the [whole run](bench/runs/2026-10-19-bench.txt).
 
-The [raw benchmark and demo logs](bench/runs/) are committed. `node scripts/readme-numbers.mjs` checks every README number against those logs, TESTED.md or a short list of specification constants, and compares the example byte for byte with a fresh demo.
+The [raw run logs](bench/runs/) are committed. `node scripts/readme-numbers.mjs` is a presence check: every README number appears in a committed log, TESTED.md or the short list in the script. It also compares the example byte for byte with a fresh demo.
 
 [MIT licence](LICENSE).

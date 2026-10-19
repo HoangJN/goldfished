@@ -56,3 +56,17 @@ test('workflow actions use full hashes and only ordinary pull requests', () => {
   }
   check(join(root, '.github/workflows'));
 });
+
+test('the release tag check accepts only the package version', () => {
+  const workflow = readFileSync(join(root, '.github/workflows/release.yml'), 'utf8');
+  const guard = /- name: Check release tag\n\s+run: node -e "([^"]+)"/u.exec(workflow);
+  assert.ok(guard);
+  assert.ok(guard.index < workflow.indexOf('- run: npm publish'));
+  const { version } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+  for (const [tag, expected] of [[`v${version}`, 0], [`v${version}-wrong`, 1], [version, 1]]) {
+    const result = spawnSync(process.execPath, ['-e', guard[1]], {
+      cwd: root, encoding: 'utf8', env: { ...process.env, GITHUB_REF_NAME: tag },
+    });
+    assert.equal(result.status, expected, result.stderr);
+  }
+});

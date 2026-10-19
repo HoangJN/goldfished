@@ -11,6 +11,10 @@
   },
   "license": "MIT",
   "author": "Jonathan Nguyen",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HoangJN/goldfished.git"
+  },
   "files": [
     "bin",
     "src",
