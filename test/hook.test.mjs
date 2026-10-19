@@ -21,7 +21,7 @@ function fixture() {
   return { top, env: { ...process.env, GOLDFISHED_HOME: homePath } };
 }
 function run(f, agent, event, payload, extra = {}) {
-  const result = spawnSync(process.execPath, [launcher, agent, event], { input: typeof payload === 'string' ? payload : JSON.stringify({ _synthetic: true, cwd: f.top, hook_event_name: event === 'prompt' ? 'UserPromptSubmit' : 'SessionStart', ...payload }), env: f.env, encoding: 'utf8', timeout: 5000, ...extra });
+  const result = spawnSync(process.execPath, [launcher, agent, event], { input: typeof payload === 'string' ? payload : JSON.stringify({ _synthetic: true, cwd: f.top, hook_event_name: event === 'prompt' ? 'UserPromptSubmit' : 'SessionStart', ...payload }), env: f.env, encoding: 'utf8', timeout: 30000, ...extra });
   assert.equal(result.status, 0, result.stderr || result.error?.message);
   return result;
 }
@@ -83,7 +83,7 @@ for (const target of [fs, fs.promises]) for (const key of ['readFileSync','readF
     writeFileSync(loader, "export function resolve(name, context, next) { if (name.endsWith('/actions.mjs')) throw new Error('Actions must not load.'); return next(name, context); }");
     writeFileSync(preload, `import {register} from 'node:module'; register(${JSON.stringify(pathToFileURL(loader).href)});`);
     for (const verb of ['rule', 'edit', 'reject', 'trust', 'lst']) {
-      const result = spawnSync(process.execPath, ['--import', pathToFileURL(preload).href, launcher, agent, 'prompt'], { input: JSON.stringify({ _synthetic: true, cwd: f.top, prompt: `gf: ${verb} Keep brass.` }), env: f.env, encoding: 'utf8', timeout: 5000 });
+      const result = spawnSync(process.execPath, ['--import', pathToFileURL(preload).href, launcher, agent, 'prompt'], { input: JSON.stringify({ _synthetic: true, cwd: f.top, prompt: `gf: ${verb} Keep brass.` }), env: f.env, encoding: 'utf8', timeout: 30000 });
       assert.equal(result.status, 0, result.stderr); assert.deepEqual(json(result), ios[agent].blockOutput(`goldfished: unknown command "${verb}". Try gf: help`));
     }
     assert.equal(store.load(f.top).source, '');

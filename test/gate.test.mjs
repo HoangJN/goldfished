@@ -10,6 +10,7 @@ import {
   checkHistory,
   checkHookGraph,
   checkLabels,
+  checkPackage,
   checkImageMetadata,
   checkInvisible,
   parseDenylist,
@@ -20,6 +21,23 @@ const scratch = mkdtempSync(join(tmpdir(), 'goldfished-gate-'));
 after(() => rmSync(scratch, { recursive: true, force: true }));
 
 const EM = String.fromCharCode(0x2014);
+
+test('package: adding test to the files list fails in a temporary copy', () => {
+  const root = mkdtempSync(join(scratch, 'package-'));
+  const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+  for (const entry of manifest.files) {
+    mkdirSync(join(root, entry), { recursive: true });
+    writeFileSync(join(root, entry, 'sample.mjs'), 'export {};\n');
+  }
+  for (const file of ['README.md', 'LICENSE']) writeFileSync(join(root, file), 'Sample\n');
+  writeFileSync(join(root, 'package.json'), JSON.stringify(manifest));
+  assert.deepEqual(checkPackage(root), []);
+  mkdirSync(join(root, 'test'));
+  writeFileSync(join(root, 'test', 'sample.test.mjs'), 'export {};\n');
+  manifest.files.push('test');
+  writeFileSync(join(root, 'package.json'), JSON.stringify(manifest));
+  assert.deepEqual(checkPackage(root), ['unexpected packed file: test/sample.test.mjs']);
+});
 
 test('hook keys belong only in hookio, including optional and bracket access', () => {
   for (const key of ['hookSpecificOutput', 'hookEventName', 'additionalContext', 'systemMessage', 'hook_event_name']) {

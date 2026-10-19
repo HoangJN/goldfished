@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { existsSync, lstatSync, readFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fieldNames } from '../src/agents/claude-code.dialect.mjs';
@@ -338,6 +339,30 @@ export function checkHistory(root, denylist = []) {
   return out;
 }
 
+export function checkPackage(root) {
+  const scratch = mkdtempSync(join(tmpdir(), 'goldfished-pack-'));
+  try {
+    const env = { ...process.env, HOME: scratch, USERPROFILE: scratch, CLAUDE_CONFIG_DIR: join(scratch, 'claude'), CODEX_HOME: join(scratch, 'codex'), GOLDFISHED_HOME: join(scratch, 'goldfished'), npm_config_cache: join(scratch, 'cache') };
+    const result = spawnSync(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['pack', '--dry-run', '--json', '--offline', '--ignore-scripts'], {
+      cwd: root, env, encoding: 'utf8', timeout: 30000, shell: process.platform === 'win32', maxBuffer: 1 << 24,
+    });
+    if (result.status !== 0) return [`npm pack failed: ${result.stderr || result.error?.message}`];
+    const [pack] = JSON.parse(result.stdout);
+    const { files } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+    const out = [];
+    for (const { path } of pack.files) {
+      const parts = path.split('/');
+      const forbidden = parts.some((part, i) => ['test', 'scripts', 'bench', '.claude', '.github'].includes(part) || (part.startsWith('.') && !(part === '.claude-plugin' && i === 0)));
+      const allowed = ['package.json', 'README.md', 'LICENSE'].includes(path) || files.some(entry => path === entry || path.startsWith(entry + '/'));
+      if (forbidden || !allowed) out.push(`unexpected packed file: ${path}`);
+    }
+    if (pack.size >= 150 * 1024) out.push(`package is ${pack.size} bytes; limit is under 150 KB`);
+    return out;
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+}
+
 export function checkLabels(root) {
   const tag = git(['tag', '--list', 'labels-v*', '--sort=-version:refname'], root).trim().split(/\r?\n/)[0];
   if (!tag) return [];
@@ -406,6 +431,7 @@ function main() {
 
   for (const reason of checkHistory(root, denylist)) fail('history', '', 0, reason);
   for (const reason of checkLabels(root)) fail('labels', 'test/labels', 0, reason);
+  for (const reason of checkPackage(root)) fail('package', 'package.json', 0, reason);
   for (const f of checkHookGraph(root)) fail('hook-imports', f.file, f.line, f.reason);
 
   for (const f of failures) {
