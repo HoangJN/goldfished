@@ -117,9 +117,14 @@ test('automated and subagent sessions are not graded and stay off the not counte
 });
 test('sessions with the card re-sent stay out of the curve and are reported in card', async t => {
   const w = await world(t).long(), js = await w.json(), [claude, codex] = js.agents;
-  assert.deepEqual([claude.sessions, claude.curve[0].sessions, claude.card.sessions, claude.card.age], [36, 24, 12, 6]);
+  assert.deepEqual([claude.sessions, claude.curve[0].sessions, claude.card.sessions, claude.card.age], [36, 24, 12, 10]);
+  assert.deepEqual(claude.curve.map(row => row.age), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  assert.equal(js.headline.age, 10);
+  const output = (await w.run()).out;
+  assert.ok(output.includes('after 10 compactions'));
+  for (const age of [7, 8, 9, 10]) assert.match(output, new RegExp(`^${age} +[0-9]`, 'm'));
   assert.ok(claude.card.kept_per_100 >= 0 && claude.card.kept_per_100 <= 100); assert.deepEqual(claude.curve, codex.curve);
-  matchSnapshot('retro', 'long', norm((await w.run()).out)); matchSnapshot('retro', 'long-json', norm(JSON.stringify(js)));
+  matchSnapshot('retro', 'long', norm(output)); matchSnapshot('retro', 'long-json', norm(JSON.stringify(js)));
   const alone = world(t);
   session(alone.claude, 'a.jsonl', ['Keep the harbour timetable in plain text.']);
   writeFileSync(join(alone.claude, 'p/card.jsonl'), readFileSync(fixture('claude-code/card-resent.jsonl')));

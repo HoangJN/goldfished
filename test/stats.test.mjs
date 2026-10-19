@@ -13,7 +13,7 @@ const row = (age, kept, messages = 100, sessions = 10) =>
 
 function independently(rows) {
   let headlineAge = null, firstMissing = null, failed = false;
-  for (let age = 1; age <= 6; age++) {
+  for (let age = 1; age <= 10; age++) {
     const r = rows.find(item => item.age === age);
     const enough = r && r.sessions >= 10 && r.messages >= 50;
     if (enough && age >= 2) headlineAge = age;
@@ -22,7 +22,7 @@ function independently(rows) {
     if (enough && !passes) failed = true;
   }
   const first = rows.find(r => r.age === 1);
-  const value = !first || first.messages < 50 || first.sessions < 10 ? null : (firstMissing ?? 7) - 1;
+  const value = !first || first.messages < 50 || first.sessions < 10 ? null : (firstMissing ?? 11) - 1;
   return { span: value, censored: value !== null && !failed, headlineAge };
 }
 
@@ -30,7 +30,7 @@ test('200 seeded curves agree with a separate reading of the span rules', () => 
   for (let seed = 1; seed <= 200; seed++) {
     const rng = mulberry32(seed), rows = [];
     let d = 300;
-    for (let age = 1; age <= 6; age++) {
+    for (let age = 1; age <= 10; age++) {
       d = Math.floor(d * (0.5 + rng() / 2));
       rows.push(row(age, Math.floor(rng() * (d + 1)), d, Math.min(d, Math.floor(rng() * 19))));
     }
@@ -90,15 +90,27 @@ test('oracle labels produce six exact-age rows without summing ages', () => {
   assert.ok(result.every(r => !measurable(r) && r.sessions === 1));
 });
 
-test('combine counts contributing sessions, fills gaps and stops at six', () => {
-  const f = fold([[1, counts(2, 3, 1)], [3, counts(1, 0)], [7, counts(1, 0)]]);
+test('combine counts contributing sessions, fills gaps and stops at ten', () => {
+  const f = fold([[1, counts(2, 3, 1)], [3, counts(1, 0)], [11, counts(1, 0)]]);
   const ages = combine([f, fold([[1, counts(0, 0)]])]);
   assert.equal(curve(ages)[0].messages, 6);
   assert.equal(curve(ages)[0].sessions, 1);
   assert.deepEqual(curve(ages)[1], row(2, 0, 0, 0));
-  assert.equal(curve(ages).length, 6);
+  assert.equal(curve(ages).length, 10);
+  assert.equal(ages.total.get(11).kept, 1);
   assert.deepEqual(curve(combine([])), []);
   assert.equal(f.ages.get(1).kept, 2);
+});
+
+test('ten measurable ages give a headline and censored span at ten', () => {
+  const f = fold(Array.from({ length: 11 }, (_, i) => [i + 1, counts(i + 5, 0)]));
+  const rows = curve(combine(Array.from({ length: 10 }, () => f)));
+  assert.deepEqual(rows.map(r => r.age), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  assert.deepEqual(rows.map(r => r.messages), [50, 60, 70, 80, 90, 100, 110, 120, 130, 140]);
+  assert.deepEqual(span(rows), { span: 10, censored: true, headlineAge: 10 });
+  const few = curve(combine(Array.from({ length: 9 }, () => f)));
+  assert.ok(few.every(r => !measurable(r)));
+  assert.deepEqual(span(few), { span: null, censored: false, headlineAge: null });
 });
 
 test('mulberry32 seed 1 has five fixed outputs', () => {
