@@ -3,9 +3,9 @@ out:
 --- AGENTS.md
 +++ AGENTS.md
 @@ -1,7 +1,2 @@
- # Harbour
--Keep the harbour open.
--
+ # Harbour\r
+-Keep the harbour open.\r
+-\r
 -<!-- goldfished:begin (managed by goldfished; change .goldfished/card.md instead) -->
 -## The user's card
 -The user's goal, standing rules and the options they ruled out are in `.goldfished/card.md`, in their own words. Read it before you start, and read it again whenever you see a summary of earlier work or your context has been reset. It outranks any summary. If the file is missing, carry on. Never edit it and never run goldfished commands that change it. To suggest an entry, run `goldfished propose --quote "<the user's exact words>" --note "<why>"`.
