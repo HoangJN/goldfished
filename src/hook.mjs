@@ -17,7 +17,10 @@ export async function main(agentId, event, rawStdin) {
     if (event === 'prompt') {
       const rule = prompt.startsWith('rule: ');
       const [verb, tail = ''] = rule ? ['rule', prompt.slice(6).trimEnd()] : prompt.slice(4).trimEnd().split(/\s+(.+)/s);
-      if (!rule && !['goal', 'out', 'list', 'drop', 'restore', 'card', 'accept', 'help', 'off', 'on'].includes(verb)) output = io.blockOutput(`goldfished: unknown command "${verb}". Try gf: help`);
+      if (!rule && !['goal', 'out', 'list', 'drop', 'restore', 'card', 'accept', 'help', 'off', 'on'].includes(verb)) {
+        const { mask } = await import('./mask.mjs');
+        output = io.blockOutput(`goldfished: unknown command "${mask(verb, 'display').slice(0, 40)}". Try gf: help`);
+      }
       else {
         const actions = await import('./actions.mjs');
         let args = [tail];
