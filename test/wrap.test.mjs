@@ -11,6 +11,15 @@ test('wrap uses 80 columns, two-space continuations and keeps line breaks', () =
   assert.equal(wrap(''), '');
 });
 
+test('wrap preserves fitting lines and spaces away from a break', () => {
+  const table = 'claude-code   318        53          2,140      1              37 in 100';
+  assert.equal(wrap(table), table);
+  assert.equal(wrap('  --show   kept messages  '), '  --show   kept messages  ');
+  assert.equal(wrap('a   b\n  c'), 'a   b\n  c');
+  assert.equal(wrap('><(((o>   goldfished retro   all sessions'), '><(((o>   goldfished retro   all sessions');
+  assert.equal(wrap('one   two three   four', 14), 'one   two\n  three   four');
+});
+
 test('counts, nouns and per-100 half-up rounding', () => {
   assert.equal(number(1204), '1,204');
   assert.equal(number(1234567), '1,234,567');
@@ -30,6 +39,9 @@ test('decimal sizes, seconds and local dates', () => {
   for (const [i, unit] of ['kB', 'MB', 'GB', 'TB', 'PB'].entries())
     assert.equal(size(1000 ** (i + 1)), `1.0 ${unit}`);
   assert.equal(size(999), '999 B');
+  for (const [bytes, expected] of [[999949, '999.9 kB'], [999950, '1.0 MB'], [999999, '1.0 MB'],
+    [999949000, '999.9 MB'], [999950000, '1.0 GB'], [999999000, '1.0 GB']])
+    assert.equal(size(bytes), expected);
   assert.equal(size(812400000), '812.4 MB');
   assert.equal(size(5700000000), '5.7 GB');
   assert.equal(secs(0.4), 'under 1s');

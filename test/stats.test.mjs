@@ -40,7 +40,8 @@ test('200 seeded curves agree with a separate reading of the span rules', () => 
       ['goldfish', 'short', 'fair'][expected.span] ?? 'long';
     assert.equal(v.id, tier);
     if (v.line.startsWith('Long')) assert.ok(actual.span >= 3 && !actual.censored);
-    if (actual.censored) assert.equal(v.line, `At least ${actual.span} compactions so far.`);
+    if (actual.censored) assert.equal(v.line,
+      `At least ${actual.span} ${actual.span === 1 ? 'compaction' : 'compactions'} so far.`);
   }
 });
 
