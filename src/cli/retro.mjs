@@ -16,7 +16,7 @@ import * as home from '../home.mjs';
 import * as store from '../store.mjs';
 import { topLevel } from '../project.mjs';
 import { command, inHome } from './card.mjs';
-const day = 86400000, EXAMPLE = 'Example from synthetic sessions, not real data.', version = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')).version;
+const day = 86400000, EXAMPLE = 'Invented example, not real data.', version = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')).version;
 const cut = s => Array.from(mask(s.replace(/[\u0000-\u001f\u007f-\u009f\s]+/gu, ' ').trim(), 'display')).slice(0, 80).join('').trimEnd();
 const blank = id => ({ id, label: META[id]?.label ?? id, status: 'none', sessions: 0, compacted: 0, messages: 0,
   firstMs: null, lastMs: null, curve: [], composition: null, span: null, censored: false, headlineAge: null,

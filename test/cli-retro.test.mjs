@@ -231,12 +231,12 @@ test('--demo reads nothing, is byte-identical under any time zone, and has no fi
   process.env.TZ = 'Pacific/Kiritimati';
   const second = await w.run({ demo: true }, { outTTY: true });
   assert.equal(process.env.TZ, 'Pacific/Kiritimati'); process.env.TZ = 'UTC';
-  assert.equal(first.out, second.out); assert.equal(first.out.split('\n')[0], 'Example from synthetic sessions, not real data.');
+  assert.equal(first.out, second.out); assert.equal(first.out.split('\n')[0], 'Invented example, not real data.');
   assert.ok(!first.out.includes(FISH) && first.out.includes('read-only') && first.err === '' && !existsSync(w.goldfished));
   matchSnapshot('retro', 'demo', first.out);
   const js = await w.run({ demo: true, json: true });
   assert.deepEqual([js.out.split('\n').length, JSON.parse(js.out).grader.id], [1, grader.GRADER.id]);
-  assert.ok(js.err.startsWith('Example from synthetic sessions, not real data.\n')); matchSnapshot('retro', 'demo-json', js.out);
+  assert.ok(js.err.startsWith('Invented example, not real data.\n')); matchSnapshot('retro', 'demo-json', js.out);
   const fish = async over => (await w.run({}, over)).out.startsWith(FISH);
   assert.deepEqual([await fish({ outTTY: true }), await fish({ outTTY: false }), await fish({ outTTY: true, env: { ...w.env, NO_COLOR: '1' } })], [true, false, false]);
 });

@@ -19,8 +19,8 @@ times compacted   your messages   kept   partly there   not found
 
 not counted: 567 short replies under 20 characters, 89 pastes over 1,500
   characters
-Why so high after one: Claude Code's summary lists your messages once. The next
-  compaction summarises that list.
+Why so high after one: in our tests Claude Code's first summary quoted your
+  messages. The next compaction summarises that summary.
 Claude Code deletes session files after 30 days by default, so older sessions
   are not here.
 Keep your goal and rules in front of your agent: npx goldfished init

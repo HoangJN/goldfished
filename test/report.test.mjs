@@ -17,7 +17,7 @@ function result() {
       composition: [row(1, 200, 12, 176, 10), row(2, 200, 12, 112, 30), row(3, 200, 12, 68, 44)],
       span: 1, censored: false, headlineAge: 3,
       headline: { age: 3, keptPer100: 23, ci95: [16, 32], messages: 700, sessions: 17 },
-      verdict: null, note: "Why so high after one: Claude Code's summary lists your messages once. The next compaction summarises that list.",
+      verdict: null, note: "Why so high after one: in our tests Claude Code's first summary quoted your messages. The next compaction summarises that summary.",
       card: { sessions: 15, age: 3, keptPer100: 79 }, drift: null, notCounted: { short: 567, pasted: 89 },
     }], show: null, audit: null, history: null,
   };
