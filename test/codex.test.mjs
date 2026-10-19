@@ -40,6 +40,7 @@ function actual(sessions, counts) {
     messages: sessions.flatMap(s => s.typed.map(m => ({ id: String(m.id), epoch: m.epoch,
       labels: s.compactions.slice(m.epoch).map(c => c.visible === null ? null : c.visible.includes(m.text) ? 'kept' : 'gone') }))),
     drift: !adapter.driftCheck(counts).ok,
+    cardResent: sessions.some(s => s.cardResent),
   };
 }
 
@@ -49,10 +50,32 @@ test('every Codex fixture agrees with its independent oracle', async t => {
   for (const [name, expected] of Object.entries({ ...oracle.fixtures, ...oracle.generated })) {
     const { sessions, counts } = await load([generated[name] ?? join(root, name)]);
     assert.deepEqual(actual(sessions, counts), expected, name);
+    for (const session of sessions) assert.equal(session.cardResent, expected.cardResent, name);
     assert.ok(sessions[0].project.startsWith(name.includes('large-compacted') ? 'large-kettle' : 'copper-kettle'));
     assert.equal(counts.malformed, 0);
     sessions[0].compactions.forEach((c, i) => assert.equal(c.epoch, i + 1));
   }
+});
+test('only a separate developer card item sets the re-send flag', async t => {
+  const source = await readFile(join(root, 'sessions/2026/01/06/rollout-card-resent.jsonl'), 'utf8');
+  const records = source.trim().split('\n').map(line => JSON.parse(line));
+  const hooks = records.filter(record => record.type === 'response_item');
+  const withoutHooks = records.filter(record => record.type !== 'response_item');
+  const file = join(await scratch(t), 'card-variant.jsonl');
+  const variants = [
+    [[], false], [[hooks[0]], true], [[hooks[1]], true],
+    [hooks.map(record => ({ ...record, payload: { ...record.payload, content: [{ type: 'input_text', text: 'another tool: context' }] } })), false],
+    [hooks.map(record => ({ ...record, payload: { ...record.payload, role: 'assistant' } })), false],
+    [hooks.map(record => ({ ...record, payload: { ...record.payload, type: 'other_item' } })), false],
+  ];
+  for (const [extra, expected] of variants) {
+    await writeFile(file, [...withoutHooks, ...extra].map(record => JSON.stringify(record)).join('\n') + '\n');
+    const { sessions, counts } = await load([file]);
+    assert.equal(sessions[0].cardResent, expected);
+    assert.equal(adapter.driftCheck(counts).ok, true);
+  }
+  for (const hook of hooks) assert.equal(mayNeed(JSON.stringify(hook)), true);
+  for (const record of records.filter(record => record.type === 'compacted')) assert.equal(decode(JSON.stringify(record), 1).cardResent, false);
 });
 
 test('drift mutants are caught and unread compactions are counted', async t => {

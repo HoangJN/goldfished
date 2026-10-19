@@ -2,13 +2,14 @@
 out:
 {
   "agent": "claude-code",
-  "files": 28,
-  "bytes": 39755,
-  "lines": 221,
+  "files": 29,
+  "bytes": 41302,
+  "lines": 229,
   "malformed": 1,
   "skippedLong": 0,
   "types": {
     "assistant": 73,
+    "attachment": 2,
     "future_speaker": 1,
     "harbour_bookkeeping_0": 3,
     "harbour_bookkeeping_1": 3,
@@ -22,20 +23,20 @@ out:
     "harbour_bookkeeping_9": 3,
     "reply_v3": 1,
     "request_v3": 1,
-    "system": 19,
-    "user": 62
+    "system": 21,
+    "user": 65
   },
   "rejects": {
     "meta": 1,
-    "not_user": 125,
+    "not_user": 129,
     "origin_sdk": 1,
     "origin_sdk_legacy": 1,
-    "summary": 19,
+    "summary": 21,
     "tool_result": 1,
     "wrapper": 3
   },
-  "compactLike": 38,
-  "understood": 38,
+  "compactLike": 42,
+  "understood": 42,
   "lineBuckets": [
     {
       "power": 0,
@@ -63,15 +64,15 @@ out:
     },
     {
       "power": 6,
-      "count": 28
+      "count": 29
     },
     {
       "power": 7,
-      "count": 151
+      "count": 157
     },
     {
       "power": 8,
-      "count": 6
+      "count": 7
     },
     {
       "power": 9,
@@ -82,7 +83,7 @@ out:
       "count": 1
     }
   ],
-  "compactions": 20,
+  "compactions": 22,
   "drift": {
     "ok": true,
     "reasons": [],
@@ -91,21 +92,21 @@ out:
 }
 {
   "agent": "codex",
-  "files": 11,
-  "bytes": 33262,
-  "lines": 48,
+  "files": 12,
+  "bytes": 34536,
+  "lines": 55,
   "malformed": 0,
   "skippedLong": 0,
   "types": {
-    "compacted": 7,
-    "event_msg": 15,
+    "compacted": 9,
+    "event_msg": 16,
     "future_bookkeeping": 1,
-    "response_item": 2,
-    "session_meta": 11
+    "response_item": 4,
+    "session_meta": 12
   },
   "rejects": {},
-  "compactLike": 7,
-  "understood": 7,
+  "compactLike": 9,
+  "understood": 9,
   "lineBuckets": [
     {
       "power": 0,
@@ -133,15 +134,15 @@ out:
     },
     {
       "power": 6,
-      "count": 6
+      "count": 8
     },
     {
       "power": 7,
-      "count": 39
+      "count": 43
     },
     {
       "power": 8,
-      "count": 2
+      "count": 3
     },
     {
       "power": 9,
@@ -168,7 +169,7 @@ out:
       "count": 1
     }
   ],
-  "compactions": 7,
+  "compactions": 9,
   "drift": {
     "ok": true,
     "reasons": [],

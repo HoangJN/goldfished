@@ -5,7 +5,8 @@ export const fieldNames = [
   'timestamp', 'cwd', 'cli_version', 'source', 'originator', 'replacement_history', 'encrypted_content',
 ];
 
-export const mayNeed = text => /user_message|compacted/u.test(text);
+export const mayNeed = text => /user_message|compacted/u.test(text) ||
+  (/"type"\s*:\s*"response_item"/u.test(text) && /"role"\s*:\s*"developer"/u.test(text));
 
 function shape(text) {
   const values = {}, stack = [];
@@ -42,7 +43,7 @@ function readable(item) {
 
 export function decode(text, n) {
   if (/^\s*\{\s*"_synthetic"\s*:\s*true/u.test(text)) return null;
-  const needed = /user_message|compacted|session_meta/u.test(text);
+  const needed = mayNeed(text) || /session_meta/u.test(text);
   let record;
   if (needed) {
     record = JSON.parse(text);
@@ -51,6 +52,9 @@ export function decode(text, n) {
   const fields = record ? null : shape(text);
   const kind = record?.type ?? fields?.type ?? 'unknown';
   const payload = record?.payload;
+  // CX1 did not print the exact path; use response_item.payload.content[].text for developer messages.
+  const hookText = kind === 'response_item' && payload?.type === 'message' && payload.role === 'developer' ? readable(payload).join('\n') : '';
+  const cardResent = /^(?:goldfished: this conversation has just been compacted\.|goldfished: the card below came from the project folder)/u.test(hookText);
   const inner = payload?.type ?? fields?.payload_type;
   const conversation = (payload && Object.hasOwn(payload, 'role')) || fields?.payload_role !== undefined || /_message$/u.test(inner ?? '');
   const known = kind === 'response_item' || (kind === 'event_msg' && ['user_message', 'agent_message'].includes(inner));
@@ -67,7 +71,7 @@ export function decode(text, n) {
     if (meta[key] !== undefined && !['cli', 'exec', 'codex_cli_rs', 'codex_exec', 'codex_cli'].includes(meta[key])) unknown.push(key + '_' + String(meta[key]));
   }
   return {
-    kind, conversation, known, compactLike, boundary, invalid, understood: validBoundary,
+    kind, conversation, known, compactLike, boundary, invalid, cardResent, understood: validBoundary,
     unfamiliar: /compact/iu.test(kind) && !boundary,
     identity: n, body: typed && !invalid ? payload.message : undefined,
     dedupeKey: typed && !invalid ? createHash('sha256').update(JSON.stringify([record.timestamp, payload.message])).digest('hex') : undefined,
