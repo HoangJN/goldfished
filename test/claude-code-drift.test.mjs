@@ -34,7 +34,8 @@ function check({ sessions, counts }, expected) {
     sub: sessions.filter(s => s.sub).length, typed: typed.length, rejected,
     compactions: sessions.flatMap(s => s.compactions.map(c => ({ visible: c.visible === null ? 'null' : 'found',
       pre: c.pre ?? null, post: c.post ?? null, trigger: c.trigger ?? null }))),
-    messages: typed.map(({ id, epoch }) => ({ id, epoch })), drift: !adapter.driftCheck(counts).ok },
+    messages: typed.map(({ id, epoch }) => ({ id, epoch })), drift: !adapter.driftCheck(counts).ok,
+    cardResent: sessions.some(s => s.cardResent) },
   { ...expected, messages: expected.messages.map(({ id, epoch }) => ({ id, epoch })) });
   for (const session of sessions) {
     session.compactions.forEach((c, i) => assert.equal(c.epoch, i + 1));

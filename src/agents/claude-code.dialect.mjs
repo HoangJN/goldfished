@@ -3,10 +3,10 @@ import { createHash } from 'node:crypto';
 export const fieldNames = [
   '_synthetic', 'type', 'message', 'role', 'content', 'text', 'isCompactSummary', 'isMeta',
   'turnOrigin', 'entrypoint', 'promptSource', 'subtype', 'compactMetadata', 'compact_metadata',
-  'preTokens', 'pre_tokens', 'postTokens', 'post_tokens', 'trigger', 'uuid', 'cwd', 'version', 'timestamp',
+  'preTokens', 'pre_tokens', 'postTokens', 'post_tokens', 'trigger', 'uuid', 'cwd', 'version', 'timestamp', 'attachment',
 ];
 
-export const mayNeed = text => /"type"\s*:\s*"user"|compact_boundary|isCompactSummary/u.test(text);
+export const mayNeed = text => /"type"\s*:\s*"(?:user|attachment)"|compact_boundary|isCompactSummary/u.test(text);
 
 export function decode(text, n) {
   if (/^\s*\{\s*"_synthetic"\s*:\s*true/u.test(text)) return null;
@@ -15,6 +15,9 @@ export function decode(text, n) {
   if (!record || typeof record !== 'object' || Array.isArray(record)) return { malformed: true, reason: 'not_user' };
   const get = key => record[key];
   const kind = get('type') ?? 'unknown';
+  const hookText = record.attachment?.content?.[0];
+  const cardResent = kind === 'attachment' && record.attachment?.type === 'hook_additional_context' &&
+    typeof hookText === 'string' && /^(?:goldfished: this conversation has just been compacted\.|goldfished: the card below came from the project folder)/u.test(hookText);
   const content = record?.message?.content;
   const body = typeof content === 'string' ? content : Array.isArray(content) ?
     content.filter(block => block?.type === 'text' && typeof block.text === 'string').map(block => block.text).join('\n') : '';
@@ -39,7 +42,7 @@ export function decode(text, n) {
   return {
     dedupeKey: get('uuid') ?? createHash('sha256').update(JSON.stringify([get('timestamp'), body || get('content') || ''])).digest('hex'),
     conversation, known, invalid, unfamiliar: kind === 'system' && /compact/iu.test(get('subtype') ?? '') && !boundary,
-    kind, reason, body, identity: get('uuid') ?? n, directory: typeof get('cwd') === 'string' ? get('cwd') : undefined,
+    kind, reason, body, cardResent, identity: get('uuid') ?? n, directory: typeof get('cwd') === 'string' ? get('cwd') : undefined,
     release: typeof get('version') === 'string' ? get('version') : undefined, ms: Date.parse(get('timestamp')), automated: get('entrypoint') === 'sdk-cli',
     summary, boundary, compactLike, understood: compactLike && (boundary || summary) && !invalid,
     sizes: boundary ? { pre: metadata.preTokens ?? metadata.pre_tokens, post: metadata.postTokens ?? metadata.post_tokens, trigger: metadata.trigger } : {},
