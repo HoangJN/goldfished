@@ -124,7 +124,7 @@ async function retro(args, io) {
         if (f.audit) for (const sample of fold.auditPool) {
           seen++; const slot = seen <= 5 ? seen - 1 : Math.floor(rng() * seen);
           if (slot < 5) audit[slot] = { agent: adapter.id, project: session.project, age: sample.age, label: sample.label,
-            score: sample.score, you: cut(sample.text), summary: cut(grader.bestMatch(sample.text, session.compactions[sample.visibleIdx].visible)) };
+            score: sample.score, you: cut(sample.text), summary: cut(grader.bestMatch(sample.text, mask(session.compactions[sample.visibleIdx].visible, 'display'))) };
         }
       }
       summarise(agent, main, card);
@@ -153,11 +153,13 @@ async function retro(args, io) {
     const loaded = store.load(topLevel(io.cwd));
     result.cardTrusted = existsSync(loaded.cardPath) && loaded.trusted;
     result.probes = probesOf(home.state(), topLevel(io.cwd));
-    for (const agent of result.agents) {
-      const old = home.lastHistory(agent.id, io.nowMs - 7 * day);
-      if (old) result.history = { ...result.history, [agent.id]: { date: Date.parse(old.date), span: old.span, censored: old.span_censored } };
+    if (f.save) {
+      for (const agent of result.agents) {
+        const old = home.lastHistory(agent.id, io.nowMs - 7 * day);
+        if (old) result.history = { ...result.history, [agent.id]: { date: Date.parse(old.date), span: old.span, censored: old.span_censored } };
+      }
+      for (const agent of report.json(result).agents) home.appendHistory({ ...agent, date: new Date(io.nowMs).toISOString() });
     }
-    if (f.save) for (const agent of report.json(result).agents) home.appendHistory({ ...agent, date: new Date(io.nowMs).toISOString() });
   });
   finish(result, io.outTTY === true);
   return 0;

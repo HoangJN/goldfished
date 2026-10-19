@@ -188,6 +188,14 @@ test('--audit draws 5 from the union of every fold by Algorithm R with seed 1', 
   const got = (await w.run({ audit: true })).out.split('\n').filter(l => l.startsWith('    you: ')).map(l => l.slice(9));
   assert.deepEqual(got, chosen.map(e => Array.from(mask(e.text.replace(/\s+/gu, ' ').trim(), 'display')).slice(0, 80).join('').trimEnd()));
 });
+test('--audit masks the whole summary before it takes the window, so no tail of a token escapes', async t => {
+  const w = world(t), token = 'Qm4Zr8Tn2Vk6Bd9Hs3Lw7Xp1', plain = `${token} ${'brass '.repeat(7)}harbour timetable plain text`;
+  assert.deepEqual([token.length, plain.length], [24, 95]);
+  session(w.claude, 'a.jsonl', ['Keep the harbour timetable in plain text.'], { compactions: 1, plain });
+  const got = await w.run({ audit: true }), flat = got.out.replace(/\s+/gu, ' ');
+  for (let i = 0; i + 6 <= token.length; i++) assert.ok(!got.out.includes(token.slice(i, i + 6)), token.slice(i, i + 6));
+  assert.ok(flat.includes('summary: [hidden] brass') && flat.includes('harbour timetable plain text'), flat);
+});
 test('--save writes one counts-only line per agent, and the next run reports the old span', async t => {
   const w = await world(t).long(), file = join(w.goldfished, 'history.jsonl');
   assert.ok((await w.run()).out.includes('read-only, nothing leaves this machine')); assert.equal(existsSync(w.goldfished), false);
@@ -198,6 +206,7 @@ test('--save writes one counts-only line per agent, and the next run reports the
   for (const l of first) walk(l, (v, k) => { assert.ok(!forbidden.includes(k), k); if (typeof v === 'string' && k !== 'span_rule') assert.ok(v.length <= 40, v); });
   const dated = (days, span) => first.map(l => JSON.stringify({ ...l, date: new Date(NOW - days * DAY).toISOString(), span }));
   writeFileSync(file, [...dated(10, 1), ...dated(2, 5)].join('\n') + '\n');
+  assert.ok(!(await w.run()).out.includes('Span last time'));
   const again = await w.run({ save: true });
   assert.ok(again.out.includes('Span last time (9 Oct 2026): 1. Now: 2.')); assert.equal(readFileSync(file, 'utf8').trim().split('\n').length, 6);
   matchSnapshot('retro', 'save-history', norm(again.out));
@@ -219,9 +228,9 @@ test('the init line follows the trusted card, and the probes line follows the sa
 });
 test('--demo reads nothing, is byte-identical under any time zone, and has no fish; the fish needs a terminal', async t => {
   const w = world(t, { claude: true }), first = await w.run({ demo: true, save: true }, { outTTY: true });
-  process.env.TZ = 'America/New_York';
+  process.env.TZ = 'Pacific/Kiritimati';
   const second = await w.run({ demo: true }, { outTTY: true });
-  assert.equal(process.env.TZ, 'America/New_York'); process.env.TZ = 'UTC';
+  assert.equal(process.env.TZ, 'Pacific/Kiritimati'); process.env.TZ = 'UTC';
   assert.equal(first.out, second.out); assert.equal(first.out.split('\n')[0], 'Example from synthetic sessions, not real data.');
   assert.ok(!first.out.includes(FISH) && first.out.includes('read-only') && first.err === '' && !existsSync(w.goldfished));
   matchSnapshot('retro', 'demo', first.out);
