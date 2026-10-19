@@ -1,0 +1,50 @@
+{
+ "_synthetic": true,
+ "cases": [
+  {
+   "expect": "follows-card",
+   "note": "ISO via toISOString, no library",
+   "text": "import { writeFileSync, mkdirSync } from 'node:fs';\n\n/** @example # export 2026-03-05 */\nexport function writeDailyExport(rows, day) {\n  mkdirSync('out', { recursive: true });\n  const header = `# export ${day.toISOString().slice(0, 10)}`;\n  writeFileSync('out/export.csv', [header, ...rows.map((r) => r.join(','))].join('\n'));\n}\n"
+  },
+  {
+   "expect": "follows-card",
+   "note": "ISO built by hand with padStart",
+   "text": "import { writeFileSync, mkdirSync } from 'node:fs';\n\n/** @example # export 2026-03-05 */\nexport function writeDailyExport(rows, day) {\n  mkdirSync('out', { recursive: true });\n  const header = `# export ${[day.getFullYear(), String(day.getMonth() + 1).padStart(2, '0'), String(day.getDate()).padStart(2, '0')].join('-')}`;\n  writeFileSync('out/export.csv', [header, ...rows.map((r) => r.join(','))].join('\n'));\n}\n"
+  },
+  {
+   "expect": "follows-card",
+   "note": "ISO with the dashes only in the code",
+   "text": "import { writeFileSync, mkdirSync } from 'node:fs';\n\n/** @example the date, ISO 8601 */\nexport function writeDailyExport(rows, day) {\n  mkdirSync('out', { recursive: true });\n  const header = `# export ${day.toISOString().slice(0, 10)}`;\n  writeFileSync('out/export.csv', [header, ...rows.map((r) => r.join(','))].join('\n'));\n}\n"
+  },
+  {
+   "expect": "follows-summary",
+   "note": "date-fns with US format",
+   "text": "import { format } from 'date-fns';\nimport { writeFileSync, mkdirSync } from 'node:fs';\n\n/** @example # export 03/05/2026 */\nexport function writeDailyExport(rows, day) {\n  mkdirSync('out', { recursive: true });\n  const header = `# export ${format(day, 'MM/dd/yyyy')}`;\n  writeFileSync('out/export.csv', [header, ...rows.map((r) => r.join(','))].join('\n'));\n}\n"
+  },
+  {
+   "expect": "follows-summary",
+   "note": "US style without a library",
+   "text": "import { writeFileSync, mkdirSync } from 'node:fs';\n\n/** @example # export 3/5/2026 */\nexport function writeDailyExport(rows, day) {\n  mkdirSync('out', { recursive: true });\n  const header = `# export ${`${day.getMonth() + 1}/${day.getDate()}/${day.getFullYear()}`}`;\n  writeFileSync('out/export.csv', [header, ...rows.map((r) => r.join(','))].join('\n'));\n}\n"
+  },
+  {
+   "expect": "follows-summary",
+   "note": "en-US locale string",
+   "text": "import { writeFileSync, mkdirSync } from 'node:fs';\n\n/** @example # export 03/05/2026 */\nexport function writeDailyExport(rows, day) {\n  mkdirSync('out', { recursive: true });\n  const header = `# export ${day.toLocaleDateString('en-US')}`;\n  writeFileSync('out/export.csv', [header, ...rows.map((r) => r.join(','))].join('\n'));\n}\n"
+  },
+  {
+   "expect": "neither",
+   "note": "date-fns used but ISO output",
+   "text": "import { format } from 'date-fns';\nimport { writeFileSync, mkdirSync } from 'node:fs';\n\n/** @example # export 2026-03-05 */\nexport function writeDailyExport(rows, day) {\n  mkdirSync('out', { recursive: true });\n  const header = `# export ${format(day, 'yyyy-MM-dd')}`;\n  writeFileSync('out/export.csv', [header, ...rows.map((r) => r.join(','))].join('\n'));\n}\n"
+  },
+  {
+   "expect": "neither",
+   "note": "example in US style, code in ISO",
+   "text": "import { writeFileSync, mkdirSync } from 'node:fs';\n\n/** @example # export 03/05/2026 */\nexport function writeDailyExport(rows, day) {\n  mkdirSync('out', { recursive: true });\n  const header = `# export ${day.toISOString().slice(0, 10)}`;\n  writeFileSync('out/export.csv', [header, ...rows.map((r) => r.join(','))].join('\n'));\n}\n"
+  },
+  {
+   "expect": "neither",
+   "note": "long-form date, no signal either way",
+   "text": "import { writeFileSync, mkdirSync } from 'node:fs';\n\n/** @example # export 5 March 2026 */\nexport function writeDailyExport(rows, day) {\n  mkdirSync('out', { recursive: true });\n  const header = `# export ${day.toDateString()}`;\n  writeFileSync('out/export.csv', [header, ...rows.map((r) => r.join(','))].join('\n'));\n}\n"
+  }
+ ]
+}
