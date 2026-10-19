@@ -71,6 +71,13 @@ for (const target of [fs, fs.promises]) for (const key of ['readFileSync','readF
     assert.equal(home.state().projects[f.top].off, false);
     assert.match(json(run(f, agent, 'prompt', { prompt: 'gf: lst' })).reason, /unknown command "lst"/);
   });
+  test(`T3m ${agent}: the unknown-verb echo is masked and cut`, () => {
+    const f = fixture(), isolated = { ...f.env, HOME: f.top, USERPROFILE: f.top, CLAUDE_CONFIG_DIR: join(f.top, 'cc'), CODEX_HOME: join(f.top, 'cx') };
+    const reply = word => json(run(f, agent, 'prompt', { prompt: `gf: ${word}` }, { env: isolated, timeout: 30000 })).reason;
+    assert.equal(reply('lst'), 'goldfished: unknown command "lst". Try gf: help');
+    assert.equal(reply(['sk', 'ant', 'aB3dE5fG7hJ9kL1mN3pQ5rS7'].join('-')), 'goldfished: unknown command "[hidden]". Try gf: help');
+    assert.equal(reply('x'.repeat(200)), `goldfished: unknown command "${'x'.repeat(40)}". Try gf: help`);
+  });
   test(`T3 ${agent}: rejects other gf verbs without loading actions`, () => {
     const f = fixture(), loader = join(f.top, 'loader.mjs'), preload = join(f.top, 'preload.mjs');
     writeFileSync(loader, "export function resolve(name, context, next) { if (name.endsWith('/actions.mjs')) throw new Error('Actions must not load.'); return next(name, context); }");
