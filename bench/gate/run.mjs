@@ -1,20 +1,24 @@
 #!/usr/bin/env node
 // Drives one forced-compaction session of the saga through claude -p, in a scratch folder, tools off.
-// Usage: node run.mjs <n>   Resumes from the state file if stopped. Exit 3 means the plan limit.
+// Usage: node run.mjs <n> [--story saga-02]   Resumes from the state file if stopped. Exit 3 means the plan limit.
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { renderStory } from '../../scripts/saga-pastes.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const ROOT = process.env.GFGATE_ROOT ?? 'D:/Dev/gf-scratch/B19';
+const args = process.argv.slice(2);
+const at = args.indexOf('--story');
+const name = at >= 0 ? args.splice(at, 2)[1] : 'saga-01';
+const ROOT = process.env.GFGATE_ROOT ?? (name === 'saga-01' ? 'D:/Dev/gf-scratch/B19' : 'D:/Dev/gf-scratch/B19b');
 const WORK = `${ROOT}/work`;
-const LAST_TURN = 50;
 const MODEL = 'sonnet'; // gate-allow
-const n = process.argv[2] ?? '1';
+const n = args[0] ?? '1';
 const STATE = `${ROOT}/state-${n}.json`;
-const story = readFileSync(join(here, '../../test/long/saga-01.story.jsonl'), 'utf8').trim().split('\n').slice(1).map((l) => JSON.parse(l));
+const story = renderStory(join(here, `../../test/long/${name}.story.jsonl`)).trim().split('\n').slice(1).map((l) => JSON.parse(l));
+const LAST_TURN = name === 'saga-01' ? 50 : story.length;
 const state = existsSync(STATE) ? JSON.parse(readFileSync(STATE, 'utf8')) : { id: null, turn: 0, k: 0, calls: [], models: [], version: null, stopped: null };
 const save = () => writeFileSync(STATE, JSON.stringify(state, null, 1));
 const say = (m) => console.log(`${new Date().toISOString()} s${n} ${m}`);
@@ -89,6 +93,7 @@ function main() {
       state.k = k;
       const f = facts();
       if (f.toolUse) throw new Error('tool use found in the session file');
+      if (f.boundaries > k) throw new Error(`${f.boundaries} compactions at k ${k}, one was not ours`);
       state.models = f.models;
       save();
       say(`k=${k} done ${JSON.stringify(totals())}`);
