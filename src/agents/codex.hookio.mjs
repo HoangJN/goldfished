@@ -23,4 +23,5 @@ export const proved = {
   CX2: true,
   CX3: false,
   CX4: true,
+  CX5: true,
 };

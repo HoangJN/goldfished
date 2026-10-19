@@ -74,7 +74,7 @@ const apart = result(); apart.agents[0].card = { sessions: 1, age: 3, keptPer100
 snap('card-apart', apart, output => assert.ok(output.includes('1 session had the card re-sent')));
 const noCard = result(); noCard.agents[0].card = null; noCard.agents[0].composition = null;
 snap('no-card', noCard, output => { assert.ok(!output.includes('With the card')); assert.ok(!output.includes('agent         sessions')); });
-const codex = result(); codex.headlineAgent = codex.agents[0].id = 'codex'; codex.agents[0].note = 'Codex keeps your newest messages word for word by design, up to about 20,000 tokens.';
+const codex = result(); codex.headlineAgent = codex.agents[0].id = 'codex'; codex.agents[0].note = 'Codex keeps your typed messages word for word in what it carries forward; in our runs the oldest dropped out once they passed about 256,000 characters.';
 snap('codex', codex, output => { assert.ok(output.replace(/\n +/g, ' ').includes(codex.agents[0].note)); assert.ok(!output.includes('deletes session files')); });
 const trusted = result(); trusted.cardTrusted = true;
 snap('trusted', trusted, output => assert.ok(!output.includes('npx goldfished init')));
