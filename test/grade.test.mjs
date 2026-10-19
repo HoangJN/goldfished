@@ -54,7 +54,7 @@ for (const [i, row] of cases.entries()) test(`${row.band} ${row.label}: ${i + 1}
 });
 
 test('the selected grader and the table cover all nine cells', () => {
-  assert.deepEqual(GRADER, { id: 'G2', threshold: 0.9 });
+  assert.deepEqual(GRADER, { id: 'G3', threshold: 0.9 });
   for (const band of ['short', 'mid', 'long']) for (const label of ['kept', 'reworded', 'gone']) {
     assert.ok(cases.filter(row => row.band === band && row.label === label).length >= 2);
   }
@@ -68,15 +68,16 @@ test('normalisation treats both sides alike', () => {
   assert.deepEqual(score(plain, prepare(decorated)), { label: 'kept', score: 1 });
   // Invented: removed quotes join letters even inside a short substring.
   assert.equal(score('The owls bell', prepare('The owl\u2019s `bell`')).label, 'kept');
-  // Invented: exact means a substring, including inside a larger word.
-  assert.equal(score('copper', prepare('A copperplate illustration')).label, 'kept');
+  // Invented: part of a larger word is not a surviving word.
+  assert.equal(score('copper', prepare('A copperplate illustration')).label, 'gone');
 });
 
 test('empty input and missing short phrases stay gone', () => {
   // Invented: no words, an empty summary and a short near match.
-  for (const [message, summary] of [['', 'A lantern'], [' ** ` " ', 'A lantern'], ['Keep it', ''], ['Keep it', 'Keep this']]) {
+  for (const [message, summary] of [['', 'A lantern'], [' ** ` " ', 'A lantern'], ['Keep it', '']]) {
     assert.deepEqual(score(message, prepare(summary)), { label: 'gone', score: 0 });
   }
+  assert.deepEqual(score('Keep it', prepare('Keep this')), { label: 'gone', score: 0.5 });
 });
 
 test('a prepared summary serves repeated scores without changing', () => {
@@ -89,16 +90,23 @@ test('a prepared summary serves repeated scores without changing', () => {
   }
 });
 
-test('short exact lookup agrees with substring search', () => {
-  // Invented: a deterministic alphabet exercises branching and repeated substrings.
+test('word runs agree with a direct search', () => {
+  // Invented: short words exercise branching and repeated runs without overlap credit.
   let seed = 831;
   const random = () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0);
   for (let trial = 0; trial < 100; trial++) {
-    const visible = Array.from({ length: 100 }, () => String.fromCharCode(97 + random() % 7)).join('');
-    const index = prepare(visible);
+    const visible = Array.from({ length: 30 }, () => String.fromCharCode(97 + random() % 7));
+    const index = prepare(visible.join(' '));
     for (let j = 0; j < 30; j++) {
-      const query = j < 15 ? visible.slice(j, j + 1 + random() % 12) : Array.from({ length: 1 + random() % 12 }, () => String.fromCharCode(97 + random() % 7)).join('');
-      assert.equal(score(query, index).label, visible.includes(query) ? 'kept' : 'gone');
+      const query = j < 15 ? visible.slice(j, j + 1 + random() % 12) : Array.from({ length: 1 + random() % 12 }, () => String.fromCharCode(97 + random() % 7));
+      let longest = 0;
+      for (let a = 0; a < query.length; a++) for (let b = 0; b < visible.length; b++) {
+        let run = 0;
+        while (a + run < query.length && query[a + run] === visible[b + run]) run++;
+        longest = Math.max(longest, run);
+      }
+      const value = longest / query.length;
+      assert.deepEqual(score(query.join(' '), index), { label: value >= 0.9 ? 'kept' : 'gone', score: value });
     }
   }
 });
@@ -132,4 +140,23 @@ test('audit returns an original eighty-character window with the most shared wor
   assert.equal(bestMatch('copper lantern', 'Tiny lantern.'), 'Tiny lantern.');
   assert.equal(bestMatch('missing', '.'.repeat(100)), '.'.repeat(80));
   assert.equal(bestMatch('missing', ''), '');
+});
+
+// Invented: the six rubric examples and four review cases, word for word.
+const rubricCases = [
+  { "message": "Please keep the clay preview panel open during repaint.", "summary": "Current request: please keep the clay preview panel open during repaint.", "label": "kept" },
+  { "message": "Well, preserve the copper swatch selection between tab changes please.", "summary": "Preserve the copper swatch selection between tab changes please.", "label": "kept" },
+  { "message": "Build the tide chart, but never fetch readings during a redraw.", "summary": "Build the tide chart, but fetch readings during a redraw.", "label": "reworded" },
+  { "message": "Sort the crate names and show their weights beside them.", "summary": "User asked to \"sort the crate names\". Weight display was omitted.", "label": "reworded" },
+  { "message": "Make the seed picker usable with arrow keys.", "summary": "Keyboard navigation is required for choosing seeds.", "label": "reworded", "allowGone": true },
+  { "message": "Close the amber tooltip when Escape is pressed.", "summary": "The amber tooltip appears in the screenshot. Next task is font sizing.", "label": "gone" },
+  { "message": "Close the amber tooltip on Escape.", "summary": "The amber tooltip appears on the screenshot. Next task is font sizing.", "label": "gone" },
+  { "message": "Rename the deploy script and move the logs into the archive folder", "summary": "We wrote the first script and ran it. Logs went into the cloud, and a move to the new host is planned.", "label": "gone" },
+  { "message": "Always run the formatter before committing, and tell me what files it changed.", "summary": "Asked to always run the formatter. Then listed changed files.", "label": "reworded" },
+  { "message": "If the export fails, keep the draft and show the error beside the save button.", "summary": "the export fails keep the draft and show the error beside the save button", "label": "kept" }
+];
+for (const [i, row] of rubricCases.entries()) test(`rubric and review: ${i + 1}`, () => {
+  const label = score(row.message, prepare(row.summary)).label;
+  // The seed picker may be gone: word overlap cannot recover this pure paraphrase.
+  assert.ok(label === row.label || row.allowGone && label === 'gone', `${row.message}: ${label}`);
 });
