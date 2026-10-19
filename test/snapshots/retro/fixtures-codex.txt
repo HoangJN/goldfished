@@ -15,6 +15,6 @@ times compacted   your messages   kept   partly there   not found
 (each row counts the messages that went through exactly that many compactions)
 
 not counted: 0 short replies under 20 characters, 0 pastes over 1,500 characters
-Codex keeps your newest messages word for word by design, up to about 20,000
-  tokens.
+Codex keeps your typed messages word for word in what it carries forward; in our
+  runs the oldest dropped out once they passed about 256,000 characters.
 Keep your goal and rules in front of your agent: npx goldfished init

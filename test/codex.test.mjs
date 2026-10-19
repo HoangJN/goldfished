@@ -137,6 +137,8 @@ test('dual typed forms must agree within a turn, including repeated copies', asy
 test('only observed metadata values are added to known sources and originators', () => {
   const meta = (source, originator) => decode(JSON.stringify({ type: 'session_meta', payload: { source, originator } }), 1);
   assert.deepEqual(meta('vscode', 'gfproof').unknown, []);
+  assert.deepEqual([meta('cli', 'codex-tui').unknown, meta('cli', 'codex-tui').automated], [[], false]);
+  assert.deepEqual(meta('codex-tui', 'codex-tui').unknown, ['source_codex-tui']);
   assert.equal(meta('gfproof', 'vscode').unknown.length, 2);
   assert.equal(meta('future', 'future').unknown.length, 2);
   assert.equal(meta('exec', 'codex_exec').automated, true);

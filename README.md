@@ -81,7 +81,7 @@ npx goldfished@latest retro --demo
 
 ## What we measured
 
-On our invented heavy story, Claude Code kept every typed decision through 30 forced compactions. Codex kept none older than 8 compactions. These are one story each, with forced or lowered compaction, and real sessions may differ. See [TESTED.md](TESTED.md) for the runs and their limits.
+On our invented heavy story, Claude Code kept every typed decision through 30 forced compactions. In a working session with tools on and compaction left to Claude Code, it kept all of them through 20 compactions, with its built-in memory on as shipped. Codex kept none older than 8 compactions. These are one story each, with forced or lowered compaction windows, and real sessions may differ. See [TESTED.md](TESTED.md) for the runs and their limits.
 
 ## Keep your goal and rules
 

@@ -22,6 +22,6 @@ Same messages throughout: kept after 1 / 2 / 3 = 88 / 56 / 34 in 100.
 
 not counted: 567 short replies under 20 characters, 89 pastes over 1,500
   characters
-Codex keeps your newest messages word for word by design, up to about 20,000
-  tokens.
+Codex keeps your typed messages word for word in what it carries forward; in our
+  runs the oldest dropped out once they passed about 256,000 characters.
 Keep your goal and rules in front of your agent: npx goldfished init

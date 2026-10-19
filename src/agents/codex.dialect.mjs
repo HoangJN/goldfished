@@ -73,7 +73,7 @@ export function decode(text, n) {
   const meta = kind === 'session_meta' ? payload : undefined;
   const unknown = [];
   if (meta) for (const key of ['source', 'originator']) {
-    if (meta[key] !== undefined && !['cli', 'exec', 'codex_cli_rs', 'codex_exec', 'codex_cli', ...(key === 'source' ? ['vscode'] : ['gfproof'])].includes(meta[key])) unknown.push(key + '_' + String(meta[key]));
+    if (meta[key] !== undefined && !['cli', 'exec', 'codex_cli_rs', 'codex_exec', 'codex_cli', ...(key === 'source' ? ['vscode'] : ['gfproof', 'codex-tui'])].includes(meta[key])) unknown.push(key + '_' + String(meta[key]));
   }
   return {
     kind, conversation, known, compactLike, boundary, invalid, cardResent, understood: validBoundary,
