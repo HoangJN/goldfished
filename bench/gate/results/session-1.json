@@ -1,0 +1,868 @@
+{
+ "_synthetic": true,
+ "session": 1,
+ "compactions": 25,
+ "complete": true,
+ "loses": false,
+ "decided": [],
+ "stale": [],
+ "grid": [
+  {
+   "k": 1,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 2,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 3,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 4,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 5,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 6,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 7,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 8,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 9,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 10,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 11,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 12,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    },
+    "g2": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 13,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    },
+    "g2": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 14,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    },
+    "g2": {
+     "label": "kept",
+     "score": 1
+    },
+    "w1": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 15,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    },
+    "g2": {
+     "label": "kept",
+     "score": 1
+    },
+    "w1": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 16,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    },
+    "g2": {
+     "label": "kept",
+     "score": 1
+    },
+    "w1": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 17,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    },
+    "g2": {
+     "label": "kept",
+     "score": 1
+    },
+    "w1": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 18,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    },
+    "w1": {
+     "label": "kept",
+     "score": 1
+    },
+    "g3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 19,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    },
+    "w1": {
+     "label": "kept",
+     "score": 1
+    },
+    "g3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 20,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    },
+    "w1": {
+     "label": "kept",
+     "score": 1
+    },
+    "g3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 21,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    },
+    "w1": {
+     "label": "kept",
+     "score": 1
+    },
+    "g3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 22,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    },
+    "w1": {
+     "label": "kept",
+     "score": 1
+    },
+    "g3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 23,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    },
+    "w1": {
+     "label": "kept",
+     "score": 1
+    },
+    "g3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 24,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    },
+    "w1": {
+     "label": "kept",
+     "score": 1
+    },
+    "g3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  },
+  {
+   "k": 25,
+   "live": {
+    "g1a": {
+     "label": "kept",
+     "score": 1
+    },
+    "g1b": {
+     "label": "kept",
+     "score": 1
+    },
+    "r1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x1": {
+     "label": "kept",
+     "score": 1
+    },
+    "x2": {
+     "label": "kept",
+     "score": 1
+    },
+    "r3": {
+     "label": "kept",
+     "score": 1
+    },
+    "w1": {
+     "label": "kept",
+     "score": 1
+    },
+    "g3": {
+     "label": "kept",
+     "score": 1
+    }
+   }
+  }
+ ]
+}
