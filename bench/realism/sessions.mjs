@@ -86,4 +86,19 @@ export const sessions = [
   },
 ];
 
-export const band = (n) => (n >= 20 && n <= 60 ? 'short' : n >= 61 && n <= 300 ? 'mid' : n >= 301 && n <= 1500 ? 'long' : null);
+// Ordinary work typed after the first compaction. None of it is paired. It only gives the second summary something to chew on.
+const later = {
+  'p01-bakery': ['Add a flag so I can ask for a different date instead of just tomorrow.', 'Can it also print a total of loaves per item at the bottom?', 'List the files in the folder and tell me what each one does.'],
+  'p02-tides': ['Add a small note under the table saying the times are for high water only.', 'Make the table rows a little taller, my thumbs are not small.', 'Tell me which files exist in the folder and how I open the page.'],
+  'p03-library': ['Add a command to list everything a named borrower currently has out.', 'Add a command that shows the books overdue today.', 'Write a short usage note at the top of the script, three lines at most.'],
+  'p04-allotment': ['Add two more crops to crops.json, a hardy one and a tender one.', 'Sort the output by the week to sow, earliest first.', 'Add a header line saying which year the plan is for.'],
+  'p05-bells': ['Add a command line option to say how many weeks the rota should cover.', 'Let me mark one ringer as unavailable for a given week.', 'Print each week with the ringers in alphabetical order.'],
+  'p06-blocks': ['Add a function that checks a level has exactly one goal cell.', 'Write a second example level, a bit harder than the first.', 'Add a tiny renderer that prints a level to the terminal.'],
+  'p07-hives': ['Add a command to void an inspection by its number.', 'List the hives that have not been inspected in the last fourteen days.', 'Add a summary command that counts inspections per hive.'],
+  'p08-ferry': ['Add an option to show only the departures after a given time.', 'Print the destination names in capitals.', 'Add a few quick tests for the parser using the lines I gave you.'],
+  'p09-seeds': ['Add a section at the top welcoming new members.', 'Group the offers by category as well as by person.', 'Add a footer with the date of the next swap, the second Saturday of the month.'],
+  'p10-ladder': ['Add a function that takes a list of results and applies them in order.', 'Add a ladder printout sorted by rating, highest first.', 'Show an example run with five players and four games.'],
+};
+for (const s of sessions) s.later = later[s.slug];
+
+export const band =(n) => (n >= 20 && n <= 60 ? 'short' : n >= 61 && n <= 300 ? 'mid' : n >= 301 && n <= 1500 ? 'long' : null);
