@@ -22,7 +22,7 @@ export const commands = { probe: command('probe', '<agent> [--saw yes|no]', { sa
       const state = home.state();
       home.setState({ probes: { ...state.probes, [agent]: { agent, date: io.today, kept: saw === 'yes' } } });
       io.out(`goldfished: noted. ${agent} ${saw === 'yes' ? 'kept' : 'did not keep'} your card after compaction (your test, ${io.today}).` +
-        (saw === 'no' ? ' Tell us: https://github.com/HoangJN/goldfished/issues' : ''));
+        (saw === 'no' ? ' Tell us: https://github.com/JNevermind/goldfished/issues' : ''));
     }
     return 0;
   });

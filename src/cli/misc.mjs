@@ -54,7 +54,7 @@ export function readHooks(io) {
 export const hasHooks = (data, wanted) => !!wanted && Object.entries(wanted).every(([event, rows]) => rows.every(row => data.hooks?.[event]?.some(item => item?.matcher === row.matcher && row.hooks.every(hook => item.hooks?.some(other => other?.type === hook.type && other.command === hook.command)))));
 export function hookStep(agent, io = {}) {
   if (agent === 'claude-code' && ['P1', 'P3', 'P5', 'P6', 'P6-auto', 'P10'].every(key => claude[key]))
-    return ['claude plugin marketplace add HoangJN/goldfished\nclaude plugin install goldfished@goldfished'];
+    return ['claude plugin marketplace add JNevermind/goldfished\nclaude plugin install goldfished@goldfished'];
   if (agent === 'codex' && codex.CX1 && codex.CX2) {
     const hooks = codexHooks(hookIO(io));
     if (!hooks) return ['The npx copy is temporary. Install a stable copy for the Codex hook:\nnpm install -g goldfished\ngoldfished init'];
@@ -100,7 +100,7 @@ export const commands = {
       return [!existsSync(loaded.cardPath) ? 'none' : loaded.trusted ? 'trusted' : 'not trusted',
         Object.entries(list).filter(([key, probe]) => META[probe.agent ?? key] && typeof probe.kept === 'boolean').length];
     });
-    io.out([...lines, `card: ${card}`, `probe results: ${probes}`, 'Paste this into a new issue: https://github.com/HoangJN/goldfished/issues/new/choose'].join('\n'));
+    io.out([...lines, `card: ${card}`, `probe results: ${probes}`, 'Paste this into a new issue: https://github.com/JNevermind/goldfished/issues/new/choose'].join('\n'));
     return 0;
   }),
   doctor: command('doctor', '', {}, (args, io) => {

@@ -39,7 +39,7 @@ test('bug prints counts and fixed words only', async t => {
   assert.equal(code, 0); assert.equal(err, '');
   for (const word of [folderWord, typedWord, cardWord, s.cwd]) assert.ok(!text.includes(word), text);
   const [url] = text.split('\n').slice(-1);
-  assert.equal(url, 'Paste this into a new issue: https://github.com/HoangJN/goldfished/issues/new/choose');
+  assert.equal(url, 'Paste this into a new issue: https://github.com/JNevermind/goldfished/issues/new/choose');
   assert.ok(!/[\/]/u.test(text.slice(0, text.length - url.length)), text);
   assert.ok(!/\d{4}-\d{2}-\d{2}|\d{8}|\d{2}[:.]\d{2}[:.]\d{2}/u.test(text), text);
   const lines = text.split('\n');
