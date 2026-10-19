@@ -34,7 +34,7 @@ async function listFiles(root, { sinceMs = 0 } = {}) {
 
 async function readSession({ file, group }, tally, seen = new Set()) {
   const session = { key: file, group, project: '', auto: false, sub: normalise(file).split('/').includes('subagents'),
-    firstMs: null, lastMs: null, versions: [], typed: [], compactions: [] };
+    firstMs: null, lastMs: null, versions: [], typed: [], compactions: [], cardResent: false };
   let directory, pending, tail = new Map();
   const identities = new Map(), texts = new Map(), checks = driftCounts(tally);
   tally.files++;
@@ -53,6 +53,7 @@ async function readSession({ file, group }, tally, seen = new Set()) {
       try { record = decode(line, value.n); } catch { tally.malformed++; continue; }
       if (!record) continue;
       if (record.malformed) { tally.malformed++; continue; }
+      session.cardResent ||= record.cardResent;
       session.auto ||= record.automated;
       if (directory === undefined && record.directory !== undefined) {
         directory = record.directory; session.project = normalise(directory).split('/').at(-1);

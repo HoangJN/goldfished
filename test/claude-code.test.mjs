@@ -40,6 +40,7 @@ function check({ sessions, counts }, expected) {
   { ...Object.fromEntries(['sessions', 'auto', 'sub', 'typed', 'rejected', 'compactions'].map(key => [key, expected[key]])),
     messages: expected.messages.map(({ id, epoch }) => ({ id, epoch })) });
   for (const session of sessions) {
+    assert.equal(session.cardResent, expected.cardResent);
     session.compactions.forEach((compaction, i) => assert.equal(compaction.epoch, i + 1));
     for (const message of session.typed) {
       const labels = expected.messages.find(item => item.id === message.id).labels;
@@ -54,6 +55,11 @@ function check({ sessions, counts }, expected) {
 for (const [name, expected] of Object.entries(oracle.fixtures)) {
   const reason = deferred.find(([file]) => file === name)?.[1];
   test('oracle: ' + name, { skip: reason }, async () => check(await collect(await fixtureFiles(name)), expected));
+  test('card flag and drift: ' + name, async () => {
+    const { sessions, counts } = await collect(await fixtureFiles(name));
+    for (const session of sessions) assert.equal(session.cardResent, expected.cardResent);
+    assert.equal(!adapter.driftCheck(counts).ok, expected.drift);
+  });
 }
 let scratch, generated;
 before(async () => { scratch = await mkdtemp(join(tmpdir(), 'goldfished-adapter-')); generated = await writeGenerated(scratch); });
@@ -63,6 +69,7 @@ for (const [name, expected] of Object.entries(oracle.generated)) {
     const info = await stat(generated[name]);
     const result = await collect([{ file: generated[name], group: scratch, ...info }]);
     check(result, expected);
+    assert.equal(!adapter.driftCheck(result.counts).ok, expected.drift);
     if (name === 'large-line.jsonl') { assert.equal(result.counts.skippedLong, 0); assert.ok(result.counts.bytes > 64 * 1024 * 1024); }
   });
 }
@@ -72,6 +79,27 @@ test('modified time filters files and preserves project groups', async () => {
   assert.deepEqual(recent.map(item => item.file), [generated['large-line.jsonl']]);
   assert.ok(all.every(item => item.group === scratch && item.size > 0));
   assert.deepEqual(await adapter.listFiles(join(scratch, 'absent')), []);
+});
+test('only the card hook record sets the re-send flag', async () => {
+  const records = (await readFile(new URL('card-resent.jsonl', root), 'utf8')).trim().split('\n').map(line => JSON.parse(line));
+  const hooks = records.filter(record => record.type === 'attachment');
+  const summaries = records.filter(record => record.isCompactSummary);
+  const withoutHooks = records.filter(record => record.type !== 'attachment');
+  const file = join(scratch, 'card-variant.tmp');
+  const variants = [
+    [[], false], [[hooks[0]], true], [[hooks[1]], true],
+    [hooks.map(record => ({ ...record, attachment: { ...record.attachment, content: ['another tool: context'] } })), false],
+    [hooks.map(record => ({ ...record, attachment: { ...record.attachment, type: 'other_context' } })), false],
+    [hooks.map(record => ({ ...record, attachment: { ...record.attachment, content: [null, record.attachment.content[0]] } })), false],
+  ];
+  for (const [extra, expected] of variants) {
+    await writeFile(file, [...withoutHooks, ...extra].map(record => JSON.stringify(record)).join('\n') + '\n');
+    const { sessions, counts } = await collect([{ file, group: scratch }]);
+    assert.equal(sessions[0].cardResent, expected);
+    assert.equal(adapter.driftCheck(counts).ok, true);
+  }
+  for (const hook of hooks) assert.equal(mayNeed(JSON.stringify(hook)), true);
+  for (const summary of summaries) assert.equal(decode(JSON.stringify(summary), 1).cardResent, false);
 });
 test('registry, roots, newest matching cwd, metadata and drift placeholder', async () => {
   assert.equal(adapters[0], adapter);

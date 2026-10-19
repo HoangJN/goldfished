@@ -20,7 +20,8 @@
           "labels": []
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "adjacent.jsonl": {
       "sessions": 1,
@@ -54,7 +55,8 @@
           ]
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "summary-four-later.jsonl": {
       "sessions": 1,
@@ -81,7 +83,8 @@
           ]
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "three-compactions.jsonl": {
       "sessions": 1,
@@ -130,7 +133,8 @@
           ]
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "boundary-without-summary.jsonl": {
       "sessions": 1,
@@ -164,7 +168,8 @@
           ]
         }
       ],
-      "drift": true
+      "drift": true,
+      "cardResent": false
     },
     "summary-without-boundary.jsonl": {
       "sessions": 1,
@@ -191,7 +196,8 @@
           ]
         }
       ],
-      "drift": true
+      "drift": true,
+      "cardResent": false
     },
     "preserved-tail.jsonl": {
       "sessions": 1,
@@ -225,7 +231,8 @@
           ]
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "sdk-session.jsonl": {
       "sessions": 1,
@@ -243,7 +250,8 @@
           "labels": []
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "legacy-origin.jsonl": {
       "sessions": 1,
@@ -266,7 +274,8 @@
           "labels": []
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "tool-result.jsonl": {
       "sessions": 1,
@@ -284,7 +293,8 @@
           "labels": []
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "slash-command-wrapper.jsonl": {
       "sessions": 1,
@@ -303,7 +313,8 @@
           "labels": []
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "pasted-brief.jsonl": {
       "sessions": 1,
@@ -321,7 +332,8 @@
           "labels": []
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "short-replies.jsonl": {
       "sessions": 1,
@@ -349,7 +361,8 @@
           "labels": []
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "subagent-project": {
       "sessions": 2,
@@ -370,7 +383,8 @@
           "labels": []
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "forked-project": {
       "sessions": 2,
@@ -402,7 +416,8 @@
           "labels": []
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "unknown-and-bad-json.jsonl": {
       "sessions": 1,
@@ -418,7 +433,8 @@
           "labels": []
         }
       ],
-      "drift": true
+      "drift": true,
+      "cardResent": false
     },
     "bom-crlf.jsonl": {
       "sessions": 1,
@@ -445,7 +461,8 @@
           ]
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "secret-canary.jsonl": {
       "sessions": 1,
@@ -461,7 +478,8 @@
           "labels": []
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "manual-trigger.jsonl": {
       "sessions": 1,
@@ -488,7 +506,8 @@
           ]
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "truncated-last-line.jsonl": {
       "sessions": 1,
@@ -504,7 +523,8 @@
           "labels": []
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "newer-request-records.jsonl": {
       "sessions": 1,
@@ -520,7 +540,8 @@
           "labels": []
         }
       ],
-      "drift": true
+      "drift": true,
+      "cardResent": false
     },
     "ten-unknown-types.jsonl": {
       "sessions": 1,
@@ -536,7 +557,8 @@
           "labels": []
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "snake-case-boundary.jsonl": {
       "sessions": 1,
@@ -563,7 +585,8 @@
           ]
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "boundary-without-post-tokens.jsonl": {
       "sessions": 1,
@@ -590,7 +613,8 @@
           ]
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "spaces-and-dots.jsonl": {
       "sessions": 1,
@@ -606,7 +630,8 @@
           "labels": []
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "six-compactions.jsonl": {
       "sessions": 1,
@@ -668,7 +693,43 @@
           ]
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
+    },
+    "card-resent.jsonl": {
+      "sessions": 1,
+      "auto": 0,
+      "sub": 0,
+      "typed": 1,
+      "rejected": {
+        "summary": 2
+      },
+      "compactions": [
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        },
+        {
+          "visible": "found",
+          "pre": 120000,
+          "post": 21000,
+          "trigger": "auto"
+        }
+      ],
+      "messages": [
+        {
+          "id": "resend-a",
+          "epoch": 0,
+          "labels": [
+            "kept",
+            "kept"
+          ]
+        }
+      ],
+      "drift": false,
+      "cardResent": true
     }
   },
   "generated": {
@@ -688,7 +749,8 @@
           "labels": []
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     },
     "modified-time.jsonl": {
       "sessions": 1,
@@ -704,7 +766,8 @@
           "labels": []
         }
       ],
-      "drift": false
+      "drift": false,
+      "cardResent": false
     }
   }
 }

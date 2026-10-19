@@ -33,7 +33,7 @@ async function listFiles(root, { sinceMs = 0 } = {}) {
 
 async function readSession({ file, group }, tally, seen = new Set()) {
   const session = { key: file, group, project: '', auto: false, sub: false,
-    firstMs: null, lastMs: null, versions: [], typed: [], compactions: [] };
+    firstMs: null, lastMs: null, versions: [], typed: [], compactions: [], cardResent: false };
   let directory;
   const checks = driftCounts(tally), reader = readLines(file, { mayNeed });
   tally.files++;
@@ -50,6 +50,7 @@ async function readSession({ file, group }, tally, seen = new Set()) {
       let record;
       try { record = decode(line, value.n); } catch { tally.malformed++; continue; }
       if (!record) continue;
+      session.cardResent ||= record.cardResent;
       count(tally.types, record.kind);
       for (const unknown of record.unknown) count(tally.types, unknown);
       if (record.compactLike) tally.compactLike++;
