@@ -3,6 +3,8 @@ import { copyFileSync, mkdirSync, readFileSync, readdirSync, writeFileSync } fro
 import { join } from 'node:path';
 import * as L from './lib.mjs';
 import adapter from '../../../src/agents/codex.mjs';
+import * as grader from '../../../src/grade.mjs';
+import { foldSession } from '../../../src/fold.mjs';
 
 const prompts = [
   'Keep the copper kettle beside the pantry. Reply only with ok.',
@@ -12,6 +14,7 @@ const prompts = [
 ];
 const specs = [{ tag: 'cx4', event: 'UserPromptSubmit', mode: 'say', args: ['The invented hook code word is REED.'] }];
 const agents = 'Keep answers to one word for this invented proof.';
+const words = 'amber basalt cedar dune ember fjord garnet harbour iris juniper kestrel lantern meadow nectar orchard pebble quartz reed saffron thistle umber velvet willow yarrow zephyr'.split(' ');
 let execFailed = 0, appFailed = 0;
 const textOf = item => typeof item?.message === 'string' ? item.message :
   typeof item?.content === 'string' ? item.content : (item?.content ?? []).map(part => part.text ?? '').join('\n');
@@ -36,7 +39,7 @@ function counts(id) {
     kinds, shapes, typed, injected, occurrences: occurrences.filter(Boolean), compactions: rows.filter(r => r.type === 'compacted').length,
     failedTurns: rows.filter(r => r.payload?.type === 'task_complete' && r.payload.error).length };
 }
-async function app(resume, texts) {
+async function app(resume, texts, config) {
   return new Promise((resolve, reject) => {
     const child = spawn(L.CODEX, ['app-server'], { cwd: L.PROJ, env: L.childEnv() });
     let buffer = '', id, turn = 0, ended = false;
@@ -57,7 +60,7 @@ async function app(resume, texts) {
           send({ method: 'initialized' });
           send({ id: 2, method: resume ? 'thread/resume' : 'thread/start', params: {
             ...(resume ? { threadId: resume } : {}), cwd: L.PROJ, model: process.env.GFPROOF_MODEL,
-            sandbox: 'read-only', approvalPolicy: 'never',
+            sandbox: 'read-only', approvalPolicy: 'never', ...(config ? { config } : {}),
           } });
         } else if (m.id === 2) { id = m.result.thread.id; next(); }
         else if (m.method === 'turn/completed') {
@@ -98,19 +101,42 @@ if (process.argv[2] === 'observe') {
     writeFileSync(join(L.OUT, 'cx4-counts.json'), JSON.stringify(result, null, 2));
     console.log(JSON.stringify(result));
   } finally { L.finish(); }
+} else if (process.argv[2] === 'live') {
+  if (L.ROOT.replaceAll('\\', '/').toLowerCase() !== 'd:/dev/gf-scratch/b23/live') throw new Error('Set the B23 scratch child folder');
+  L.init();
+  mkdirSync(join(L.ROOT, 'tmp'), { recursive: true });
+  process.env.TEMP = process.env.TMP = join(L.ROOT, 'tmp');
+  const limit = Number(process.env.GFPROOF_LIMIT ?? 20000), turns = Number(process.env.GFPROOF_TURNS ?? 8), size = Number(process.env.GFPROOF_WORDS ?? 600);
+  try {
+    console.log(L.version());
+    L.configure(`${L.OUT}/cx4-live`, [], { agents });
+    await L.trustAll();
+    const texts = Array.from({ length: turns }, (_, i) => `Rule ${i + 1}: keep the ${words[i * 3 % words.length]} ledger in plain text and never move the ${words[i * 5 % words.length]} gate. Now write about ${size} words of invented harbour log, in plain sentences.`);
+    const appId = await app(null, texts, { model_auto_compact_token_limit: limit });
+    const result = { ...counts(appId), failedTurns: appFailed, limit, turns };
+    const dir = join(L.ROOT, 'app-sessions/2026/10/19');
+    mkdirSync(dir, { recursive: true });
+    copyFileSync(L.rollout(appId).file, join(dir, 'rollout-live.jsonl'));
+    writeFileSync(join(L.OUT, 'cx4-live-counts.json'), JSON.stringify({ ...result, shapes: undefined }, null, 2));
+    console.log(JSON.stringify({ ...result, shapes: undefined }));
+  } finally { L.finish(); }
 } else if (process.argv[2] === 'retro') {
-  const result = spawnSync(process.execPath, ['bin/goldfished.mjs', 'retro', '--agent', 'codex', '--dir', join(L.ROOT, 'app-sessions'), '--json'],
+  const result = spawnSync(process.execPath, [join(L.here, '../../../bin/goldfished.mjs'), 'retro', '--agent', 'codex', '--dir', join(L.ROOT, 'app-sessions'), '--json'],
     { encoding: 'utf8', env: L.childEnv(), timeout: 240000 });
   writeFileSync(join(L.OUT, 'cx4-retro.json'), result.stdout);
   console.log('retro exit ' + result.status);
   const files = await adapter.listFiles(join(L.ROOT, 'app-sessions'));
   const report = JSON.parse(result.stdout);
   const tally = { files: 0, bytes: 0, lines: 0, malformed: 0, skippedLong: 0, types: new Map(), rejects: new Map(), compactLike: 0, understood: 0, lineBuckets: [] };
-  let sessions = 0, typed = 0, compactions = 0, automated = 0;
+  let sessions = 0, typed = 0, compactions = 0, automated = 0, labelled = 0;
+  const ages = {};
   for await (const session of adapter.sessions(files, tally)) {
     sessions++; typed += session.typed.length; compactions += session.compactions.length; automated += Number(session.auto);
+    const fold = foldSession(session, grader, { sampleSeed: 1 });
+    labelled += fold.labelled;
+    for (const [age, c] of [...fold.ages].sort((x, y) => x[0] - y[0])) ages[age] = c;
   }
-  console.log(JSON.stringify({ sessions, typed, compactions, automated, graded: report.agents.reduce((sum, a) => sum + (a.compacted ?? 0), 0), drift: !adapter.driftCheck(tally).ok,
+  console.log(JSON.stringify({ sessions, typed, compactions, automated, graded: labelled, drift: !adapter.driftCheck(tally).ok, kept: ages,
     json: report.agents.map(a => ({ status: a.status, sessions: a.sessions, messages: a.messages, compacted: a.compacted })) }));
 } else if (process.argv[2] === 'counts') {
   const result = {};
