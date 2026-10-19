@@ -101,4 +101,18 @@ const later = {
 };
 for (const s of sessions) s.later = later[s.slug];
 
-export const band =(n) => (n >= 20 && n <= 60 ? 'short' : n >= 61 && n <= 300 ? 'mid' : n >= 301 && n <= 1500 ? 'long' : null);
+// Words that mark a job's subject. Two jobs that share one are never paired, and a summary holding the other job's word is never used.
+export const topics = {
+  'p01-bakery': ['bakery', 'bread', 'loaves', 'oven', 'sourdough', 'trays'],
+  'p02-tides': ['tide', 'tides', 'harbour', 'boat'],
+  'p03-library': ['library', 'books', 'loans', 'borrower'],
+  'p04-allotment': ['allotment', 'crops', 'vegetables', 'garden', 'frost', 'sow'],
+  'p05-bells': ['ringers', 'rota', 'bell'],
+  'p06-blocks': ['puzzle', 'blocks', 'level'],
+  'p07-hives': ['hive', 'hives', 'bees', 'inspection'],
+  'p08-ferry': ['ferry', 'timetable', 'departures', 'quay'],
+  'p09-seeds': ['seeds', 'newsletter', 'garden'],
+  'p10-ladder': ['chess', 'elo', 'ladder', 'rating'],
+};
+
+export const band = (n) => (n >= 20 && n <= 60 ? 'short' : n >= 61 && n <= 300 ? 'mid' : n >= 301 && n <= 1500 ? 'long' : null);

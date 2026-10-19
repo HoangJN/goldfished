@@ -7,7 +7,7 @@ import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { mulberry32 } from '../../src/prng.mjs';
-import { band, sessions } from './sessions.mjs';
+import { band, sessions, topics } from './sessions.mjs';
 import { checkFile, parseDenylist } from '../../scripts/gate.mjs';
 
 const ROOT = process.env.GFREAL_ROOT ?? 'D:/Dev/gf-scratch/b12r-gfreal';
@@ -141,48 +141,71 @@ function unsafe(message, summary, denylist) {
 }
 
 const word = (message, summary) => norm(summary).includes(norm(message));
+const SUMMARIES = `${OUTDIR}/summaries.json`;
+const hasTopic = (text, slug) => topics[slug].some((w) => new RegExp('\\b' + w, 'i').test(text));
 
-// Each message is paired once, with the first summary or the second, alternating inside each band.
-// A pair that fails a check is dropped, and the message tries the other summary before it is given up.
+// Reads each job's first summary from its session file and keeps them outside the repo, so the set can be rebuilt without more runs.
 function pairs() {
+  const first = existsSync(SUMMARIES) ? JSON.parse(readFileSync(SUMMARIES, 'utf8')) : {};
+  for (const s of sessions) first[s.slug] = harvest(s)[0];
+  mkdirSync(OUTDIR, { recursive: true });
+  writeFileSync(SUMMARIES, JSON.stringify(first, null, 1));
+  rebuild();
+}
+
+// Fifteen messages with their own job's first summary, fifteen with another job's. A message is used once.
+function rebuild() {
   const denylist = parseDenylist(readFileSync(DENYLIST, 'utf8'));
-  const rand = mulberry32(3);
-  const shuffle = (list) => { for (let i = list.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [list[i], list[j]] = [list[j], list[i]]; } return list; };
-  const candidates = [];
-  const seen = { 1: [0, 0], 2: [0, 0] };
-  for (const s of sessions) {
-    const summaries = harvest(s);
-    for (const message of s.turns) {
-      const ok = {};
-      for (const age of [1, 2]) {
-        const why = unsafe(message, summaries[age - 1], denylist);
-        if (why.length) console.log(`dropped: ${s.slug} message of ${message.length} chars at age ${age} (${[...new Set(why)].join('; ')})`);
-        else { ok[age] = summaries[age - 1]; seen[age][0]++; if (word(message, ok[age])) seen[age][1]++; }
-      }
-      candidates.push({ slug: s.slug, message, band: band(message.length), ok });
-    }
+  const saved = JSON.parse(readFileSync(SUMMARIES, 'utf8'));
+  const rand3 = mulberry32(3);
+  const rand4 = mulberry32(4);
+  const shuffle = (list) => { for (let i = list.length - 1; i > 0; i--) { const j = Math.floor(rand3() * (i + 1)); [list[i], list[j]] = [list[j], list[i]]; } return list; };
+  const usable = {};
+  const entries = sessions.flatMap((s) => s.turns.map((message) => ({ slug: s.slug, message, band: band(message.length) })));
+  for (const [slug, summary] of Object.entries(saved)) {
+    if (!summary) continue;
+    usable[slug] = summary;
   }
-  const order = shuffle([...candidates]).sort((x, y) => x.band.localeCompare(y.band));
-  const byAge = { 1: [], 2: [] };
-  order.forEach((c, i) => {
-    const want = (i % 2) + 1;
-    const age = c.ok[want] ? want : c.ok[3 - want] ? 3 - want : 0;
-    if (age) byAge[age].push({ band: c.band, stratum: 'realism', message: c.message, summary: c.ok[age], age, _synthetic: true });
-  });
-  const chosen = [...shuffle(byAge[1]).slice(0, WANT / 2), ...shuffle(byAge[2]).slice(0, WANT / 2)];
-  const kept = shuffle(chosen).map((p, i) => ({ id: `r${String(i + 1).padStart(3, '0')}`, ...p }));
-  const per = { band: {}, age: {}, verbatim: { 1: [0, 0], 2: [0, 0] } };
+  const own = {};
+  for (const e of entries) {
+    if (!usable[e.slug]) continue;
+    const why = unsafe(e.message, usable[e.slug], denylist);
+    if (why.length) console.log(`dropped: ${e.slug} message of ${e.message.length} chars, own summary (${[...new Set(why)].join('; ')})`);
+    else own[e.message] = usable[e.slug];
+  }
+  const order = shuffle([...entries]).sort((x, y) => x.band.localeCompare(y.band));
+  let n = 0;
+  const ownList = [];
+  const otherList = [];
+  for (const e of order) {
+    if (own[e.message] && n++ % 3 !== 2) ownList.push({ ...e, summary: own[e.message], kind: 'own' });
+    else otherList.push(e);
+  }
+  const others = [];
+  for (const e of shuffle(otherList)) {
+    const options = Object.keys(usable).filter((slug) => slug !== e.slug
+      && !topics[slug].some((w) => topics[e.slug].includes(w))
+      && !hasTopic(usable[slug], e.slug)
+      && !word(e.message, usable[slug])
+      && !unsafe(e.message, usable[slug], denylist).length);
+    if (!options.length) { console.log(`dropped: ${e.slug} message of ${e.message.length} chars, no other summary fits`); continue; }
+    const slug = options[Math.floor(rand4() * options.length)];
+    others.push({ ...e, summary: usable[slug], kind: 'other' });
+  }
+  const chosen = [...shuffle(ownList).slice(0, WANT / 2), ...others.slice(0, WANT / 2)];
+  const kept = shuffle(chosen).map((p, i) => ({ id: `r${String(i + 1).padStart(3, '0')}`, band: p.band, stratum: 'realism', message: p.message, summary: p.summary, age: 1, kind: p.kind, _synthetic: true }));
+  const per = { band: {}, kind: {}, verbatim: { own: [0, 0], other: [0, 0] } };
   for (const p of kept) {
     per.band[p.band] = (per.band[p.band] ?? 0) + 1;
-    per.age[p.age] = (per.age[p.age] ?? 0) + 1;
-    per.verbatim[p.age][0]++;
-    if (word(p.message, p.summary)) per.verbatim[p.age][1]++;
+    per.kind[p.kind] = (per.kind[p.kind] ?? 0) + 1;
+    per.verbatim[p.kind][0]++;
+    if (word(p.message, p.summary)) per.verbatim[p.kind][1]++;
   }
   mkdirSync(OUTDIR, { recursive: true });
   writeFileSync(`${OUTDIR}/pairs.jsonl`, kept.map((p) => JSON.stringify(p)).join('\n') + '\n');
-  console.log(`written ${kept.length}, per band ${JSON.stringify(per.band)}, per age ${JSON.stringify(per.age)}`);
-  console.log(`word for word, written pairs (of total): age 1 ${per.verbatim[1][1]} of ${per.verbatim[1][0]}, age 2 ${per.verbatim[2][1]} of ${per.verbatim[2][0]}`);
-  console.log(`word for word, all safe candidates: age 1 ${seen[1][1]} of ${seen[1][0]}, age 2 ${seen[2][1]} of ${seen[2][0]}`);
+  console.log(`first summaries held for ${Object.keys(usable).length} of ${sessions.length} jobs`);
+  console.log(`written ${kept.length}, per band ${JSON.stringify(per.band)}, per kind ${JSON.stringify(per.kind)}`);
+  console.log(`word for word: own ${per.verbatim.own[1]} of ${per.verbatim.own[0]}, other ${per.verbatim.other[1]} of ${per.verbatim.other[0]}`);
 }
 
 function clean() {
@@ -199,5 +222,6 @@ const [cmd, ...rest] = process.argv.slice(2);
 if (cmd === 'all') { await run(); pairs(); }
 else if (cmd === 'run') await run(rest.length ? rest : undefined);
 else if (cmd === 'pairs') pairs();
+else if (cmd === 'rebuild') rebuild();
 else if (cmd === 'clean') clean();
 else { console.error('usage: make.mjs run [slug ...] | pairs | clean | all'); process.exit(2); }
