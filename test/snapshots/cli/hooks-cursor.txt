@@ -1,0 +1,5 @@
+0
+out:
+goldfished: cursor has no hook goldfished can use yet. init gives it an inline rules file. Check what it receives with: goldfished card --agent cursor
+err:
+

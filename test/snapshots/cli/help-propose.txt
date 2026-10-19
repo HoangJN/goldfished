@@ -1,0 +1,5 @@
+0
+out:
+goldfished propose --quote "<words>" --note "<why>"
+err:
+

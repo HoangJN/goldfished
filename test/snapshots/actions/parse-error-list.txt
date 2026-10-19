@@ -1,0 +1,4 @@
+## RULES
+[r01 | 2026-10-18] Keep the synthetic tool offline.
+broken entry
+not trusted: parse error on line 3. If the card is yours, run: goldfished trust

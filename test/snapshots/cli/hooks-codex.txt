@@ -1,0 +1,32 @@
+0
+out:
+npm install -g goldfished
+Put these entries in your Codex home's hooks.json.
+Codex asks you to trust a new hook once.
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"<installed>/hooks/run.mjs\" codex session-start"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"<installed>/hooks/run.mjs\" codex prompt"
+          }
+        ]
+      }
+    ]
+  }
+}
+err:
+

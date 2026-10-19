@@ -1,0 +1,1 @@
+goldfished: give it a label in your own words: goldfished accept p1 "<label>"
