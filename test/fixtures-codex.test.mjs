@@ -57,7 +57,7 @@ test('recursive fixture listing and hand-written oracle agree in both directions
   assert.deepEqual(listed, Object.keys(oracle.fixtures).sort());
   assert.ok(listed.length >= 9);
   for (const name of listed) {
-    assert.match(name, /^sessions\/\d{4}\/\d{2}\/\d{2}\/rollout-.+\.jsonl$/);
+    assert.match(name, /^(?:cx4\/)?sessions\/\d{4}\/\d{2}\/\d{2}\/rollout-.+\.jsonl$/);
     checkOracle(oracle.fixtures[name], name);
     checkSession(await readFile(join(root, name), 'utf8'), name);
   }

@@ -1,0 +1,8 @@
+{"_synthetic":true,"note":"Invented two-block injected user item, plus developer policy and hook output."}
+{"timestamp":"2026-01-07T12:00:00Z","type":"session_meta","payload":{"cwd":"/srv/work/copper-kettle","cli_version":"0.1.0","source":"vscode","originator":"gfproof"}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"event_msg","payload":{"type":"task_started","turn_id":"combined-one"}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"# AGENTS.md instructions\n\n<INSTRUCTIONS>Use linen labels.</INSTRUCTIONS>"},{"type":"input_text","text":"<environment_context>\n<cwd>/srv/work/copper-kettle</cwd>\n</environment_context>"}]}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"response_item","payload":{"type":"message","role":"developer","content":[{"type":"input_text","text":"Only work inside the project folder."}]}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"response_item","payload":{"type":"message","role":"developer","content":[{"type":"input_text","text":"The hook asks for one-word answers."}]}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"Store the apricot jars on the lower shelf."}]}}
+{"timestamp":"2026-01-07T12:00:00Z","type":"event_msg","payload":{"type":"task_complete"}}
