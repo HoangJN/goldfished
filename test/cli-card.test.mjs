@@ -54,8 +54,8 @@ test('proposals check complete messages and sentences, then accept or reject', a
   assert.equal(existsSync(join(s.cwd, '.goldfished')), false);
   matchSnapshot('cli', 'propose', await s.run('propose', [], { quote: '  KEEP the harbour\t timetable in plain text! ', note: '\u001b[31mKeep\n\u0000this' + 'x'.repeat(90) }));
   const saved = JSON.parse(readFileSync(join(s.cwd, '.goldfished/proposed.md'), 'utf8')).entries[0];
-  assert.equal(saved.note.length, 80); assert.ok(saved.note.startsWith('Keepthis')); assert.equal(saved.from, saved.quote);
-  assert.ok(!readFileSync(join(s.cwd, '.goldfished/proposed.md'), 'utf8').includes('Never use Redis'));
+  assert.equal(saved.note.length, 80); assert.ok(saved.note.startsWith('Keepthis'));
+  assert.equal(saved.from, 'Never use Redis. Keep the harbour timetable in plain text!');
   matchSnapshot('cli', 'accept-no-label', await s.run('accept', ['p1']));
   matchSnapshot('cli', 'accept', await s.run('accept', ['p1', 'Timetable']));
   assert.ok(!readFileSync(join(s.cwd, '.goldfished/card.md'), 'utf8').includes('Keepthis'));
@@ -72,6 +72,31 @@ test('quote lookup uses Codex too and excludes sessions older than two days', as
   assert.match(await s.run('propose', [], { quote: text, note: 'Keep it' }), /^0\n/u);
   const old = new Date(s.io.nowMs - 3 * 86400000); utimesSync(file, old, old); utimesSync(other, old, old);
   matchSnapshot('cli', 'propose-old-session', await s.run('propose', [], { quote: text, note: 'Keep it' }));
+});
+test('a proposal stores its masked source message, cut to 160 characters', async t => {
+  const s = setup(t), file = session(s), quote = 'Keep the harbour timetable in plain text!';
+  const secret = readFileSync(new URL('./fixtures/claude-code/secret-canary.jsonl', import.meta.url), 'utf8').match(/and (\S+) private/u)[1];
+  const source = `Keep ${secret} private. ${quote} ${'x'.repeat(180)}`;
+  writeFileSync(file, readFileSync(file, 'utf8').replace(`Never use Redis. ${quote}`, source));
+  assert.match(await s.run('propose', [], { quote, note: 'Keep it' }), /^0\n/u);
+  const stored = readFileSync(join(s.cwd, '.goldfished/proposed.md'), 'utf8'), proposal = JSON.parse(stored).entries[0];
+  assert.equal(proposal.from, `Keep [hidden] private. ${quote} ${'x'.repeat(180)}`.slice(0, 160));
+  assert.equal(proposal.quote, quote); assert.ok(!stored.includes(secret));
+  assert.ok(!s.out.join('').includes(source)); assert.equal(s.err.length, 0);
+});
+test('the newest session of each adapter can supply a quote', async t => {
+  const s = setup(t); session(s); const older = session(s, 'codex');
+  const old = new Date(s.io.nowMs - 3600000); utimesSync(older, old, old);
+  for (const quote of ['Never use Redis.', 'Keep the copper kettle beside the pantry.'])
+    assert.match(await s.run('propose', [], { quote, note: 'Keep it' }), /^0\n/u);
+});
+test('command failures reveal their stack only with debug enabled', async t => {
+  const s = setup(t); mkdirSync(join(s.cwd, '.goldfished')); writeFileSync(join(s.cwd, '.goldfished/proposed.md'), 'invalid');
+  for (const debug of [undefined, '0', '1']) {
+    s.io.env.GOLDFISHED_DEBUG = debug; assert.match(await s.run('list'), /^1\n/u);
+    assert.equal(s.err.length, debug === '1' ? 2 : 1); assert.match(s.err[0], /could not run list/u);
+    if (debug === '1') assert.match(s.err[1], /^SyntaxError:[\s\S]*\n\s+at /u);
+  }
 });
 test('proposing cannot trust a hand-edited or malformed card', async t => {
   const s = setup(t); session(s); await s.run('rule', ['Keep the harbour open.']);

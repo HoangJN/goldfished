@@ -11,7 +11,7 @@ Codex asks you to trust a new hook once.
         "hooks": [
           {
             "type": "command",
-            "command": "node \"<installed>/hooks/run.mjs\" codex SessionStart"
+            "command": "node \"<installed>/hooks/run.mjs\" codex session-start"
           }
         ]
       }
@@ -21,7 +21,7 @@ Codex asks you to trust a new hook once.
         "hooks": [
           {
             "type": "command",
-            "command": "node \"<installed>/hooks/run.mjs\" codex UserPromptSubmit"
+            "command": "node \"<installed>/hooks/run.mjs\" codex prompt"
           }
         ]
       }

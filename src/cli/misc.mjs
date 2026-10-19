@@ -89,7 +89,7 @@ export const commands = {
       const launcher = fileURLToPath(new URL('../../hooks/run.mjs', import.meta.url)).replaceAll('\\', '/');
       const hook = event => ({ type: 'command', command: `node "${launcher}" codex ${event}` });
       io.out('npm install -g goldfished\nPut these entries in your Codex home\'s hooks.json.\nCodex asks you to trust a new hook once.');
-      io.out(JSON.stringify({ hooks: { SessionStart: [{ matcher: 'compact', hooks: [hook('SessionStart')] }], UserPromptSubmit: [{ hooks: [hook('UserPromptSubmit')] }] } }, null, 2));
+      io.out(JSON.stringify({ hooks: { SessionStart: [{ matcher: 'compact', hooks: [hook('session-start')] }], UserPromptSubmit: [{ hooks: [hook('prompt')] }] } }, null, 2));
     } else io.out(`goldfished: ${agent} has no hook goldfished can use yet. ${META[agent].rulesFile ? 'init gives it an inline rules file' : 'init gives it a pointer to the card'}. Check what it receives with: goldfished card --agent ${agent}`);
     return 0;
   }),

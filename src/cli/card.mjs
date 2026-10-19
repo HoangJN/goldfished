@@ -27,7 +27,11 @@ export function command(name, usage, flags, fn, terminal = false) {
       if (typeof value !== flags[key]) return fail(`goldfished: invalid --${key}. Try: goldfished ${name} --help`);
     }
     try { return await fn(args, io); }
-    catch { return fail(`goldfished: could not run ${name}. Check your files and try again.`); }
+    catch (error) {
+      const code = fail(`goldfished: could not run ${name}. Check your files and try again.`);
+      if (io.env.GOLDFISHED_DEBUG === '1') io.err(error?.stack ?? String(error));
+      return code;
+    }
   };
 }
 const definitions = {
@@ -64,8 +68,9 @@ commands.propose = command('propose', '--quote "<words>" --note "<why>"', { quot
     io.err('goldfished: cannot check quotes on this agent, so nothing was saved. Ask the user to run: goldfished out "<label>" --quote "<their words>"'); return 1;
   }
   const q = normal(quote), sentence = text => normal(text).replace(/[.!?]+$/u, '');
-  if (Array.from(quote).length < 12 || q.split(' ').length < 3 || !typed.some(messages => messages?.some(text =>
-    normal(text) === q || text.split(/[.!?\r\n]+/u).some(part => normal(part) && normal(part) === sentence(quote))))) {
+  const from = typed.flatMap(messages => messages ?? []).find(text =>
+    normal(text) === q || text.split(/[.!?\r\n]+/u).some(part => normal(part) && normal(part) === sentence(quote)));
+  if (Array.from(quote).length < 12 || q.split(' ').length < 3 || from === undefined) {
     io.err('goldfished: that quote is not something the user typed in this project in the last two days, so it was not saved.'); return 1;
   }
   const result = inHome(io, () => {
@@ -75,7 +80,7 @@ commands.propose = command('propose', '--quote "<words>" --note "<why>"', { quot
       return { refused: `goldfished: this card is not trusted on this machine (${loaded.reason}), so nothing was changed. ` +
         (line ? `Fix line ${line} in .goldfished/card.md, then run: goldfished trust` : 'If the card is yours, run: goldfished trust') };
     }
-    const added = proposals.add(loaded.proposals, { quote, note, from: quote });
+    const added = proposals.add(loaded.proposals, { quote, note, from });
     store.save(top, { ...loaded, proposals: added.list }); return added;
   });
   if (result.refused) { io.err(result.refused); return 1; }
