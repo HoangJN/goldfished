@@ -44,7 +44,7 @@ async function installHook(agent, io, flags) {
     show();
     if (!offer) return;
     if (!flags['install-hook'] && await question(io, 'Install the Claude Code hook now? [y/N] ') !== 'y') return;
-    for (const args of [['plugin', 'marketplace', 'add', 'HoangJN/goldfished'], ['plugin', 'install', 'goldfished@goldfished']]) {
+    for (const args of [['plugin', 'marketplace', 'add', 'JNevermind/goldfished'], ['plugin', 'install', 'goldfished@goldfished']]) {
       const result = io.run('claude', args);
       io.out(`claude ${args.join(' ')}: ${result.error?.code === 'ENOENT' ? 'claude not found on PATH' : `exit ${result.status}`}`);
       if (result.status !== 0 || result.error) return;

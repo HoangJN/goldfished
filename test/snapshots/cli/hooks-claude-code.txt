@@ -1,6 +1,6 @@
 0
 out:
-claude plugin marketplace add HoangJN/goldfished
+claude plugin marketplace add JNevermind/goldfished
 claude plugin install goldfished@goldfished
 err:
 

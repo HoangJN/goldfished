@@ -147,7 +147,7 @@ test('terminal init saves the goal and installs each hook only after y, with the
     const s = setup(t), calls = [], writes = [], answers = [fixture.text, 'y', 'y']; s.io.env.CODEX_HOME = join(s.root, 'codex'); s.io.launcher = '/installed/goldfished/hooks/run.mjs';
     s.io.question = async prompt => { const answer = answers.shift(); s.out.push(prompt + answer); return answer; }; s.io.run = (program, args) => { calls.push([program, ...args]); return { status: 0, stdout: '' }; };
     s.io.read = () => JSON.stringify({ keep: true, hooks: { SessionStart: [{ hooks: [{ command: 'keep' }] }] } }); s.io.write = (file, text) => writes.push([file, JSON.parse(text)]);
-    const output = await s.run('init', { agents: agent }); assert.match(output, /^0\n/u); assert.deepEqual(answers, []); if (agent === 'claude-code') assert.deepEqual(calls, [['claude', 'plugin', 'marketplace', 'add', 'HoangJN/goldfished'], ['claude', 'plugin', 'install', 'goldfished@goldfished']]);
+    const output = await s.run('init', { agents: agent }); assert.match(output, /^0\n/u); assert.deepEqual(answers, []); if (agent === 'claude-code') assert.deepEqual(calls, [['claude', 'plugin', 'marketplace', 'add', 'JNevermind/goldfished'], ['claude', 'plugin', 'install', 'goldfished@goldfished']]);
     else { assert.equal(writes[0][0], join(s.io.env.CODEX_HOME, 'hooks.json')); assert.equal(writes[0][1].keep, true); assert.equal(writes[0][1].hooks.SessionStart.length, 2); }
     const previous = process.stdout.write, home = process.env.GOLDFISHED_HOME; let receipt; try { process.env.GOLDFISHED_HOME = s.io.env.GOLDFISHED_HOME; process.stdout.write = text => { receipt = JSON.parse(text).systemMessage; return true; }; await hook(agent, 'session-start', JSON.stringify({ cwd: s.cwd, source: 'compact' })); }
     finally { process.stdout.write = previous; if (home === undefined) delete process.env.GOLDFISHED_HOME; else process.env.GOLDFISHED_HOME = home; }
@@ -192,6 +192,6 @@ test('goal and install-hook flags require a terminal before writes and work at a
     assert.match(output, isTTY ? /^0\n/u : /^1\n/u);
     if (!isTTY) { assert.deepEqual(s.err, refusal); assert.deepEqual(readdirSync(s.root, { recursive: true }), before); assert.equal(calls.length, 0); }
     else if (flags.goal) assert.match(s.read('.goldfished/card.md'), /Keep the harbour open\./u);
-    else assert.deepEqual(calls, [['claude', 'plugin', 'marketplace', 'add', 'HoangJN/goldfished'], ['claude', 'plugin', 'install', 'goldfished@goldfished']]);
+    else assert.deepEqual(calls, [['claude', 'plugin', 'marketplace', 'add', 'JNevermind/goldfished'], ['claude', 'plugin', 'install', 'goldfished@goldfished']]);
   }
 });

@@ -6,4 +6,4 @@ claude-code: files 31, compaction records understood 58 of 58, malformed lines 1
 codex: no folder
 card: trusted
 probe results: 0
-Paste this into a new issue: https://github.com/HoangJN/goldfished/issues/new/choose
+Paste this into a new issue: https://github.com/JNevermind/goldfished/issues/new/choose

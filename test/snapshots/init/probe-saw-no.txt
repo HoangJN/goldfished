@@ -1,5 +1,5 @@
 0
 out:
-goldfished: noted. cursor did not keep your card after compaction (your test, 2026-10-19). Tell us: https://github.com/HoangJN/goldfished/issues
+goldfished: noted. cursor did not keep your card after compaction (your test, 2026-10-19). Tell us: https://github.com/JNevermind/goldfished/issues
 err:
 
