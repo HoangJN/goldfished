@@ -1,0 +1,9 @@
+0
+out:
+goldfished probe: gemini
+1. Start a new chat with gemini in this project and ask it anything. Its reply should end with PELICAN.
+2. Make it compact: /compress.
+3. Ask it anything again.
+Then tell goldfished what you saw: goldfished probe gemini --saw yes   (or --saw no)
+err:
+

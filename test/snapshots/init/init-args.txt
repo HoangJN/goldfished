@@ -1,0 +1,5 @@
+1
+out:
+
+err:
+goldfished: missing or extra arguments. Try: goldfished init --help

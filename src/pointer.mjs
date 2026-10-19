@@ -31,7 +31,8 @@ function insert(before, text, ranges) {
     return before;
   }
   if (!before) return text + '\n';
-  const separator = before.endsWith('\n') ? before.endsWith('\r\n') ? '\r\n' : '\n' : '\n\n';
+  const newline = before.includes('\r\n') ? '\r\n' : '\n';
+  const separator = before.endsWith('\n') ? before.endsWith('\r\n') ? '\r\n' : '\n' : newline + newline;
   return before + separator + text + '\n';
 }
 
@@ -49,6 +50,7 @@ export function plan({ top, agents, shared, commit, existing, tracked, recorded,
       const { text } = block(card, { kind: 'inline', budget: 6000, maxChars: 6000, trusted: trusted && !commit });
       change.after = header + text;
     } else {
+      if (ranges.length ? recorded[path]?.eolAdded : before && !before.endsWith('\n')) change.eolAdded = true;
       change.after = insert(before, [begin, "## The user's card", pointer + (tracked[path] || tracked[path] === null || commit ? '' : propose), end].join('\n'), ranges);
     }
     return change;
@@ -74,7 +76,10 @@ export function removePlan({ top, existing, recorded }) {
     for (const [start, finish] of ranges.toReversed()) {
       let prefix = after.slice(0, start);
       const suffix = after.slice(finish).replace(/^\r?\n/, '');
-      if (!suffix) prefix = prefix.replace(/(^|\n)[\t ]*\r?\n$/, '$1');
+      if (!suffix) {
+        prefix = prefix.replace(/(^|\n)[\t ]*\r?\n$/, '$1');
+        if (recorded[path]?.eolAdded) prefix = prefix.replace(/\r?\n$/, '');
+      }
       after = prefix + suffix;
     }
     changes.push({ path, before, after: !after && Object.hasOwn(recorded, path) ? null : after, kind });

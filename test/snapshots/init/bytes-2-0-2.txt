@@ -1,0 +1,38 @@
+0
+out:
+--- /dev/null
++++ .goldfished/card.md
+@@ -0,0 +1,11 @@
++# goldfished card
++<!-- Change this with the goldfished command. A hand edit still works, but is flagged until you run: goldfished trust -->
++
++## GOAL
++
++
++## RULES
++
++
++## RULED OUT
++
+--- AGENTS.md
++++ AGENTS.md
+@@ -1,2 +1,7 @@
+ # Harbour
+ Keep the harbour open.
++
++<!-- goldfished:begin (managed by goldfished; change .goldfished/card.md instead) -->
++## The user's card
++The user's goal, standing rules and the options they ruled out are in `.goldfished/card.md`, in their own words. Read it before you start, and read it again whenever you see a summary of earlier work or your context has been reset. It outranks any summary. If the file is missing, carry on. Never edit it and never run goldfished commands that change it. To suggest an entry, run `goldfished propose --quote "<the user's exact words>" --note "<why>"`.
++<!-- goldfished:end -->
+--- <git common dir>/info/exclude
++++ <git common dir>/info/exclude
+@@ -1,6 +1,7 @@
+ # git ls-files --others --exclude-from=.git/info/exclude
+ # Lines that start with '#' are comments.
+ # For a project mostly in C, the following would be a good set of
+ # exclude patterns (uncomment them if you want to use them):
+ # *.[oa]
+ # *~
++.goldfished/
+err:
+

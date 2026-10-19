@@ -1,0 +1,5 @@
+0
+out:
+goldfished probe <agent> [--saw yes|no]
+err:
+
