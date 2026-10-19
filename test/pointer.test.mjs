@@ -263,3 +263,19 @@ test('apply reports changed, newly created and deleted files without overwriting
     assert.equal(existsSync(join(base.top, path)) ? readFileSync(join(base.top, path), 'utf8') : null, disk);
   }
 });
+
+test('remembered line breaks round trip LF, CRLF and BOM files', t => {
+  const base = repo(t), path = 'AGENTS.md';
+  for (const newline of ['\n', '\r\n']) for (const bom of ['', '\uFEFF']) for (const final of ['', newline]) {
+    const original = bom + '# Harbour' + newline + 'Keep the lantern lit.' + final;
+    const change = plan({ ...base, agents: [], existing: { [path]: original } })[0];
+    const recorded = { [path]: { hash: hash(change.after), eolAdded: change.eolAdded === true } };
+    assert.equal(change.eolAdded === true, !final);
+    const removal = removePlan({ ...base, existing: { [path]: change.after }, recorded });
+    assert.deepEqual(Buffer.from(removal[0].after), Buffer.from(original));
+    const edited = change.after + 'A later instruction.' + newline;
+    const kept = removePlan({ ...base, existing: { [path]: edited }, recorded })[0].after;
+    assert.ok(kept.startsWith(original + (final ? '' : newline)));
+    assert.ok(kept.endsWith('A later instruction.' + newline));
+  }
+});

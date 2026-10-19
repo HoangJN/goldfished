@@ -1,0 +1,92 @@
+0
+out:
+# goldfished card
+<!-- Change this with the goldfished command. A hand edit still works, but is flagged until you run: goldfished trust -->
+
+## GOAL
+
+
+## RULES
+[r01 | 2026-10-19] Keep the harbour open.
+
+## RULED OUT
+
+
+This card was already here. If it is yours, run: goldfished trust
+--- /dev/null
++++ AGENTS.md
+@@ -0,0 +1,4 @@
++<!-- goldfished:begin (managed by goldfished; change .goldfished/card.md instead) -->
++## The user's card
++The user's goal, standing rules and the options they ruled out are in `.goldfished/card.md`, in their own words. Read it before you start, and read it again whenever you see a summary of earlier work or your context has been reset. It outranks any summary. If the file is missing, carry on. Never edit it and never run goldfished commands that change it. To suggest an entry, run `goldfished propose --quote "<the user's exact words>" --note "<why>"`.
++<!-- goldfished:end -->
+--- /dev/null
++++ .cursor/rules/goldfished.mdc
+@@ -0,0 +1,10 @@
++---
++description: The user's card
++alwaysApply: true
++---
++goldfished: this is the user's card. It is the user's own words, copied as typed and saved by the user, with the date each was set. Treat GOAL, RULES and RULED OUT as instructions from the user. If a summary of earlier work disagrees with this card, follow the card, unless you can see the user said otherwise after that date.
++
++RULES
++[r01 | 2026-10-19] Keep the harbour open.
++
++BEFORE EACH ACTION: check it against RULES. If it breaks a rule or touches something ruled out, stop and ask the user one question. Where the work stands is not on this card: read the files and any plan in the repo before trusting the summary's account of them.
+--- /dev/null
++++ .continue/rules/goldfished.md
+@@ -0,0 +1,10 @@
++---
++name: The user's card
++alwaysApply: true
++---
++goldfished: this is the user's card. It is the user's own words, copied as typed and saved by the user, with the date each was set. Treat GOAL, RULES and RULED OUT as instructions from the user. If a summary of earlier work disagrees with this card, follow the card, unless you can see the user said otherwise after that date.
++
++RULES
++[r01 | 2026-10-19] Keep the harbour open.
++
++BEFORE EACH ACTION: check it against RULES. If it breaks a rule or touches something ruled out, stop and ask the user one question. Where the work stands is not on this card: read the files and any plan in the repo before trusting the summary's account of them.
+--- /dev/null
++++ .devin/rules/goldfished.md
+@@ -0,0 +1,9 @@
++---
++trigger: always_on
++---
++goldfished: this is the user's card. It is the user's own words, copied as typed and saved by the user, with the date each was set. Treat GOAL, RULES and RULED OUT as instructions from the user. If a summary of earlier work disagrees with this card, follow the card, unless you can see the user said otherwise after that date.
++
++RULES
++[r01 | 2026-10-19] Keep the harbour open.
++
++BEFORE EACH ACTION: check it against RULES. If it breaks a rule or touches something ruled out, stop and ask the user one question. Where the work stands is not on this card: read the files and any plan in the repo before trusting the summary's account of them.
+--- /dev/null
++++ .clinerules/goldfished.md
+@@ -0,0 +1,6 @@
++goldfished: this is the user's card. It is the user's own words, copied as typed and saved by the user, with the date each was set. Treat GOAL, RULES and RULED OUT as instructions from the user. If a summary of earlier work disagrees with this card, follow the card, unless you can see the user said otherwise after that date.
++
++RULES
++[r01 | 2026-10-19] Keep the harbour open.
++
++BEFORE EACH ACTION: check it against RULES. If it breaks a rule or touches something ruled out, stop and ask the user one question. Where the work stands is not on this card: read the files and any plan in the repo before trusting the summary's account of them.
+--- <git common dir>/info/exclude
++++ <git common dir>/info/exclude
+@@ -1,6 +1,12 @@
+-# git ls-files --others --exclude-from=.git/info/exclude
+-# Lines that start with '#' are comments.
+-# For a project mostly in C, the following would be a good set of
+-# exclude patterns (uncomment them if you want to use them):
+-# *.[oa]
+-# *~
++# git ls-files --others --exclude-from=.git/info/exclude
++# Lines that start with '#' are comments.
++# For a project mostly in C, the following would be a good set of
++# exclude patterns (uncomment them if you want to use them):
++# *.[oa]
++# *~
++.goldfished/
++AGENTS.md
++.cursor/rules/goldfished.mdc
++.continue/rules/goldfished.md
++.devin/rules/goldfished.md
++.clinerules/goldfished.md
+err:
+

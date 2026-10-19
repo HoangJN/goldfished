@@ -1,0 +1,27 @@
+0
+out:
+# goldfished card
+<!-- Change this with the goldfished command. A hand edit still works, but is flagged until you run: goldfished trust -->
+
+## GOAL
+
+
+## RULES
+
+
+## RULED OUT
+
+
+This card was already here. If it is yours, run: goldfished trust
+--- AGENTS.md
++++ AGENTS.md
+@@ -1,1 +1,6 @@
+-Keep the harbour open.
++Keep the harbour open.
++
++<!-- goldfished:begin (managed by goldfished; change .goldfished/card.md instead) -->
++## The user's card
++The user's goal, standing rules and the options they ruled out are in `.goldfished/card.md`, in their own words. Read it before you start, and read it again whenever you see a summary of earlier work or your context has been reset. It outranks any summary. If the file is missing, carry on. Never edit it and never run goldfished commands that change it.
++<!-- goldfished:end -->
+err:
+

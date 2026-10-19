@@ -1,0 +1,9 @@
+0
+out:
+goldfished probe: cursor
+1. Start a new chat with cursor in this project and ask it anything. Its reply should end with PELICAN.
+2. Make it compact: keep chatting until it summarises.
+3. Ask it anything again.
+Then tell goldfished what you saw: goldfished probe cursor --saw yes   (or --saw no)
+err:
+
