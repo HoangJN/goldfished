@@ -165,5 +165,5 @@ export const commands = Object.fromEntries(['init', 'uninit'].map(name => [name,
         io.out(`Done. Test it now: type /compact in your agent. You should see: ${receipt}`);
       }
       return reports.length ? 1 : 0;
-    }),
+    }, args => name === 'init' && ['goal', 'install-hook'].some(flag => Object.hasOwn(args.flags, flag))),
 ]));

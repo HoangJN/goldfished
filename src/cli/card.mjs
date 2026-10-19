@@ -21,7 +21,7 @@ export function command(name, usage, flags, fn, terminal = false) {
   return async (args, io) => {
     const fail = text => { io.err(text); return 1; };
     if (args.flags.help === true) { io.out(`goldfished ${name}${usage ? ` ${usage}` : ''}`); return 0; }
-    if (terminal && !io.isTTY) return fail("goldfished: this changes the user's card, so it only runs in a terminal the user is typing in. Agents: use goldfished propose." +
+    if ((typeof terminal === 'function' ? terminal(args) : terminal) && !io.isTTY) return fail("goldfished: this changes the user's card, so it only runs in a terminal the user is typing in. Agents: use goldfished propose." +
       (io.env.MSYSTEM ? ` In Git Bash, run it as: winpty goldfished ${name}, or use PowerShell or Windows Terminal.` : ''));
     for (const [key, value] of Object.entries(args.flags)) {
       if (!Object.hasOwn(flags, key)) return fail(`goldfished: unknown flag --${key}. Try: goldfished ${name} --help`);

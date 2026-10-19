@@ -168,7 +168,7 @@ test('hook consent, failures, existing installs, invalid JSON and npx copies sta
     s.io.question = async prompt => { assert.ok(!prompt.startsWith('Your goal')); return mode === 'declined' ? 'n' : 'y'; };
     s.io.read = () => mode === 'invalid' ? '{broken' : null; s.io.write = (file, text) => writes.push(text);
     s.io.run = (program, args) => { calls.push(args); return { status: mode === 'fail' && args.includes('add') ? 1 : mode === 'missing' ? null : 0, stdout: mode === 'installed' ? 'goldfished@goldfished' : '', ...(mode === 'missing' ? { error: { code: 'ENOENT' } } : {}) }; };
-    const flags = { agents: agent, goal: fixture.text, yes: mode !== 'declined', ...(mode === 'dry-run' ? { 'dry-run': true, 'install-hook': true } : !['yes', 'no-terminal', 'declined'].includes(mode) ? { 'install-hook': true } : {}) };
+    const flags = { agents: agent, ...(mode === 'no-terminal' ? {} : { goal: fixture.text }), yes: mode !== 'declined', ...(mode === 'dry-run' ? { 'dry-run': true, 'install-hook': true } : !['yes', 'no-terminal', 'declined'].includes(mode) ? { 'install-hook': true } : {}) };
     assert.match(await s.run('init', flags), /^0\n/u);
     if (['yes', 'dry-run', 'no-terminal', 'declined'].includes(mode)) assert.equal(calls.length, ['yes', 'no-terminal'].includes(mode) ? 1 : 0);
     if (['missing', 'fail'].includes(mode)) assert.equal(calls.length, 2);
@@ -188,4 +188,17 @@ test('goal flags replace and archive, goals are not asked again, and plain folde
   assert.match(await s.run('init', { yes: true, goal: 'x'.repeat(601) }), /^1\n/u);
   rmSync(join(s.cwd, '.git'), { recursive: true }); await s.run('init', { yes: true });
   assert.ok(!existsSync(join(s.cwd, '.git'))); assert.ok(s.out.includes('No git repository here, so nothing was added to its exclude list.'));
+});
+
+test('goal and install-hook flags require a terminal before writes and work at a fake terminal', async t => {
+  for (const isTTY of [false, true]) for (const flags of [{ goal: fixture.text }, { 'install-hook': true }]) {
+    const s = setup(t), calls = []; s.io.isTTY = false; await card.goal({ positional: [fixture.text], flags: {} }, s.io); const refusal = [...s.err];
+    s.io.isTTY = isTTY; s.io.run = (program, args) => { calls.push([program, ...args]); return { status: 0, stdout: '' }; };
+    if (!isTTY) for (const key of ['apply', 'save', 'setState', 'exclude', 'write']) s.io[key] = () => assert.fail('Write before terminal check.');
+    const before = readdirSync(s.root, { recursive: true }), output = await s.run('init', { ...flags, yes: true, agents: 'claude-code' });
+    assert.match(output, isTTY ? /^0\n/u : /^1\n/u);
+    if (!isTTY) { assert.deepEqual(s.err, refusal); assert.deepEqual(readdirSync(s.root, { recursive: true }), before); assert.equal(calls.length, 0); }
+    else if (flags.goal) assert.match(s.read('.goldfished/card.md'), /Keep the harbour open\./u);
+    else assert.deepEqual(calls, [['claude', 'plugin', 'list'], ['claude', 'plugin', 'marketplace', 'add', 'HoangJN/goldfished'], ['claude', 'plugin', 'install', 'goldfished@goldfished']]);
+  }
 });
