@@ -67,14 +67,46 @@ test('dialect fields planted in source fail in quoted strings and property acces
     for (const body of [`const key = '${field}';`, `record.${field};`, `record?. ${field};`, `record.\n ${field};`,
       `record["${field}"];`, 'const key = `' + field + '`;']) {
       writeFileSync(planted, body);
-      const found = checkFile({ file: 'src/planted.mjs', text: readFileSync(planted, 'utf8') });
+      const found = checkFile({ file: 'src/agents/planted.mjs', text: readFileSync(planted, 'utf8') });
       assert.ok(found.some(f => f.check === 'dialect-fields'), body);
-      assert.equal(run('src/planted.dialect.mjs', body).length, 0);
+      assert.equal(run('src/agents/planted.dialect.mjs', body).length, 0);
       assert.equal(run('test/planted.test.mjs', body).length, 0);
     }
   }
-  assert.ok(run('src/planted.mjs', "record.uuid; // gate-allow").some(f => f.check === 'dialect-fields'));
-  assert.equal(run('src/planted.mjs', "record.uuidSuffix; const key = 'uuidSuffix';").length, 0);
+  assert.ok(run('src/agents/planted.mjs', "record.uuid; // gate-allow").some(f => f.check === 'dialect-fields'));
+  assert.equal(run('src/agents/planted.mjs', "record.uuidSuffix; const key = 'uuidSuffix';").length, 0);
+  for (const field of fieldNames) {
+    if (/[_A-Z]/u.test(field)) {
+      for (const body of [`const key = '${field}';`, `record.${field};`, `record?. ${field};`, `record.\n ${field};`,
+        `record["${field}"];`, 'const key = `' + field + '`;']) assert.ok(run('src/planted.mjs', body).some(f => f.check === 'dialect-fields'), body);
+    } else assert.equal(run('src/planted.mjs', `record.${field};`).length, 0);
+  }
+});
+
+test('plain-word fields are checked in adapters, not other source files', () => {
+  for (const field of ['message', 'text', 'type', 'role']) {
+    for (const body of [`record.${field}`, `record?.${field}`, `record['${field}']`]) {
+      assert.ok(run('src/agents/x.mjs', body).some(f => f.check === 'dialect-fields'), body);
+      assert.deepEqual(run('src/report.mjs', body), [], body);
+    }
+  }
+});
+
+test('distinctive session fields are checked outside adapters too', () => {
+  for (const field of ['isCompactSummary', 'compact_metadata', 'preTokens', '_synthetic']) {
+    for (const body of [`record.${field}`, `record?.\n${field}`, `record['${field}']`]) {
+      for (const file of ['src/report.mjs', 'src/agents/x.mjs']) assert.ok(run(file, body).some(f => f.check === 'dialect-fields'), `${file}: ${body}`);
+    }
+  }
+});
+
+test('spread dots are not field accesses, including distinctive names', () => {
+  for (const file of ['src/report.mjs', 'src/agents/x.mjs']) {
+    for (const field of ['text', 'message', 'isCompactSummary', '_synthetic']) {
+      for (const body of [`[...${field}]`, `[... ${field}]`, `({...${field}})`]) assert.deepEqual(run(file, body), [], `${file}: ${body}`);
+      assert.ok(run(file, `[...record].isCompactSummary`).some(f => f.check === 'dialect-fields'));
+    }
+  }
 });
 
 test('a session field name is fine in a hookio file and still fails in any other source file', () => {
@@ -176,7 +208,7 @@ test('absolute user paths are caught', () => {
 test('fixtures must say they are synthetic, canaries skip the secret scan', () => {
   const key = `{"_synthetic": true, "_canary": true, "text": "${ANT_KEY}"}\n`;
   assert.equal(run('test/fixtures/c.jsonl', key).length, 0);
-  assert.deepEqual(run('src/c.jsonl', key).map(f => f.check), ['dialect-fields', 'dialect-fields', 'secrets']);
+  assert.deepEqual(run('src/agents/c.jsonl', key).map(f => f.check), ['dialect-fields', 'dialect-fields', 'secrets']);
   assert.equal(run('test/fixtures/d.jsonl', '{"text": "plain"}\n').length, 1);
   assert.equal(run('test/fixtures/e.jsonl', '{"_synthetic": true}\n').length, 0);
 });

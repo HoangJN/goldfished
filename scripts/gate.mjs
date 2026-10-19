@@ -226,8 +226,9 @@ export function checkFields(file, text) {
   if (!file.startsWith('src/') || file.endsWith('.dialect.mjs') || file.endsWith('.hookio.mjs')) return [];
   const out = [];
   for (const field of fieldNames) {
+    if (!file.startsWith('src/agents/') && !/[_A-Z]/u.test(field)) continue;
     const name = escapeRe(field);
-    const pattern = new RegExp('([\'"`])' + name + '\\1|\\.\\s*' + name + '(?![\\w$])', 'gu');
+    const pattern = new RegExp('([\'"`])' + name + '\\1|(?<!\\.)\\.\\s*' + name + '(?![\\w$])', 'gu');
     for (const match of text.matchAll(pattern)) {
       out.push({ line: text.slice(0, match.index).split(/\r?\n/u).length, reason: `session field ${field} outside a dialect` });
     }
