@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, test } from 'node:test';
-import { b1, b2, b3, b4, b5, b6, b7, b7n, b8, wilson } from '../scripts/bars.mjs';
+import { b1, b1k, b2, b2k, b3, b4, b5, b6, b7, b7n, b8, wilson } from '../scripts/bars.mjs';
 
 const scratch = mkdtempSync(join(tmpdir(), 'goldfished bars '));
 after(() => rmSync(scratch, { recursive: true, force: true }));
@@ -33,6 +33,28 @@ test('B2 passes the exact boundary: A=86, N=100, E=4400, so 4*4200=3*5600', () =
   boundary(bar);
   assert.equal(bar.range, 'approx');
   result(b2([[1, 0, 0], [0, 0, 0], [0, 0, 0]]), 'fail');
+});
+
+test('B1k merges both non-kept labels at, below and above 0.85', () => {
+  for (const k of [85, 84, 86]) {
+    const bar = b1k([[40, 0, 100 - k], [0, 0, 20], [0, k - 60, 0]]);
+    assert.equal(bar.id, 'B1k'); close(bar.value, k / 100);
+    result(bar, k >= 85 ? 'pass' : 'fail');
+    close(bar.lo, wilson(k, 100)[0]); close(bar.hi, wilson(k, 100)[1]);
+    if (k === 85) boundary(bar);
+  }
+});
+
+test('B2k merges both non-kept labels at, below and above 0.75', () => {
+  for (const errors of [5, 6, 4]) {
+    const bar = b2k([[40 - errors, 2, errors - 2], [2, 0, 18], [errors - 2, 22 - errors, 0]]);
+    assert.equal(bar.id, 'B2k'); assert.equal(bar.range, 'approx');
+    close(bar.value, 1 - errors / 20); result(bar, errors <= 5 ? 'pass' : 'fail');
+    const bounds = wilson(80 - 2 * errors, 80);
+    close(bar.lo, 2 * bounds[0] - 1); close(bar.hi, 2 * bounds[1] - 1);
+    if (errors === 5) boundary(bar);
+  }
+  result(b2k([[1, 0, 0], [0, 0, 0], [0, 0, 0]]), 'fail');
 });
 test('B3 precision and recall each require nine tenths', () => {
   b3([[9, 1, 0], [1, 9, 0], [0, 0, 0]]).forEach(boundary);
@@ -68,7 +90,8 @@ test('B8 reports signed kept share drift; unsupported gated bars fail', () => {
   close(b8(m).value, 0.1); result(b8(m), 'report');
   close(b8(m).lo, wilson(5, 10)[0] - 0.4); close(b8(m).hi, wilson(5, 10)[1] - 0.4);
   close(b8([[4, 1, 0], [0, 2, 0], [0, 0, 3]]).value, -0.1);
-  for (const bar of [b1([[0, 0, 0], [0, 0, 0], [0, 0, 0]]), b5([]), b6([]), b7n([]), ...b7([])]) result(bar, 'fail');
+  for (const bar of [b1, b1k, b2k]) result(bar([[0, 0, 0], [0, 0, 0], [0, 0, 0]]), 'fail');
+  for (const bar of [b5([]), b6([]), b7n([]), ...b7([])]) result(bar, 'fail');
 });
 test('CLI runs a stub grader, evaluates every directed cross pair, and gates the results', () => {
   const file = join(scratch, 'pairs.jsonl'), stub = join(scratch, 'stub.mjs');
@@ -81,14 +104,39 @@ test('CLI runs a stub grader, evaluates every directed cross pair, and gates the
   let r = run();
   assert.equal(r.status, 0, r.stderr); assert.match(r.stdout, /bars=pass\n$/);
   const lines = r.stdout.split('\n').filter(line => line.startsWith('bar='));
-  assert.equal(lines.length, 11);
-  for (const line of lines) assert.match(line, /^bar=\w+ value=\S+ lo=\S+ hi=\S+ threshold=\S+ result=(pass|fail|report)( range=approx)?$/);
+  assert.equal(lines.length, 13);
+  for (const line of lines) assert.match(line, /^bar=\w+ value=\S+ lo=\S+ hi=\S+ threshold=\S+ result=(pass|fail|report|limit)( range=approx)?$/);
   assert.match(lines.find(line => line.startsWith('bar=B2 ')), / range=approx$/);
-  for (const id of ['B1', 'B2', 'B3p', 'B3r', 'B4', 'B5', 'B6', 'B7k', 'B7r', 'B7n', 'B8']) assert.ok(lines.some(line => line.startsWith(`bar=${id} `)));
+  for (const id of ['B1k', 'B2k', 'B1', 'B2', 'B3p', 'B3r', 'B4', 'B5', 'B6', 'B7k', 'B7r', 'B7n', 'B8']) assert.ok(lines.some(line => line.startsWith(`bar=${id} `)));
   writeFileSync(stub, code.replace(": 'gone'", ": text === '0' && index[0] === '1' ? 'kept' : 'gone'"));
   r = run();
   assert.equal(r.status, 2, r.stderr); assert.match(r.stdout, /bars=fail\n$/);
   const cross = r.stdout.split('\n').find(line => line.startsWith('bar=B7k '));
   close(Number(/value=(\S+)/.exec(cross)[1]), 1 / 6);
   assert.match(cross, /result=fail$/);
+});
+
+test('CLI gates kept agreement and states the three-way limit once before B1', () => {
+  const file = join(scratch, 'matrix.jsonl'), stub = join(scratch, 'matrix-grader.mjs');
+  const labels = ['kept', 'reworded', 'gone'];
+  writeFileSync(stub, "export const prepare = text => text.split(':');\nexport const score = (text, index) => ({label: text === index[0] ? index[1] : 'gone'});\n");
+  for (const [matrix, status] of [
+    [[[40, 0, 0], [0, 0, 30], [0, 30, 0]], 0],
+    [[[10, 10, 0], [10, 0, 30], [0, 30, 0]], 2],
+  ]) {
+    const pairs = matrix.flatMap((row, i) => row.flatMap((n, j) => repeat(n, labels[i], labels[j])));
+    const rows = pairs.map(([label, predicted], i) => ({ id: String(i), label, band: 'short',
+      stratum: i % 2 ? 'condition' : 'near_miss', message: String(i), summary: `${i}:${predicted}`, _synthetic: true }));
+    writeFileSync(file, rows.map(row => JSON.stringify(row)).join('\n') + '\n');
+    const r = spawnSync(process.execPath, ['--import', './test/no-network.mjs', 'scripts/bars.mjs', file, '--grader', stub], { encoding: 'utf8' });
+    assert.equal(r.status, status, r.stderr); assert.match(r.stdout, new RegExp(`bars=${status ? 'fail' : 'pass'}\\n$`));
+    for (const id of ['B1k', 'B2k']) assert.match(r.stdout, new RegExp(`bar=${id} .*result=${status ? 'fail' : 'pass'}`));
+    const lines = r.stdout.trim().split('\n'), heading = 'stated limit: reworded versus gone';
+    assert.equal(lines.filter(line => line === heading).length, 1);
+    for (const bar of [b1(matrix), b2(matrix), b5(pairs)]) {
+      const line = `bar=${bar.id} value=${bar.value} lo=${bar.lo} hi=${bar.hi} threshold=${bar.threshold} result=limit${bar.range ? ` range=${bar.range}` : ''}`;
+      assert.ok(lines.includes(line)); assert.ok(lines.indexOf(heading) < lines.indexOf(line));
+    }
+    result(b1(matrix), 'fail');
+  }
 });

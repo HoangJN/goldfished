@@ -25,6 +25,10 @@ export function b2(m) {
     hi: (result.hi - expected) / (1 - expected), range: 'approx', threshold: 0.75,
     result: defined && 4 * (a * n - e) >= 3 * (n * n - e) ? 'pass' : 'fail' };
 }
+const keptMatrix = m => [[m[0][0], m[0][1] + m[0][2]],
+  [m[1][0] + m[2][0], m[1][1] + m[1][2] + m[2][1] + m[2][2]]];
+export const b1k = m => ({ ...b1(keptMatrix(m)), id: 'B1k' });
+export const b2k = m => ({ ...b2(keptMatrix(m)), id: 'B2k' });
 export const b3 = m => [metric('B3p', m[0][0], m.reduce((n, row) => n + row[0], 0), 90, 100),
   metric('B3r', m[0][0], m[0].reduce((a, b) => a + b, 0), 90, 100)];
 export const b4 = m => metric('B4', m[0][2] + m[2][0], total(m), 3, 1, true, true);
@@ -60,9 +64,13 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     rows.forEach((row, i) => rows.forEach((_, j) => { if (i !== j) cross.push(['gone', predict(row.message, indices[j])]); }));
     const subset = (field, value) => pairs.filter((_, i) => rows[i][field] === value);
     const m = confusion(pairs);
-    const bars = [b1(m), b2(m), ...b3(m), b4(m), b5(subset('band', 'short')), b6(subset('stratum', 'condition')),
-      ...b7(cross), b7n(subset('stratum', 'near_miss')), b8(m)];
-    for (const b of bars) console.log(`bar=${b.id} value=${b.value} lo=${b.lo} hi=${b.hi} threshold=${b.threshold} result=${b.result}${b.range ? ` range=${b.range}` : ''}`);
+    const bars = [b1k(m), b2k(m), ...b3(m), b4(m), b6(subset('stratum', 'condition')),
+      ...b7(cross), b7n(subset('stratum', 'near_miss')), b8(m),
+      ...[b1(m), b2(m), b5(subset('band', 'short'))].map(b => ({ ...b, result: 'limit' }))];
+    for (const b of bars) {
+      if (b.id === 'B1') console.log('stated limit: reworded versus gone');
+      console.log(`bar=${b.id} value=${b.value} lo=${b.lo} hi=${b.hi} threshold=${b.threshold} result=${b.result}${b.range ? ` range=${b.range}` : ''}`);
+    }
     printMatrix(m);
     const pass = bars.every(b => b.result !== 'fail');
     console.log(`bars=${pass ? 'pass' : 'fail'}`);
