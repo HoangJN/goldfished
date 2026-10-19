@@ -21,7 +21,7 @@ function setup(t) {
     } };
 }
 function snapshot(name, text) {
-  text = text.replaceAll('\\', '\\\\').replaceAll('\uFEFF', '\\uFEFF');
+  text = text.replaceAll('\\', '\\\\').replaceAll('\uFEFF', '\\uFEFF').replaceAll('\r', '\\r');
   const file = new URL(`./snapshots/init/${name}.txt`, import.meta.url);
   if (process.env.UPDATE_GOLDFISHED_SNAPSHOTS === '1') { mkdirSync(new URL('./snapshots/init/', import.meta.url), { recursive: true }); writeFileSync(file, text); }
   assert.equal(text, readFileSync(file, 'utf8'));
