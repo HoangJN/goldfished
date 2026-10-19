@@ -35,10 +35,10 @@ test('shapes tallies every fixture without exposing its messages or paths', asyn
 
 test('doctor checks plugin, hook entries and the hook node; hooks refuses npx paths', async t => {
   const s = setup(t); s.io.launcher = '/installed/hooks/run.mjs';
-  for (const present of [false, true]) {
-    s.io.run = program => ({ status: present ? 0 : 1, stdout: program === 'node' ? '/path/node' : present ? 'goldfished@goldfished' : '' });
-    s.io.read = () => JSON.stringify({ hooks: present ? codexHooks(s.io) : {} });
-    const output = await s.run('doctor'); assert.ok(output.includes(present ? 'plugin installed' : 'plugin not found'));
+  for (const [source, status] of [[null, 'plugin not found'], ['{"plugins":{}}', 'plugin not found'], ['{"plugins":{"goldfished@goldfished":[]}}', 'plugin installed'], ['{broken', 'could not check']]) { const present = status === 'plugin installed';
+    s.io.run = program => { assert.equal(program, 'node'); return { status: present ? 0 : 1, stdout: '/path/node' }; };
+    s.io.read = file => file === join(s.io.env.CLAUDE_CONFIG_DIR, 'plugins/installed_plugins.json') ? source : JSON.stringify({ hooks: present ? codexHooks(s.io) : {} });
+    const output = await s.run('doctor'); assert.ok(output.includes(`Claude Code: ${status}`));
     assert.ok(output.includes(present ? 'hook entries present' : 'Codex: missing')); assert.ok(output.includes(present ? 'Hook node on PATH: /path/node' : 'node not found on PATH: the hook will not run'));
     assert.ok(output.includes('Codex runs it only after you trust it once.'));
   }

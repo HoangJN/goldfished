@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { createInterface } from 'node:readline/promises';
 import { command, inHome } from './card.mjs';
-import { hookStep, hookIO, codexFile, codexHooks, readHooks, hasHooks } from './misc.mjs';
+import { hookStep, hookIO, codexFile, codexHooks, readHooks, hasHooks, claudePlugin } from './misc.mjs';
 import * as pointer from '../pointer.mjs';
 import * as store from '../store.mjs';
 import * as project from '../project.mjs';
@@ -40,8 +40,7 @@ async function installHook(agent, io, flags) {
   if (!steps.length) return;
   const offer = flags['install-hook'] || (io.isTTY && !flags.yes);
   if (agent === 'claude-code') {
-    const listed = io.run('claude', ['plugin', 'list']);
-    if (listed.status === 0 && listed.stdout.includes('goldfished@goldfished')) { io.out('Claude Code: plugin installed'); return; }
+    if (claudePlugin(io) === 'plugin installed') { io.out('Claude Code: plugin installed'); return; }
     show();
     if (!offer) return;
     if (!flags['install-hook'] && await question(io, 'Install the Claude Code hook now? [y/N] ') !== 'y') return;

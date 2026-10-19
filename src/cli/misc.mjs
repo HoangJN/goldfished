@@ -36,6 +36,9 @@ export function hookIO(io) {
   io.launcher ??= fileURLToPath(new URL('../../hooks/run.mjs', import.meta.url)).replaceAll('\\', '/');
   return io;
 }
+export function claudePlugin(io) {
+  try { return Object.hasOwn(JSON.parse(io.read(join(io.env.CLAUDE_CONFIG_DIR || join(homedir(), '.claude'), 'plugins/installed_plugins.json')) ?? '{}')?.plugins ?? {}, 'goldfished@goldfished') ? 'plugin installed' : 'plugin not found'; } catch { return 'could not check'; }
+}
 export const codexFile = io => join(io.env.CODEX_HOME || join(homedir(), '.codex'), 'hooks.json');
 export function codexHooks(io) {
   if (io.launcher.includes('_npx')) return null;
@@ -107,9 +110,9 @@ export const commands = {
     io.out(`Node: ${nodeVersion}\nNode path: ${process.execPath}\ngoldfished home: ${dir}`);
     io.out(`Agents: ${adapters.filter(adapter => adapter.roots(io.env, homedir()).some(existsSync)).map(adapter => adapter.id).join(', ') || 'none'}`);
     hookIO(io);
-    const node = io.run('node', ['-p', 'process.execPath']), plugin = io.run('claude', ['plugin', 'list']);
+    const node = io.run('node', ['-p', 'process.execPath']);
     io.out(node.status === 0 ? `Hook node on PATH: ${node.stdout.trim()}` : 'node not found on PATH: the hook will not run');
-    io.out(`Claude Code: ${plugin.error?.code === 'ENOENT' ? 'could not check' : plugin.status === 0 && plugin.stdout.includes('goldfished@goldfished') ? 'plugin installed' : 'plugin not found'}`);
+    io.out(`Claude Code: ${claudePlugin(io)}`);
     try {
       const data = readHooks(io).data;
       const launcher = data.hooks?.SessionStart?.flatMap(row => row?.hooks ?? []).map(hook => /^node "(.+\/hooks\/run\.mjs)" codex session-start$/u.exec(hook?.command)).find(Boolean)?.[1] ?? io.launcher;
