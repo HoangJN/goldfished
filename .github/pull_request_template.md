@@ -1,4 +1,4 @@
-- [ ] `npm test` and `npm run gate` are green.
-- [ ] British English, no em-dash character, no network imports, no dependencies or install scripts.
+- [ ] `npm test` and `npm run gate` are green. The gate checks em-dashes, network imports, synthetic markers on fixtures and commit footers.
+- [ ] British English, no new dependencies, no install scripts. The maintainer checks these by eye.
 - [ ] Any fixture is invented and marked `"_synthetic": true`; no real session text, paths or names.
 - [ ] My commit messages have no tool co-author trailer and no generated-by footer.

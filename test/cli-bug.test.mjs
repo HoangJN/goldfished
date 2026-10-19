@@ -7,17 +7,20 @@ import { commands } from '../src/cli/misc.mjs';
 import { commands as card } from '../src/cli/card.mjs';
 import { matchSnapshot } from './snapshot.mjs';
 
-const folderWord = 'FOLDERCANARY-91c4', typedWord = 'TYPEDCANARY-5d2e', cardWord = 'CARDCANARY-77b0';
+const folderWord = 'FOLDERCANARY-91c4', typedWord = 'TYPEDCANARY-5d2e', originWord = 'acmebillingcanary', cardWord = 'CARDCANARY-77b0';
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 
-function setup(t) {
+function setup(t, fixtures = true) {
   const cwd = mkdtempSync(join(tmpdir(), 'gfb-')), out = [], err = [];
   t.after(() => rmSync(cwd, { recursive: true, force: true }));
   const io = { out: s => out.push(s), err: s => err.push(s), cwd, isTTY: false, today: '2026-10-18', nowMs: Date.now(),
     env: { GOLDFISHED_HOME: join(cwd, 'home'), CLAUDE_CONFIG_DIR: join(cwd, 'claude'), CODEX_HOME: join(cwd, 'codex') } };
   mkdirSync(join(cwd, 'claude/projects'), { recursive: true });
-  cpSync(new URL('./fixtures/claude-code', import.meta.url), join(cwd, 'claude/projects'), { recursive: true });
-  return { cwd, io, out, err, async bug(flags = {}) {
+  if (fixtures) cpSync(new URL('./fixtures/claude-code', import.meta.url), join(cwd, 'claude/projects'), { recursive: true });
+  return { cwd, io, out, err, async shapes(flags = {}) {
+    out.length = err.length = 0; const code = await commands.shapes({ positional: [], flags }, io);
+    return { code, text: out.join('\n'), err: err.join('\n') };
+  }, async bug(flags = {}) {
     out.length = err.length = 0; const code = await commands.bug({ positional: [], flags }, io);
     return { code, text: out.join('\n'), err: err.join('\n') };
   } };
@@ -69,4 +72,26 @@ test('bug takes one agent, counts probes and card states, and refuses an unknown
   assert.match((await s.bug({ agent: 'codex' })).text, /^card: not trusted$/mu);
   const bad = await s.bug({ agent: 'unknown' });
   assert.equal(bad.code, 1); assert.equal(bad.err, 'goldfished: unknown agent "unknown".'); assert.equal(bad.text, '');
+});
+
+test('a reject reason built from session data prints as other, in bug and in shapes', async t => {
+  const s = setup(t, false), session = join(s.cwd, 'claude/projects', folderWord);
+  mkdirSync(session);
+  writeFileSync(join(session, 'origin.jsonl'), [
+    '{"_synthetic":true,"note":"Canary in a turn origin."}',
+    JSON.stringify({ type: 'user', uuid: 'o-a', timestamp: '2026-01-01T10:00:00Z', sessionId: 'o', cwd: '/srv/quay', turnOrigin: originWord,
+      message: { role: 'user', content: 'hi' } }),
+    JSON.stringify({ type: 'user', uuid: 'o-b', timestamp: '2026-01-01T10:01:00Z', sessionId: 'o', cwd: '/srv/quay', turnOrigin: 'sdk',
+      message: { role: 'user', content: 'hi again' } }),
+  ].join('\n') + '\n');
+  const bug = await s.bug({ agent: 'claude-code' });
+  assert.equal(bug.code, 0);
+  assert.ok(!bug.text.includes(originWord), bug.text);
+  assert.match(bug.text, /^claude-code: files 1, .*, rejects origin_sdk 1, other 1$/mu);
+  const shapes = await s.shapes({ agent: 'claude-code' });
+  assert.equal(shapes.code, 0);
+  assert.ok(!shapes.text.includes(originWord), shapes.text);
+  const shape = JSON.parse(shapes.text);
+  assert.equal(shape.files, 1);
+  assert.deepEqual(shape.rejects, { origin_sdk: 1, other: 1 });
 });

@@ -16,11 +16,15 @@ import * as pointer from '../pointer.mjs';
 const homePath = io => resolve(io.env.GOLDFISHED_HOME || join(homedir(), '.goldfished'));
 const version = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')).version;
 const pick = id => adapters.filter(adapter => !id || id === 'all' || adapter.id === id);
+const REASONS = new Set(['not_user', 'summary', 'meta', 'tool_result', 'wrapper', 'origin_sdk', 'origin_sdk_legacy']);
 async function read(adapter, roots, sinceMs) {
   const tally = { files: 0, bytes: 0, lines: 0, malformed: 0, skippedLong: 0, types: new Map(), rejects: new Map(), compactLike: 0, understood: 0, lineBuckets: [] };
   const files = (await Promise.all(roots.map(root => adapter.listFiles(root, { sinceMs })))).flat();
   let compactions = 0;
   for await (const session of adapter.sessions(files, tally)) compactions += session.compactions.length;
+  const known = new Map();
+  for (const [reason, count] of tally.rejects) { const word = REASONS.has(reason) ? reason : 'other'; known.set(word, (known.get(word) ?? 0) + count); }
+  tally.rejects = known;
   return { tally, compactions };
 }
 const noArgs = (args, name) => { if (args.positional.length) throw new Error(`Unexpected arguments for ${name}.`); };
@@ -51,12 +55,8 @@ export const commands = {
     for (const adapter of chosen) {
       const roots = adapter.roots(io.env, homedir());
       if (!roots.some(existsSync)) { lines.push(`${adapter.id}: no folder`); continue; }
-      const { tally } = await read(adapter, roots, io.nowMs - 30 * 86400000), reasons = new Map();
-      for (const [reason, count] of tally.rejects) {
-        const word = /^[a-z_]{1,24}$/u.test(reason) ? reason : 'other';
-        reasons.set(word, (reasons.get(word) ?? 0) + count);
-      }
-      const rejects = [...reasons].sort(([a], [b]) => (a < b ? -1 : 1)).map(([reason, count]) => `${reason} ${count}`).join(', ') || 'none';
+      const { tally } = await read(adapter, roots, io.nowMs - 30 * 86400000);
+      const rejects = [...tally.rejects].sort(([a], [b]) => (a < b ? -1 : 1)).map(([reason, count]) => `${reason} ${count}`).join(', ') || 'none';
       lines.push(`${adapter.id}: files ${tally.files}, compaction records understood ${tally.understood} of ${tally.compactLike}, ` +
         `malformed lines ${tally.malformed}, drift ${adapter.driftCheck(tally).ok ? 'no' : 'yes'}, rejects ${rejects}`);
     }

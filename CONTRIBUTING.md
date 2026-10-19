@@ -72,14 +72,20 @@ A route for Gemini, Copilot or Qwen is merged only with all four of these:
 
 ## Before a pull request
 
-Run `npm test` and `npm run gate`. Both must be green. The gate holds a contributor to this:
+Run `npm test` and `npm run gate`. Both must be green. The gate checks these things, and fails the run if one is wrong:
+
+- No em-dash character (U+2014) in any file.
+- No network imports, `fetch` calls or WebSocket use in `src`, `bin` or `hooks`.
+- Every session fixture file carries `"_synthetic": true` on its first line.
+- No key-shaped strings or personal paths in any file, and no invisible characters outside fixtures.
+- Commit and tag messages carry no tool co-author trailer and no generated-by footer, from anyone. A commit or tag from an AI company address or a bot name fails too, and so does a commit under the project's own email with a different name.
+
+The gate does not check the next four. The maintainer checks them by eye, and a pull request that breaks one will be sent back:
 
 - British English in prose.
-- No em-dash character (U+2014) anywhere.
-- No network imports in `src`, `bin` or `hooks`.
-- No dependencies and no install scripts.
-- Fixtures are invented and marked synthetic, never a real session.
-- Commit messages carry no tool co-author trailer and no generated-by footer. The check fails on them from anyone.
+- No dependencies.
+- No install scripts.
+- Fixtures are invented, never a real session, even trimmed. The marker says a fixture is synthetic; only you can say it is true.
 
 The maintainer squash-merges pull requests (joins all their commits into one). If your tool added a co-author or generated-by line to a commit message, remove it, or turn that tool's co-author setting off.
 
