@@ -34,8 +34,9 @@ Same messages throughout: kept after 1 / 2 / 3 = 88 / 56 / 34 in 100.
 
 not counted: 567 short replies under 20 characters, 89 pastes over 1,500
   characters
-Why so high after one: in our tests Claude Code's first summary quoted your
-  messages. The next compaction summarises that summary.
+In our tests Claude Code's summary quoted every message you typed, through 30
+  compactions, and cut long pastes to a line. Those compactions were forced; a
+  real one may differ.
 Claude Code deletes session files after 30 days by default, so older sessions
   are not here.
 Keep your goal and rules in front of your agent: npx goldfished init
