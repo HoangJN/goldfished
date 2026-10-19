@@ -21,17 +21,20 @@ const PCT = opt('--pct', '100');
 const EVERY = Number(opt('--anchor-every', 3));
 const n = args[0] ?? '0';
 const STATE = `${ROOT}/state-${n}.json`;
+const CFG = process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude');
+const STOP = 0.9;
 const TOOLS = 'Read,Write,Edit,Glob,Grep';
 const ASK = "List every goal, rule and ruled-out option the user has given you, in the user's own words.";
 const story = renderStory(join(here, '../../../test/long/saga-02.story.jsonl')).trim().split('\n').slice(1).map((l) => JSON.parse(l));
-const state = existsSync(STATE) && !fresh ? JSON.parse(readFileSync(STATE, 'utf8')) : { id: null, turn: 0, k: 0, window: WINDOW, pct: PCT, calls: [], anchors: [], version: null, stopped: null };
+const state = existsSync(STATE) && !fresh ? JSON.parse(readFileSync(STATE, 'utf8')) : { id: null, turn: 0, k: 0, window: WINDOW, pct: PCT, calls: [], anchors: [], version: null, stopped: null, weekly: [], fiveHour: [] };
 const save = () => writeFileSync(STATE, JSON.stringify(state, null, 1));
 const say = (m) => console.log(`${new Date().toISOString()} s${n} ${m}`);
 
 class Quota extends Error {}
+class Stop extends Error {}
 
 const sessionFile = (id) => {
-  const base = join(homedir(), '.claude', 'projects');
+  const base = join(CFG, 'projects');
   for (const d of existsSync(base) ? readdirSync(base) : []) if (existsSync(join(base, d, `${id}.jsonl`))) return join(base, d, `${id}.jsonl`);
   return null;
 };
@@ -44,7 +47,7 @@ export const compactions = (id) => {
 
 function call(label, prompt, fork) {
   const flags = ['-p', '--model', MODEL, '--setting-sources', 'project', '--output-format', 'stream-json', '--verbose', '--tools', TOOLS, '--allowedTools', ...TOOLS.split(','), '--permission-mode', 'acceptEdits', '--strict-mcp-config', ...(state.id ? ['--resume', state.id] : []), ...(fork ? ['--fork-session'] : []), ...(n === '0' ? ['--debug-file', `${ROOT}/debug-${label.replace(/\W+/g, '-')}.txt`] : [])];
-  const env = { ...process.env, CLAUDE_CODE_AUTO_COMPACT_WINDOW: state.window, CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: state.pct };
+  const env = { ...process.env, CLAUDE_CONFIG_DIR: CFG, CLAUDE_CODE_AUTO_COMPACT_WINDOW: state.window, CLAUDE_AUTOCOMPACT_PCT_OVERRIDE: state.pct };
   delete env.ANTHROPIC_API_KEY; delete env.ANTHROPIC_AUTH_TOKEN;
   const t0 = Date.now();
   const r = spawnSync('claude', flags, { cwd: WORK, env, input: prompt, encoding: 'utf8', maxBuffer: 1 << 29, timeout: 40 * 60 * 1000 });
@@ -84,12 +87,17 @@ function main() {
     state.calls.push({ turn: t, ms: c.ms, api: c.api, tools: c.tools, rate: c.rate.slice(-1), usd: c.usd, usage: c.usage, compactions: all.slice(before) });
     state.turn = t;
     state.k = all.length;
-    if (all.length > before && state.k % EVERY === 0) {
+    const w = c.rate.map((r) => r.unifiedWindows ?? {}).at(-1);
+    if (w?.seven_day) { state.weekly.push(w.seven_day.utilization); state.fiveHour.push(w.five_hour?.utilization ?? null); }
+    if (!state.weekly.length) throw new Error('no weekly reading in the JSON');
+    if (Math.floor(all.length / EVERY) > Math.floor(before / EVERY)) {
       const a = once(`anchor ${state.k}`, () => call(`anchor ${state.k}`, ASK, true));
       state.anchors.push({ k: state.k, ms: a.ms, api: a.api, tools: a.tools, usd: a.usd, usage: a.usage, fork: a.id, text: a.text });
       say(`anchor k=${state.k} ${a.api.length} api calls, ${a.tools.length} tool uses`);
     }
     save();
+    if (state.weekly.at(-1) > STOP) throw new Stop(`weekly reading ${state.weekly.at(-1)}`);
+    say(`weekly ${state.weekly.at(-1)} turn ${t}`);
     say(`turn ${t} k=${state.k} api=${c.api.length} tools=${c.tools.length} ${Math.round(c.ms / 1000)}s ${JSON.stringify(all.slice(before))}`);
   }
   state.stopped = 'finished';
@@ -97,8 +105,8 @@ function main() {
 }
 
 try { main(); } catch (e) {
-  state.stopped = e instanceof Quota ? 'quota' : 'error';
+  state.stopped = e instanceof Quota ? 'quota' : e instanceof Stop ? 'weekly' : 'error';
   save();
   say(`${state.stopped}: ${e.message} at turn ${state.turn} k ${state.k}`);
-  process.exit(e instanceof Quota ? 3 : 1);
+  process.exit(e instanceof Quota ? 3 : e instanceof Stop ? 4 : 1);
 }
