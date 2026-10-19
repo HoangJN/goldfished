@@ -1,0 +1,16 @@
+{
+  "_synthetic": true,
+  "story": "test/long/saga-01.story.jsonl",
+  "atoms": [
+    { "id": "g1a", "turn": 1, "kind": "goal", "text": "take a whole folder of them" },
+    { "id": "g1b", "turn": 1, "kind": "goal", "text": "have a clean report out before the office opens on Friday" },
+    { "id": "r1", "turn": 2, "kind": "rule", "text": "never edit, move or rename anything in the originals folder" },
+    { "id": "x1", "turn": 4, "kind": "ruled_out", "text": "no database file for caching parsed weeks" },
+    { "id": "x2", "turn": 4, "kind": "ruled_out", "text": "no paid mapping service for port names" },
+    { "id": "r2", "turn": 5, "kind": "rule", "text": "keep every function under forty lines", "supersededAt": 28 },
+    { "id": "r3", "turn": 5, "kind": "rule", "text": "any new behaviour gets its test in the same commit" },
+    { "id": "g2", "turn": 24, "kind": "goal change", "text": "one page per boat, one sheet of paper", "supersededAt": 36 },
+    { "id": "w1", "turn": 28, "kind": "withdrawal", "text": "forget the forty line rule" },
+    { "id": "g3", "turn": 36, "kind": "goal change", "text": "a warnings list at the top of the report" }
+  ]
+}
