@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { after, test } from 'node:test';
+import { after, afterEach, beforeEach, test } from 'node:test';
 import {
   checkBinaryMarkers,
   checkFile,
@@ -19,6 +19,12 @@ import { fieldNames } from '../src/agents/claude-code.dialect.mjs';
 
 const scratch = mkdtempSync(join(tmpdir(), 'goldfished-gate-'));
 after(() => rmSync(scratch, { recursive: true, force: true }));
+const inheritedIdentity = process.env.GOLDFISHED_IDENTITY;
+beforeEach(() => { delete process.env.GOLDFISHED_IDENTITY; });
+afterEach(() => {
+  if (inheritedIdentity === undefined) delete process.env.GOLDFISHED_IDENTITY;
+  else process.env.GOLDFISHED_IDENTITY = inheritedIdentity;
+});
 
 const EM = String.fromCharCode(0x2014);
 
@@ -511,12 +517,22 @@ test('history: notes under any ref are refused', () => {
 test('history: a pinned identity stands in for git config', () => {
   const dir = tempRepo();
   commit(dir, '-m', 'Add the thing');
-  process.env.GOLDFISHED_IDENTITY = 'Someone Else <else@example.invalid>';
+  git(dir, {}, 'config', '--unset', 'user.name');
+  git(dir, {}, 'config', '--unset', 'user.email');
+  const keys = ['GIT_CONFIG_GLOBAL', 'GIT_CONFIG_NOSYSTEM'];
+  const saved = keys.map(key => process.env[key]);
+  const empty = join(scratch, 'empty-config');
+  writeFileSync(empty, '');
+  process.env.GIT_CONFIG_GLOBAL = empty;
+  process.env.GIT_CONFIG_NOSYSTEM = '1';
   try {
+    assert.deepEqual(checkHistory(dir), ['config git user.name or user.email is not set']);
+    process.env.GOLDFISHED_IDENTITY = 'Someone Else <else@example.invalid>';
     assert.equal(checkHistory(dir).length, 2);
     process.env.GOLDFISHED_IDENTITY = 'Test Person <test@example.invalid>';
     assert.deepEqual(checkHistory(dir), []);
   } finally {
     delete process.env.GOLDFISHED_IDENTITY;
+    keys.forEach((key, i) => saved[i] === undefined ? delete process.env[key] : (process.env[key] = saved[i]));
   }
 });

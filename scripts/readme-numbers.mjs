@@ -6,14 +6,7 @@ import { spawnSync } from 'node:child_process';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const numbers = text => text.match(/\d+(?:[.,]\d+)*/gu) ?? [];
 const allowed = new Map([
-  ['640', 'The brief sets the banner width.'],
-  ['20', 'SPEC Platforms requires Node 20 or newer.'],
-  ['10', 'D-053 requires ten sessions at an age.'],
-  ['50', 'D-053 requires fifty messages at an age; half defines span.'],
-  ['95', 'SPEC names the 95% range.'],
-  ['100', 'SPEC reports kept messages per hundred.'],
-  ['6', 'D-063 limits the curve to age six.'],
-  ['79', 'The brief records sealed three-way agreement at 79 in 100.'],
+  ['640', 'README.md banner width.'],
 ]);
 
 function evidenceNumbers(folder) {

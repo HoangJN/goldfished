@@ -1,0 +1,19 @@
+bar=B1k value=1 lo=0.8864866068260312 hi=0.9999999999999999 threshold=0.85 result=pass
+bar=B2k value=1 lo=0.7729732136520624 hi=0.9999999999999998 threshold=0.75 result=pass range=approx
+bar=B3p value=1 lo=0.7961166989641515 hi=1 threshold=0.9 result=pass
+bar=B3r value=1 lo=0.7961166989641515 hi=1 threshold=0.9 result=pass
+bar=B4 value=0 lo=0 hi=3.405401795219063 threshold=3 result=pass
+bar=B6 value=0 lo=NaN hi=NaN threshold=1 result=fail
+bar=B7k value=0.0896551724137931 lo=0.07243151989598148 hi=0.11048662527466599 threshold=0.01 result=fail
+bar=B7r value=0.0034482758620689655 lo=0.0011734030501959229 hi=0.010088890265545599 threshold=0.05 result=pass
+bar=B7n value=0 lo=NaN hi=NaN threshold=1 result=fail
+bar=B8 value=0 lo=-0.16845874359466234 hi=0.16845874359466229 threshold=0 result=report
+stated limit: reworded versus gone
+bar=B1 value=1 lo=0.8864866068260312 hi=0.9999999999999999 threshold=0.85 result=limit
+bar=B2 value=1 lo=0.7729732136520624 hi=0.9999999999999998 threshold=0.75 result=limit range=approx
+bar=B5 value=1 lo=0.7224672001371107 hi=0.9999999999999999 threshold=0.8 result=limit
+confusion rows=label columns=predicted kept reworded gone
+kept 15 0 0
+reworded 0 0 0
+gone 0 0 15
+bars=fail
