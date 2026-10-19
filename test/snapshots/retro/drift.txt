@@ -1,0 +1,10 @@
+goldfished retro   all sessions   read-only, nothing leaves this machine
+read 1 file (<size>) in <secs>. not graded: 0 automated sessions, 0 subagent
+  files
+
+format drift in claude-code: goldfished read 1 file but could not understand 1
+  compaction record, so its numbers are not shown. Run goldfished shapes --agent
+  claude-code and paste the output (counts only) into an issue.
+Claude Code deletes session files after 30 days by default, so older sessions
+  are not here.
+Keep your goal and rules in front of your agent: npx goldfished init
