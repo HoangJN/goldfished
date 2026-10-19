@@ -1,0 +1,5 @@
+0
+out:
+goldfished: p3 rejected.
+err:
+

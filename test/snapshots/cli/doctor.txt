@@ -1,0 +1,11 @@
+0
+out:
+Node: <version>
+Node path: <node>
+goldfished home: <project>/home
+Agents: claude-code, codex
+Card: none
+Pointer AGENTS.md: missing
+Probes: none
+err:
+

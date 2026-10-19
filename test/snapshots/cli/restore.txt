@@ -1,0 +1,5 @@
+0
+out:
+goldfished: r01 restored.
+err:
+

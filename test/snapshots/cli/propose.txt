@@ -1,0 +1,5 @@
+0
+out:
+goldfished: proposed p1. The user can accept it with: goldfished accept p1 "<label>"
+err:
+

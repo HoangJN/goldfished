@@ -1,0 +1,5 @@
+1
+out:
+
+err:
+goldfished: unknown flag --bogus. Try: goldfished shapes --help

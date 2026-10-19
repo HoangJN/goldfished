@@ -1,0 +1,5 @@
+0
+out:
+goldfished: saved r01. 1 rule, 0 goals, 1 ruled out.
+err:
+
