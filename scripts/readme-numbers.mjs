@@ -34,7 +34,7 @@ export function checkReadme(readme) {
   });
   const issues = [];
   if (demo.status !== 0) issues.push('retro --demo failed');
-  const block = /(?:^|\n)```text\n(Example from synthetic sessions, not real data\.\n[\s\S]*?)```(?=\n|$)/gu;
+  const block = /(?:^|\n)```text\n(Invented example, not real data\.\n[\s\S]*?)```(?=\n|$)/gu;
   const blocks = [...readme.matchAll(block)];
   if (blocks.length !== 1 || blocks[0][1] !== demo.stdout) {
     issues.push('The demo block must be byte-identical to fresh retro --demo output');

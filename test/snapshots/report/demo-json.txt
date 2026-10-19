@@ -94,9 +94,9 @@
       },
       "drift": null,
       "card": {
-        "sessions": 12,
+        "sessions": 4,
         "age": 4,
-        "kept_per_100": 84
+        "kept_per_100": null
       }
     },
     {
