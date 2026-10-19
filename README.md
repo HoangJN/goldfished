@@ -16,20 +16,20 @@ read 427 files (734.5 MB) in 8s. not graded: 17 automated sessions, 29 subagent
 
 Memory span: 1 compaction
 18 in 100 of your messages were still in front of the agent after 4 compactions
-(95% range 11 to 27), 300 messages, 13 sessions, claude-code, 3 Sep 2026 to 28
-  Sep 2026.
+(95% range 11 to 27), 300 messages, 13 sessions, Agent A, 3 Sep 2026 to 28 Sep
+  2026.
 Short memory. More than half your words are gone by the second compaction.
 4 sessions had the card re-sent after compaction; they are counted apart.
 This counts your words in what the agent can still see (the summary and the
   recent messages it keeps), not whether it still acted on them.
 
 agent         sessions   compacted   messages   memory span    kept after 4
-claude-code   287        64          2,837      1              18 in 100
-codex         76         23          945        at least 4     56 in 100
+Agent A       287        64          2,837      1              18 in 100
+Agent B       76         23          945        at least 4     56 in 100
 Agents compact differently and you use them differently. This compares your
 sessions, not the tools.
 
-claude-code, by times compacted
+Agent A, by times compacted
 times compacted   your messages   kept   partly there   not found
 1                 1,360           95%    3%             3%
 2                 720             42%    15%            43%
@@ -40,10 +40,6 @@ Same messages throughout: kept after 1 / 2 / 3 = 93 / 50 / 32 in 100.
 
 not counted: 345 short replies under 20 characters, 73 pastes over 1,500
   characters
-Why so high after one: in our tests Claude Code's first summary quoted your
-  messages. The next compaction summarises that summary.
-Claude Code deletes session files after 30 days by default, so older sessions
-  are not here.
 Keep your goal and rules in front of your agent: npx goldfished init
 ```
 
@@ -73,6 +69,10 @@ Try the invented example without reading any session files:
 ```sh
 npx goldfished@latest retro --demo
 ```
+
+## What we measured
+
+On our invented heavy story, Claude Code kept every typed decision through 30 forced compactions. Codex kept none older than 8 compactions. These are one story each, with forced or lowered compaction, and real sessions may differ. See [TESTED.md](TESTED.md) for the runs and their limits.
 
 ## Keep your goal and rules
 

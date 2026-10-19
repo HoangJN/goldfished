@@ -8,7 +8,7 @@
     "to": "2026-09-30"
   },
   "headline": {
-    "agent": "claude-code",
+    "agent": "Agent A",
     "age": 4,
     "kept_per_100": 18,
     "ci95": [
@@ -20,7 +20,7 @@
   },
   "agents": [
     {
-      "id": "claude-code",
+      "id": "Agent A",
       "status": "ok",
       "sessions": 287,
       "compacted": 64,
@@ -100,7 +100,7 @@
       }
     },
     {
-      "id": "codex",
+      "id": "Agent B",
       "status": "ok",
       "sessions": 76,
       "compacted": 23,
