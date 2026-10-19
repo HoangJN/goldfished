@@ -1,0 +1,25 @@
+{
+  "_synthetic": true,
+  "note": "Invented harbour sessions. Each agent receives the requested GiB independently.",
+  "seed": 1,
+  "normalLineBytes": 2048,
+  "typedFraction": 0.03,
+  "claude-code": {
+    "files": 1800,
+    "sizeDistribution": "log-normal",
+    "logSigma": 1.5,
+    "longLineFraction": 0.001,
+    "longLineMiB": [1, 8],
+    "largestLineMiB": 64,
+    "compactedFraction": 0.3,
+    "deepFiles": 3,
+    "deepCompactions": 200
+  },
+  "codex": {
+    "files": 40,
+    "largestFileFraction": 0.5,
+    "largestCompactedLineMiB": 64
+  },
+  "runs": { "warmGiB": 6, "warmCount": 5, "scaleGiB": [0.5, 1, 2], "scaleCount": 3, "freshCount": 1 },
+  "bars": { "warmSeconds": 60, "freshSeconds": 90, "peakBytes": 400000000, "scaleTolerance": 0.2 }
+}
