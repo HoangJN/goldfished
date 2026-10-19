@@ -1,0 +1,2 @@
+goldfished found no sessions. It looked in: ~/synthetic-one, ~/synthetic-two.
+  Point it at a folder with: goldfished retro --agent <id> --dir <path>

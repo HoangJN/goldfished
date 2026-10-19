@@ -1,0 +1,29 @@
+goldfished retro   last 47 days   read-only, nothing leaves this machine
+read 4,567 files (876.5 MB) in 19s. not graded: 23 automated sessions, 31
+  subagent files
+
+Memory span: at least 1 compaction so far
+23 in 100 of your messages were still in front of the agent after 3 compactions
+(95% range 16 to 32), 700 messages, 17 sessions, claude-code, 3 Apr 2025 to 27
+  Apr 2025.
+At least 1 compaction so far.
+With the card re-sent after compaction (15 sessions): 79 in 100 kept after 3
+  compactions.
+This counts your words in what the agent can still see (the summary and the
+  recent messages it keeps), not whether it still acted on them.
+
+claude-code, by times compacted
+times compacted   your messages   kept   partly there   not found
+1                 1,500           90%    6%             4%
+2                 1,100           41%    20%            39%
+3                 700             23%    22%            55%
+(each row counts the messages that went through exactly that many compactions)
+Same messages throughout: kept after 1 / 2 / 3 = 88 / 56 / 34 in 100.
+
+not counted: 567 short replies under 20 characters, 89 pastes over 1,500
+  characters
+Why so high after one: Claude Code's summary lists your messages once. The next
+  compaction summarises that list.
+Claude Code deletes session files after 30 days by default, so older sessions
+  are not here.
+Keep your goal and rules in front of your agent: npx goldfished init

@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "tool_version": "9.8.7",
+  "grader": {
+    "id": "synthetic",
+    "threshold": 0.87
+  },
+  "window": {
+    "days": 47,
+    "from": "2025-04-01",
+    "to": "2025-04-30"
+  },
+  "headline": {
+    "agent": "claude-code",
+    "age": 3,
+    "kept_per_100": 23,
+    "ci95": [
+      16,
+      32
+    ],
+    "messages": 700,
+    "sessions": 17
+  },
+  "agents": [
+    {
+      "id": "claude-code",
+      "status": "ok",
+      "sessions": 2345,
+      "compacted": 123,
+      "messages": 9876,
+      "span": 1,
+      "span_censored": false,
+      "verdict": "short",
+      "curve": [
+        {
+          "age": 1,
+          "messages": 1500,
+          "sessions": 43,
+          "kept": 1350,
+          "reworded": 90,
+          "gone": 60
+        },
+        {
+          "age": 2,
+          "messages": 1100,
+          "sessions": 35,
+          "kept": 451,
+          "reworded": 220,
+          "gone": 429
+        },
+        {
+          "age": 3,
+          "messages": 700,
+          "sessions": 17,
+          "kept": 161,
+          "reworded": 154,
+          "gone": 385
+        }
+      ],
+      "composition": [
+        {
+          "age": 1,
+          "messages": 200,
+          "sessions": 12,
+          "kept": 176,
+          "reworded": 10,
+          "gone": 14
+        },
+        {
+          "age": 2,
+          "messages": 200,
+          "sessions": 12,
+          "kept": 112,
+          "reworded": 30,
+          "gone": 58
+        },
+        {
+          "age": 3,
+          "messages": 200,
+          "sessions": 12,
+          "kept": 68,
+          "reworded": 44,
+          "gone": 88
+        }
+      ],
+      "not_counted": {
+        "short": 567,
+        "pasted": 89
+      },
+      "drift": null,
+      "card": {
+        "sessions": 1,
+        "age": 3,
+        "kept_per_100": null
+      }
+    }
+  ],
+  "span_rule": "largest k with every age 1..k measurable and at 50 or more kept per 100; measurable = 50 messages from 10 sessions"
+}

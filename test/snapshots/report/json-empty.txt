@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "tool_version": "9.8.7",
+  "grader": {
+    "id": "synthetic",
+    "threshold": 0.87
+  },
+  "window": {
+    "days": 47,
+    "from": "2025-04-01",
+    "to": "2025-04-30"
+  },
+  "headline": null,
+  "agents": [],
+  "span_rule": "largest k with every age 1..k measurable and at 50 or more kept per 100; measurable = 50 messages from 10 sessions"
+}
