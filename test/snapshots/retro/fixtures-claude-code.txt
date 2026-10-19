@@ -1,0 +1,28 @@
+goldfished retro   all sessions   read-only, nothing leaves this machine
+read 30 files (<size>) in <secs>. not graded: 1 automated session, 1
+  subagent file
+
+Too few to give a rate yet: 0 of 7 messages (2 sessions) were still there after
+  6 compactions.
+Too early to say. Too few compacted messages so far.
+1 session had the card re-sent after compaction; they are counted apart.
+This counts your words in what the agent can still see (the summary and the
+  recent messages it keeps), not whether it still acted on them.
+
+claude-code, by times compacted
+times compacted   your messages   kept   partly there   not found
+1                 25              too few too few        too few
+2                 14              too few too few        too few
+3                 11              too few too few        too few
+4                 9               too few too few        too few
+5                 8               too few too few        too few
+6                 7               too few too few        too few
+(each row counts the messages that went through exactly that many compactions)
+Same messages throughout: kept after 1 / 2 / 3 = 73 / 0 / 18 in 100.
+
+not counted: 2 short replies under 20 characters, 6 pastes over 1,500 characters
+Why so high after one: Claude Code's summary lists your messages once. The next
+  compaction summarises that list.
+Claude Code deletes session files after 30 days by default, so older sessions
+  are not here.
+Keep your goal and rules in front of your agent: npx goldfished init

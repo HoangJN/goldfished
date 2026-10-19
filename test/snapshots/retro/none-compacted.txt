@@ -1,0 +1,6 @@
+goldfished retro   all sessions   read-only, nothing leaves this machine
+read 1 file (<size>) in <secs>. not graded: 0 automated sessions, 0 subagent
+  files
+
+1 session read, none compacted yet. Nothing has been lost yet.
+Keep your goal and rules in front of your agent: npx goldfished init

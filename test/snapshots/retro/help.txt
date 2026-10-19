@@ -1,0 +1,1 @@
+goldfished retro [--agent <id>|all] [--dir <path>] [--days <n>] [--names] [--show] [--audit] [--json] [--save] [--demo]

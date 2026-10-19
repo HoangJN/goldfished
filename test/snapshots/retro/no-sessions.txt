@@ -1,0 +1,2 @@
+goldfished found no sessions. It looked in: ~/c/projects, ~/x/sessions. Point it
+  at a folder with: goldfished retro --agent <id> --dir <path>
