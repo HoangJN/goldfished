@@ -15,13 +15,17 @@ export async function main(agentId, event, rawStdin) {
     const project = await import('./project.mjs'), top = project.topLevel(input[cwdKey]);
     let output;
     if (event === 'prompt') {
-      const actions = await import('./actions.mjs'), rule = prompt.startsWith('rule: ');
-      const [verb, tail = ''] = rule ? ['rule', prompt.slice(6)] : prompt.slice(4).split(/\s+(.+)/s);
-      let args = [tail];
-      if (verb === 'out') { const split = /\s+--\s+/.exec(tail); args = split ? [tail.slice(0, split.index), '--quote', tail.slice(split.index + split[0].length)] : [tail]; }
-      if (verb === 'accept') { const [pid, label] = tail.split(/\s+(.+)/s); args = label === undefined ? [pid] : [pid, label]; }
-      const { reply } = actions.run(top, verb, args, { today: new Date().toISOString().slice(0, 10), via: 'chat' });
-      output = rule ? io.screenOutput(reply) : io.blockOutput(reply);
+      const rule = prompt.startsWith('rule: ');
+      const [verb, tail = ''] = rule ? ['rule', prompt.slice(6).trimEnd()] : prompt.slice(4).trimEnd().split(/\s+(.+)/s);
+      if (!rule && !['goal', 'out', 'list', 'drop', 'restore', 'card', 'accept', 'help', 'off', 'on'].includes(verb)) output = io.blockOutput(`goldfished: unknown command "${verb}". Try gf: help`);
+      else {
+        const actions = await import('./actions.mjs');
+        let args = [tail];
+        if (verb === 'out') { const split = /\s+--\s+/.exec(tail); args = split ? [tail.slice(0, split.index), '--quote', tail.slice(split.index + split[0].length)] : [tail]; }
+        if (verb === 'accept') { const [pid, label] = tail.split(/\s+(.+)/s); args = label === undefined ? [pid] : [pid, label]; }
+        const { reply } = actions.run(top, verb, args, { today: new Date().toISOString().slice(0, 10), via: 'chat' });
+        output = rule ? io.screenOutput(reply) : io.blockOutput(reply);
+      }
     } else {
       const state = home.state(), entry = state.projects?.[top] ?? {};
       if (entry.off) output = io.screenOutput('goldfished: re-sends are off in this project. Turn them on with: gf: on');

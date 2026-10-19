@@ -237,10 +237,12 @@ export function checkFields(file, text) {
 
 export function checkHookKeys(file, text) {
   if (!file.startsWith('src/') || file.endsWith('.hookio.mjs')) return [];
+  const code = text.replace(/\/\*[\s\S]*?\*\/|\/\/[^\r\n]*|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|`(?:\\[\s\S]|[^`\\])*`/g, part => part.replace(/[^\r\n]/g, ' '));
   const out = [];
   for (const key of ['hookSpecificOutput', 'hookEventName', 'additionalContext', 'systemMessage', 'hook_event_name']) {
-    const pattern = new RegExp('([\'"`])' + key + '\\1|\\.\\s*' + key + '(?![\\w$])', 'gu');
-    for (const match of text.matchAll(pattern)) out.push({ line: text.slice(0, match.index).split(/\r?\n/u).length, reason: `hook key ${key} outside hookio` });
+    const patterns = [[text, new RegExp('([\'"`])' + key + '\\1|\\.\\s*' + key + '(?![\\w$])', 'gu')],
+      [code, new RegExp('[{,]\\s*' + key + '(?=\\s*[:},=])', 'gu')]];
+    for (const [source, pattern] of patterns) for (const match of source.matchAll(pattern)) out.push({ line: text.slice(0, match.index).split(/\r?\n/u).length, reason: `hook key ${key} outside hookio` });
   }
   return out;
 }
@@ -257,7 +259,7 @@ export function checkHookGraph(root) {
     let text;
     try { text = readFileSync(join(root, file), 'utf8'); }
     catch { out.push({ file, line: 0, reason: 'cannot read hook import' }); return; }
-    const imports = /\b(?:import|export)\s+(?:[^'";]*?\s+from\s*)?['"]([^'"]+)['"]|\bimport\s*\(\s*['"`]([^'"`]+)['"`]/g;
+    const imports = /\b(?:import|export)\b\s*(?:[^'";]*?\bfrom\b\s*)?['"]([^'"]+)['"]|\bimport\s*\(\s*['"`]([^'"`]+)['"`]/g;
     for (const match of text.matchAll(imports)) {
       const target = match[1] ?? match[2];
       if (target.startsWith('.')) visit(posix.normalize(posix.join(posix.dirname(file), target)));

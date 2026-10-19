@@ -71,6 +71,25 @@ for (const target of [fs, fs.promises]) for (const key of ['readFileSync','readF
     assert.equal(home.state().projects[f.top].off, false);
     assert.match(json(run(f, agent, 'prompt', { prompt: 'gf: lst' })).reason, /unknown command "lst"/);
   });
+  test(`T3 ${agent}: rejects other gf verbs without loading actions`, () => {
+    const f = fixture(), loader = join(f.top, 'loader.mjs'), preload = join(f.top, 'preload.mjs');
+    writeFileSync(loader, "export function resolve(name, context, next) { if (name.endsWith('/actions.mjs')) throw new Error('Actions must not load.'); return next(name, context); }");
+    writeFileSync(preload, `import {register} from 'node:module'; register(${JSON.stringify(pathToFileURL(loader).href)});`);
+    for (const verb of ['rule', 'edit', 'reject', 'trust', 'lst']) {
+      const result = spawnSync(process.execPath, ['--import', pathToFileURL(preload).href, launcher, agent, 'prompt'], { input: JSON.stringify({ _synthetic: true, cwd: f.top, prompt: `gf: ${verb} Keep brass.` }), env: f.env, encoding: 'utf8', timeout: 5000 });
+      assert.equal(result.status, 0, result.stderr); assert.deepEqual(json(result), ios[agent].blockOutput(`goldfished: unknown command "${verb}". Try gf: help`));
+    }
+    assert.equal(store.load(f.top).source, '');
+  });
+  test(`T3 ${agent}: trailing whitespace is trimmed and argument whitespace is accepted`, () => {
+    const f = fixture(); save(f);
+    for (const [command, clean] of [['gf: list ', 'gf: list'], ['gf: help\n', 'gf: help']]) assert.deepEqual(json(run(f, agent, 'prompt', { prompt: command })), json(run(f, agent, 'prompt', { prompt: clean })));
+    assert.deepEqual(json(run(f, agent, 'prompt', { prompt: 'gf: drop r01 ' })), ios[agent].blockOutput('goldfished: r01 dropped. Bring it back with: goldfished restore r01'));
+    assert.equal(store.load(f.top).card.rules.length, 0);
+    assert.deepEqual(json(run(f, agent, 'prompt', { prompt: 'gf: restore\t \nr01 \r\n' })), ios[agent].blockOutput('goldfished: r01 restored.'));
+    assert.deepEqual(json(run(f, agent, 'prompt', { prompt: 'rule: Keep brass. \t\r\n' })), ios[agent].screenOutput('goldfished: saved r02. 2 rules, 1 goal, 1 ruled out.'));
+    assert.equal(store.load(f.top).card.rules.at(-1).text, 'Keep brass.');
+  });
   test(`T4 ${agent}: only compact sends the exact block and one receipt`, () => {
     const f = fixture(), loaded = save(f), io = ios[agent];
     for (const value of ['startup', 'resume', 'clear', 'fork', null]) assert.equal(run(f, agent, 'session-start', { source: value }).stdout, '');
