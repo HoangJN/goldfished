@@ -6,6 +6,7 @@ import { join, dirname } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { commands } from '../src/cli/init.mjs';
 import { commands as card } from '../src/cli/card.mjs';
+import { commands as misc } from '../src/cli/misc.mjs';
 
 const fixture = { _synthetic: true, text: 'Keep the harbour open.' };
 function setup(t) {
@@ -116,4 +117,24 @@ test('init and uninit reject bad flags and arguments', async t => {
   for (const name of ['init', 'uninit']) for (const [label, flags, positional] of [['help', { help: true }, []], ['flag', { bogus: true }, []], ['args', {}, ['extra']]])
     snapshot(`${name}-${label}`, await s.run(name, flags, positional));
   snapshot('agent-invalid', await s.run('init', { agents: 'unknown' }));
+});
+
+test('init hands over the proved hook step without installing it', async t => {
+  for (const agent of ['claude-code', 'codex', 'cursor']) {
+    const s = setup(t), heading = 'To bring the card back after compaction, run:';
+    if (agent === 'claude-code') mkdirSync(join(s.cwd, '.claude'));
+    const flags = agent === 'claude-code' ? {} : { agents: agent };
+    assert.equal(await misc.hooks({ positional: [agent], flags: {} }, s.io), 0);
+    const steps = [...s.out], before = readdirSync(s.root, { recursive: true });
+    const preview = await s.run('init', { ...flags, 'dry-run': true });
+    assert.deepEqual(readdirSync(s.root, { recursive: true }), before);
+    const applied = await s.run('init', { ...flags, yes: true });
+    for (const output of [preview, applied]) {
+      if (agent === 'cursor') { assert.ok(!output.includes(heading)); assert.ok(!output.includes(steps.join('\n'))); }
+      else assert.ok(output.endsWith(`${heading}\n${steps.join('\n')}\nerr:\n\n`));
+    }
+    assert.ok(!existsSync(join(s.cwd, '.claude/settings.json')));
+    assert.ok(!existsSync(join(s.cwd, '.codex/hooks.json')));
+    await s.run('uninit', { yes: true }); assert.ok(!s.out.includes(heading));
+  }
 });
