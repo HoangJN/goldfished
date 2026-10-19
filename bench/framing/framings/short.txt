@@ -1,0 +1,10 @@
+goldfished: the user's card, copied as typed, with the date each entry was set.
+
+GOAL (set 2026-10-19)
+Build exportkit, the tool that writes the finance team daily export file.
+
+RULES
+[r01 | 2026-10-19] Write every date as ISO 8601, YYYY-MM-DD, never in US style.
+
+RULED OUT (decided against; do not propose again unless the user raises it)
+[x01 | 2026-10-19] a date library. User said: "No date library. We use the built-in Date and nothing else."
