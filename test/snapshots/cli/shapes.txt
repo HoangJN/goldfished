@@ -1,0 +1,179 @@
+0
+out:
+{
+  "agent": "claude-code",
+  "files": 28,
+  "bytes": 39755,
+  "lines": 221,
+  "malformed": 1,
+  "skippedLong": 0,
+  "types": {
+    "assistant": 73,
+    "future_speaker": 1,
+    "harbour_bookkeeping_0": 3,
+    "harbour_bookkeeping_1": 3,
+    "harbour_bookkeeping_2": 3,
+    "harbour_bookkeeping_3": 3,
+    "harbour_bookkeeping_4": 3,
+    "harbour_bookkeeping_5": 3,
+    "harbour_bookkeeping_6": 3,
+    "harbour_bookkeeping_7": 3,
+    "harbour_bookkeeping_8": 3,
+    "harbour_bookkeeping_9": 3,
+    "reply_v3": 1,
+    "request_v3": 1,
+    "system": 19,
+    "user": 62
+  },
+  "rejects": {
+    "meta": 1,
+    "not_user": 125,
+    "origin_sdk": 1,
+    "origin_sdk_legacy": 1,
+    "summary": 19,
+    "tool_result": 1,
+    "wrapper": 3
+  },
+  "compactLike": 38,
+  "understood": 38,
+  "lineBuckets": [
+    {
+      "power": 0,
+      "count": 0
+    },
+    {
+      "power": 1,
+      "count": 0
+    },
+    {
+      "power": 2,
+      "count": 1
+    },
+    {
+      "power": 3,
+      "count": 0
+    },
+    {
+      "power": 4,
+      "count": 0
+    },
+    {
+      "power": 5,
+      "count": 34
+    },
+    {
+      "power": 6,
+      "count": 28
+    },
+    {
+      "power": 7,
+      "count": 151
+    },
+    {
+      "power": 8,
+      "count": 6
+    },
+    {
+      "power": 9,
+      "count": 0
+    },
+    {
+      "power": 10,
+      "count": 1
+    }
+  ],
+  "compactions": 20,
+  "drift": {
+    "ok": true,
+    "reasons": [],
+    "unread": 0
+  }
+}
+{
+  "agent": "codex",
+  "files": 11,
+  "bytes": 33262,
+  "lines": 48,
+  "malformed": 0,
+  "skippedLong": 0,
+  "types": {
+    "compacted": 7,
+    "event_msg": 15,
+    "future_bookkeeping": 1,
+    "response_item": 2,
+    "session_meta": 11
+  },
+  "rejects": {},
+  "compactLike": 7,
+  "understood": 7,
+  "lineBuckets": [
+    {
+      "power": 0,
+      "count": 0
+    },
+    {
+      "power": 1,
+      "count": 0
+    },
+    {
+      "power": 2,
+      "count": 0
+    },
+    {
+      "power": 3,
+      "count": 0
+    },
+    {
+      "power": 4,
+      "count": 0
+    },
+    {
+      "power": 5,
+      "count": 0
+    },
+    {
+      "power": 6,
+      "count": 6
+    },
+    {
+      "power": 7,
+      "count": 39
+    },
+    {
+      "power": 8,
+      "count": 2
+    },
+    {
+      "power": 9,
+      "count": 0
+    },
+    {
+      "power": 10,
+      "count": 0
+    },
+    {
+      "power": 11,
+      "count": 0
+    },
+    {
+      "power": 12,
+      "count": 0
+    },
+    {
+      "power": 13,
+      "count": 0
+    },
+    {
+      "power": 14,
+      "count": 1
+    }
+  ],
+  "compactions": 7,
+  "drift": {
+    "ok": true,
+    "reasons": [],
+    "unread": 0
+  }
+}
+err:
+

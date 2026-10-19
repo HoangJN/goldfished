@@ -1,0 +1,5 @@
+1
+out:
+This forgets which cards you trusted. Every card becomes untrusted until you run goldfished trust in its project.
+err:
+goldfished: purge needs --yes or a typed y in a terminal.

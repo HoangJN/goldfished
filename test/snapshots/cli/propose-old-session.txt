@@ -1,0 +1,5 @@
+1
+out:
+
+err:
+goldfished: cannot check quotes on this agent, so nothing was saved. Ask the user to run: goldfished out "<label>" --quote "<their words>"

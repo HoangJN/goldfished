@@ -1,0 +1,5 @@
+1
+out:
+
+err:
+goldfished: this changes the user's card, so it only runs in a terminal the user is typing in. Agents: use goldfished propose.

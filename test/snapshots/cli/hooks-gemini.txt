@@ -1,0 +1,5 @@
+0
+out:
+goldfished: gemini has no hook goldfished can use yet. init gives it a pointer to the card. Check what it receives with: goldfished card --agent gemini
+err:
+
