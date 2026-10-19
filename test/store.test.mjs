@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, existsSync, readFileSync, writeFileSync, rmSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
 import * as store from '../src/store.mjs';
 import * as cardIO from '../src/card.mjs';
 import * as proposalIO from '../src/proposals.mjs';
 import * as home from '../src/home.mjs';
-import { main as hook } from '../src/hook.mjs';
 
 const fixture = { _synthetic: true, today: '2026-10-18' };
 let top;
@@ -17,13 +18,12 @@ beforeEach(t => {
   t.after(() => { if (previous === undefined) delete process.env.GOLDFISHED_HOME; else process.env.GOLDFISHED_HOME = previous; rmSync(top, { recursive: true, force: true }); });
 });
 
-test('edited archives load and the compact hook still prints its receipt', async () => {
+test('edited archives load and the compact hook still prints its receipt', () => {
   let data = add(store.load(top), 'goal', { text: 'Keep the invented harbour open.' });
   data = { ...data, ...cardIO.edit(data.card, data.archive, 'g01', 'Ship the invented harbour tool.', '2026-10-19') }; store.save(top, data);
   assert.match(bytes('archive.md'), /\(edited 2026-10-19\)/u); assert.equal(store.load(top).archive[0].reason, 'edited');
-  const previous = process.stdout.write; let output;
-  try { process.stdout.write = text => { output = JSON.parse(text); return true; }; await hook('claude-code', 'session-start', JSON.stringify({ cwd: top, source: 'compact' })); }
-  finally { process.stdout.write = previous; }
+  const run = spawnSync(process.execPath, [fileURLToPath(new URL('../hooks/run.mjs', import.meta.url)), 'claude-code', 'session-start'], { cwd: top, env: process.env, input: JSON.stringify({ cwd: top, source: 'compact' }), encoding: 'utf8', timeout: 30000 });
+  assert.equal(run.status, 0, run.stderr); const output = JSON.parse(run.stdout);
   assert.equal(output.systemMessage, 'goldfished: card re-sent after compaction: 1 goal, 0 rules, 0 ruled out.');
 });
 const bytes = name => readFileSync(join(top, '.goldfished', name), 'utf8');
