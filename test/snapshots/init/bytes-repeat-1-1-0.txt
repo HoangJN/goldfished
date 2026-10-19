@@ -1,17 +1,5 @@
 0
 out:
-# goldfished card
-<!-- Change this with the goldfished command. A hand edit still works, but is flagged until you run: goldfished trust -->
 
-## GOAL
-
-
-## RULES
-
-
-## RULED OUT
-
-
-This card was already here. If it is yours, run: goldfished trust
 err:
 

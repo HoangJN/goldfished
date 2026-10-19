@@ -17,10 +17,8 @@ out:
 --- AGENTS.md
 +++ AGENTS.md
 @@ -1,2 +1,7 @@
--\uFEFF# Harbour
--Keep the harbour open.
-+\uFEFF# Harbour
-+Keep the harbour open.
+ \uFEFF# Harbour
+ Keep the harbour open.
 +
 +<!-- goldfished:begin (managed by goldfished; change .goldfished/card.md instead) -->
 +## The user's card
@@ -29,18 +27,12 @@ out:
 --- <git common dir>/info/exclude
 +++ <git common dir>/info/exclude
 @@ -1,6 +1,7 @@
--# git ls-files --others --exclude-from=.git/info/exclude
--# Lines that start with '#' are comments.
--# For a project mostly in C, the following would be a good set of
--# exclude patterns (uncomment them if you want to use them):
--# *.[oa]
--# *~
-+# git ls-files --others --exclude-from=.git/info/exclude
-+# Lines that start with '#' are comments.
-+# For a project mostly in C, the following would be a good set of
-+# exclude patterns (uncomment them if you want to use them):
-+# *.[oa]
-+# *~
+ # git ls-files --others --exclude-from=.git/info/exclude
+ # Lines that start with '#' are comments.
+ # For a project mostly in C, the following would be a good set of
+ # exclude patterns (uncomment them if you want to use them):
+ # *.[oa]
+ # *~
 +.goldfished/
 err:
 

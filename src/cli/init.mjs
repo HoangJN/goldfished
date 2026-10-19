@@ -18,9 +18,14 @@ const read = file => {
 };
 const diff = (io, path, before, after) => {
   if (before === after) return;
-  const lines = text => text === null || text === '' ? [] : text.split('\n').slice(0, text.endsWith('\n') ? -1 : undefined);
-  io.out(`--- ${before === null ? '/dev/null' : path}\n+++ ${after === null ? '/dev/null' : path}\n@@ -${before ? 1 : 0},${lines(before).length} +${after ? 1 : 0},${lines(after).length} @@\n` +
-    [[before, '-'], [after, '+']].flatMap(([text, sign]) => [...lines(text).map(line => sign + line), ...(text && !text.endsWith('\n') ? ['\\ No newline at end of file'] : [])]).join('\n'));
+  const lines = text => text?.match(/[^\n]*\n|[^\n]+$/gu) ?? [], previous = lines(before), next = lines(after);
+  let leading = 0, trailing = 0;
+  while (leading < Math.min(previous.length, next.length) && previous[leading] === next[leading]) leading++;
+  while (trailing < Math.min(previous.length, next.length) - leading && previous.at(-1 - trailing) === next.at(-1 - trailing)) trailing++;
+  const show = (rows, sign) => rows.flatMap(line => [sign + line.replace(/\n$/u, ''), ...(!line.endsWith('\n') ? ['\\ No newline at end of file'] : [])]);
+  io.out(`--- ${before === null ? '/dev/null' : path}\n+++ ${after === null ? '/dev/null' : path}\n@@ -${before ? 1 : 0},${previous.length} +${after ? 1 : 0},${next.length} @@\n` +
+    [...show(previous.slice(0, leading), ' '), ...show(previous.slice(leading, previous.length - trailing), '-'),
+      ...show(next.slice(leading, next.length - trailing), '+'), ...show(previous.slice(previous.length - trailing), ' ')].join('\n'));
 };
 async function yes(io, flags) {
   if (flags['dry-run']) return false;
@@ -53,6 +58,8 @@ export const commands = Object.fromEntries(['init', 'uninit'].map(name => [name,
         const text = read(join(top, path));
         if (text !== null) existing[path] = text;
       }
+      const blocks = new Set(pointer.removePlan({ top, existing, recorded }).filter(change => change.kind === 'block' && !change.left).map(change => change.path));
+      for (const [path, record] of Object.entries(recorded)) if (record?.eolAdded && !blocks.has(path)) delete recorded[path];
       if (name === 'init') for (const row of POINTERS.filter(row => row.agent === 'all' || agents.includes(row.agent))) {
         const path = row.agent === 'cline' && existing['.clinerules'] !== undefined ? '.clinerules' : row.target;
         tracked[path] = isTracked(top, path);
@@ -61,7 +68,7 @@ export const commands = Object.fromEntries(['init', 'uninit'].map(name => [name,
       const main = project.mainCheckout(top), copy = name === 'init' && source === null && main !== top ? read(join(main, '.goldfished/card.md')) : null;
       const card = parse(source ?? copy ?? '');
       const trusted = source === null || (homeExists && inHome(io, () => store.load(top).trusted));
-      if (name === 'init' && source !== null) {
+      if (name === 'init' && source !== null && !trusted) {
         io.out(source); io.out('This card was already here. If it is yours, run: goldfished trust');
       }
       if (name === 'init' && copy !== null) io.out('Copy the main checkout\'s card with this plan?');
@@ -90,7 +97,7 @@ export const commands = Object.fromEntries(['init', 'uninit'].map(name => [name,
       for (const change of changes) if (!change.skipped && !change.left && !failed.has(change.path)) {
         if (name === 'uninit') delete recorded[change.path];
         else if (change.kind === 'owned') recorded[change.path] = hash(change.after);
-        else if (change.eolAdded || recorded[change.path]?.eolAdded) recorded[change.path] = { hash: hash(change.after), eolAdded: true };
+        else if (change.eolAdded) recorded[change.path] = { hash: hash(change.after), eolAdded: true };
         else if (change.before === null) recorded[change.path] = hash(change.after);
       }
       inHome(io, () => {

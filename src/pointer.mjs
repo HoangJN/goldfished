@@ -50,7 +50,7 @@ export function plan({ top, agents, shared, commit, existing, tracked, recorded,
       const { text } = block(card, { kind: 'inline', budget: 6000, maxChars: 6000, trusted: trusted && !commit });
       change.after = header + text;
     } else {
-      if (before && !before.endsWith('\n') && !ranges.length) change.eolAdded = true;
+      if (ranges.length ? recorded[path]?.eolAdded : before && !before.endsWith('\n')) change.eolAdded = true;
       change.after = insert(before, [begin, "## The user's card", pointer + (tracked[path] || tracked[path] === null || commit ? '' : propose), end].join('\n'), ranges);
     }
     return change;

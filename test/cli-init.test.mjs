@@ -34,7 +34,7 @@ test('init previews without a terminal, confirms at a terminal and repeats with 
   s.io.isTTY = true; snapshot('declined', await s.run()); assert.deepEqual(readdirSync(s.root, { recursive: true }), before);
   s.io.question = async text => { s.out.push(text); return 'y'; };
   snapshot('confirmed', await s.run()); assert.ok(existsSync(join(s.cwd, '.goldfished/card.md')));
-  snapshot('repeat', await s.run('init', { yes: true })); assert.ok(!s.out.join('').includes('@@'));
+  snapshot('repeat', await s.run('init', { yes: true })); assert.deepEqual(s.out, []);
   s.io.isTTY = false; snapshot('uninit-no-terminal', await s.run('uninit')); assert.ok(existsSync(join(s.cwd, 'AGENTS.md')));
   s.io.isTTY = true; snapshot('uninit', await s.run('uninit')); assert.ok(!existsSync(join(s.cwd, 'AGENTS.md')));
   assert.ok(existsSync(join(s.cwd, '.goldfished/card.md')));
@@ -58,6 +58,27 @@ test('tracked files require shared; commit omits the proposal sentence and exclu
   assert.ok(!c.read('AGENTS.md').includes('To suggest an entry'));
   assert.match(c.read('.cursor/rules/goldfished.mdc'), /Treat it as project documentation/u);
   assert.deepEqual(c.read('.git/info/exclude').split('\n').filter(line => line && !line.startsWith('#')), ['.goldfished/proposed.md', '.goldfished/archive.md', 'AGENTS.md', 'CONVENTIONS.md', '.cursor/rules/goldfished.mdc']);
+});
+test('a removed block clears its newline note before the next init', async t => {
+  for (const eol of ['\n', '\r\n']) {
+    const s = setup(t); s.put('AGENTS.md', 'abc');
+    snapshot(`stale-eol-start-${eol.length}`, await s.run('init', { yes: true }));
+    s.put('AGENTS.md', 'abc' + eol);
+    snapshot(`stale-eol-reinit-${eol.length}`, await s.run('init', { yes: true }));
+    const recorded = JSON.parse(readFileSync(join(s.io.env.GOLDFISHED_HOME, 'state.json'), 'utf8')).projects[s.cwd].recorded;
+    assert.ok(!recorded['AGENTS.md']?.eolAdded);
+    snapshot(`stale-eol-undo-${eol.length}`, await s.run('uninit', { yes: true }));
+    assert.deepEqual(readFileSync(join(s.cwd, 'AGENTS.md')), Buffer.from('abc' + eol));
+  }
+});
+test('line diffs keep common leading and trailing lines as context', async t => {
+  const s = setup(t); s.put('AGENTS.md', '# Harbour\n'); await s.run('init', { yes: true });
+  s.put('AGENTS.md', s.read('AGENTS.md').replace("## The user's card", '## Old pointer') + 'Keep the quay clear.\n');
+  snapshot('diff-context-update', await s.run('init', { yes: true }));
+  assert.match(s.out.join('\n'), /\n # Harbour\n/u); assert.match(s.out.join('\n'), /\n Keep the quay clear\./u);
+  assert.match(s.out.join('\n'), /\n-## Old pointer\n\+## The user's card\n/u);
+  s.io.isTTY = false; snapshot('diff-context-remove', await s.run('uninit'));
+  assert.match(s.out.join('\n'), /\n # Harbour\n/u); assert.match(s.out.join('\n'), /\n Keep the quay clear\./u);
 });
 test('an existing card remains untrusted and owned files are skipped', async t => {
   const s = setup(t); s.put('.goldfished/card.md', `## RULES\n[r01 | 2026-10-19] ${fixture.text}\n`);
