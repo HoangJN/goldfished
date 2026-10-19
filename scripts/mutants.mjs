@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, relative } from 'node:path';
+import { join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { isolated, root, run } from './oracle.mjs';
 
 const kill = ['kill'], stats = 'src/stats.mjs', fold = 'src/fold.mjs', grade = 'src/grade.mjs', retro = 'src/cli/retro.mjs';
@@ -30,12 +31,22 @@ const edits = [
     'yield (await readSession(file, tally, new Set())).session;', kill],
   ['later-reworded-kept', fold, 'const { label, score } = grader.score(text, index);',
     "const graded = grader.score(text, index), { score } = graded, label = age >= 10 && graded.label === 'reworded' ? 'kept' : graded.label;", kill],
-  ['gap-as-end', stats, 'const censored = rows.every',
-    'const censored = rows.filter(r => { for (let age = 1; age <= r.age; age++) if (!byAge.has(age)) return false; return true; }).every', kill],
+  ['gap-as-end', stats, 'return Array.from({ length: highest }, (_, i) => {',
+    'let end = 0; while (end < highest && messages(ages.total.get(end + 1) ?? empty()) > 0) end++; return Array.from({ length: end }, (_, i) => {', kill],
   ['dropped-sample-floor', stats, 'row.messages >= 50 && row.sessions >= 10', 'row.messages > 0', kill],
   ['card-pooled', retro, '(session.cardResent ? card : main)', '(false ? card : main)', ['cli-retro']],
   ['curve-before-six', stats, 'Math.min(6, Math.max', 'Math.min(5, Math.max', kill],
 ];
+export function firstFailure(got) {
+  const output = `${got.stdout}\n${got.stderr}`;
+  assert.ok(got.status !== null && !got.signal, 'tests did not finish');
+  assert.doesNotMatch(output, /SyntaxError|ERR_MODULE_NOT_FOUND|Cannot find module/u, 'invalid mutant, not a test kill');
+  if (got.status === 0) return null;
+  const match = /^\s*not ok \d+ - (.+)$/mu.exec(output);
+  assert.ok(match, `non-zero exit without a failing TAP test\n${output}`);
+  return match[1];
+}
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
 const base = mkdtempSync(join(tmpdir(), 'gf-mutants-')), copy = join(base, 'copy');
 try {
   const env = isolated(base);
@@ -47,7 +58,7 @@ try {
   });
   const check = process.argv.includes('--check');
   const files = [...new Set(edits.flatMap(edit => edit[4]))];
-  const testFiles = names => ['--import', './test/no-network.mjs', '--test', ...names.map(name => `test/${name}.test.mjs`)];
+  const testFiles = names => ['--import', './test/no-network.mjs', '--test', '--test-reporter=tap', ...names.map(name => `test/${name}.test.mjs`)];
   if (!check) {
     const baseline = run(testFiles(files), { cwd: copy, env, timeout: 300000 });
     assert.equal(baseline.status, 0, `unmutated tests failed\n${baseline.stdout}\n${baseline.stderr}`);
@@ -58,11 +69,12 @@ try {
       writeFileSync(edit.path, edit.changed);
       if (check) continue;
       const got = run(testFiles(edit.tests), { cwd: copy, env, timeout: 300000 });
-      assert.ok(got.status !== null && got.signal === null, `${edit.name}: tests did not finish`);
-      if (got.status !== 0) { killed++; console.log(`killed ${edit.name}`); }
+      const failed = firstFailure(got);
+      if (failed) { killed++; console.log(`killed ${edit.name} by ${failed}`); }
       else console.log(`survived ${edit.name}`);
     } finally { writeFileSync(edit.path, edit.original); }
   }
   console.log(check ? `mutants check ${prepared.length} matched once` : `mutants ${killed} killed of ${prepared.length}`);
   if (!check && killed !== prepared.length) process.exitCode = 1;
 } finally { rmSync(base, { recursive: true, force: true }); }
+}

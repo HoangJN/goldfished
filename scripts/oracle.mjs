@@ -13,7 +13,8 @@ export function isolated(base) {
   return env;
 }
 export function run(args, { cwd = root, env, input, timeout = 120000 } = {}) {
-  const got = spawnSync(process.execPath, args, { cwd, env, input, timeout, encoding: 'utf8', maxBuffer: 2 ** 24 });
+  const childEnv = { ...(env ?? process.env) }; delete childEnv.NODE_TEST_CONTEXT;
+  const got = spawnSync(process.execPath, args, { cwd, env: childEnv, input, timeout, encoding: 'utf8', maxBuffer: 2 ** 24 });
   assert.ifError(got.error);
   return got;
 }
@@ -21,47 +22,57 @@ function mulberry32(seed) {
   return () => { let t = seed += 0x6d2b79f5; t = Math.imul(t ^ t >>> 15, t | 1);
     t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 }
-export function generate(agent, seed, folder, { canary = '', cwd = '/srv/invented/orchard' } = {}) {
-  const rng = mulberry32(seed), count = n => 1 + Math.floor(rng() * n), compactions = count(8);
-  const rows = [{ _synthetic: true, note: 'Invented turns with independent counted fates.' }], typed = [], curve = [];
-  const notCounted = { short: 0, pasted: 0 };
-  const stamp = () => new Date(Date.UTC(2026, 0, seed, 0, 0, rows.length)).toISOString();
-  const user = (text, summary = false) => ({ type: 'user', uuid: `${seed}-${rows.length}`, sessionId: `s${seed}`,
-    timestamp: stamp(), cwd, version: '2.1.292',
-    ...(summary ? { isCompactSummary: true } : { turnOrigin: 'human' }), message: { role: 'user', content: text } });
-  if (agent === 'codex') rows.push({ type: 'session_meta', timestamp: stamp(),
-    payload: { id: `s${seed}`, cwd, source: 'cli', originator: 'codex_cli_rs', cli_version: '0.163.0' } });
-  for (let epoch = 0; epoch <= compactions; epoch++) {
-    for (let n = count(7); n > 0; n--) {
-      const id = typed.length, kind = count(5), tag = `s${seed}t${id}`;
-      const text = canary ? `${canary} ${tag}amber ${tag}birch ${tag}cedar ${tag}dahlia ${tag}elm` :
-        kind === 1 ? `${tag} ok` : kind === 2 ? `${tag} ` + 'p'.repeat(1501) :
-          ['amber', 'birch', 'cedar', 'dahlia', 'elm'].map(w => tag + w).join(' ');
-      const rejected = !canary && kind <= 2;
-      if (rejected) notCounted[kind === 1 ? 'short' : 'pasted']++;
-      typed.push({ text, epoch, rejected });
-      rows.push(agent === 'claude-code' ? user(text) :
-        { timestamp: stamp(), type: 'event_msg', payload: { type: 'user_message', message: text } });
+export function generate(agent, seed, folder, { canary = '', cwd = '/srv/invented/orchard', sessions } = {}) {
+  const rng = mulberry32(seed), count = n => 1 + Math.floor(rng() * n), total = new Map();
+  const expected = { sessions: sessions ?? count(10) + 2, messages: 0, not_counted: { short: 0, pasted: 0 } };
+  for (let copy = 0; copy < expected.sessions; copy++) {
+    const compactions = count(8), id = `s${seed}c${copy}`, typed = [], ages = new Map();
+    const rows = [{ _synthetic: true, note: 'Invented turns, retained history and opaque compactions.' }];
+    const stamp = () => new Date(Date.UTC(2026, 0, seed, copy, 0, rows.length)).toISOString();
+    const user = (text, summary = false) => ({ type: 'user', uuid: `${id}-${rows.length}`, sessionId: id,
+      timestamp: stamp(), cwd, version: '2.1.292', ...(summary ? { isCompactSummary: true } : { turnOrigin: 'human' }), message: { role: 'user', content: text } });
+    if (agent === 'codex') rows.push({ type: 'session_meta', timestamp: stamp(),
+      payload: { id, cwd, source: 'cli', originator: 'codex_cli_rs', cli_version: '0.163.0' } });
+    for (let epoch = 0; epoch <= compactions; epoch++) {
+      for (let n = count(7); n > 0; n--) {
+        const kind = count(5), tag = `${id}t${typed.length}`;
+        const text = canary ? `${canary} ${tag}amber ${tag}birch ${tag}cedar ${tag}dahlia ${tag}elm` :
+          kind === 1 ? `${tag} ok` : kind === 2 ? `${tag} ` + 'p'.repeat(1501) :
+            ['amber', 'birch', 'cedar', 'dahlia', 'elm'].map(w => tag + w).join(' ');
+        const rejected = !canary && kind <= 2;
+        if (rejected) expected.not_counted[kind === 1 ? 'short' : 'pasted']++;
+        const record = agent === 'claude-code' ? user(text) : { timestamp: stamp(), type: 'event_msg', payload: { type: 'user_message', message: text } };
+        typed.push({ text, epoch, rejected, record }); rows.push(record); expected.messages++;
+      }
+      if (epoch === compactions) break;
+      const opaque = agent === 'codex' && !canary && rng() < 0.25, eligible = typed.filter(m => !m.rejected);
+      const kept = canary || opaque ? [] : agent === 'claude-code' ? eligible.filter(() => rng() < 0.5) :
+        eligible.map(m => [rng(), m]).sort((a, b) => a[0] - b[0]).slice(0, count(2)).map(([, m]) => m);
+      const tail = agent === 'claude-code' ? kept.filter(() => rng() < 0.5) : [];
+      if (!opaque) for (const message of eligible) {
+        const age = epoch + 1 - message.epoch;
+        const row = ages.get(age) ?? { age, messages: 0, sessions: 1, kept: 0, reworded: 0, gone: 0 };
+        row.messages++; row[kept.includes(message) ? 'kept' : 'gone']++; ages.set(age, row);
+      }
+      if (agent === 'claude-code') {
+        rows.push({ type: 'system', subtype: 'compact_boundary', uuid: `${id}-b${epoch}`, timestamp: stamp(),
+          compactMetadata: { trigger: 'auto', preTokens: 120000, postTokens: 21000 } });
+        rows.push(user(['Quiet water beneath distant hills.', ...kept.filter(m => !tail.includes(m)).map(m => m.text)].join('\n'), true));
+        for (const message of tail) rows.push({ ...message.record, timestamp: stamp() });
+      } else rows.push({ timestamp: stamp(), type: 'compacted', payload: { message: opaque ? '' : 'Quiet water beneath distant hills.',
+        replacement_history: opaque ? [{ type: 'compaction', encrypted_content: 'invented-opaque-history' }] :
+          kept.map(m => ({ type: 'message', role: 'user', content: [{ type: 'input_text', text: m.text }] })) } });
     }
-    if (epoch === compactions) break;
-    const visible = ['Quiet water beneath distant hills.'];
-    for (const message of typed) {
-      if (message.rejected) continue;
-      const age = epoch + 1 - message.epoch, kept = !canary && rng() < 0.5;
-      const row = curve[age - 1] ??= { age, messages: 0, sessions: 1, kept: 0, reworded: 0, gone: 0 };
-      row.messages++; row[kept ? 'kept' : 'gone']++;
-      if (kept) visible.push(message.text);
+    for (const [age, counts] of ages) {
+      const row = total.get(age) ?? { age, messages: 0, sessions: 0, kept: 0, reworded: 0, gone: 0 };
+      for (const key of ['messages', 'sessions', 'kept', 'gone']) row[key] += counts[key]; total.set(age, row);
     }
-    if (agent === 'claude-code') {
-      rows.push({ type: 'system', subtype: 'compact_boundary', uuid: `${seed}-b${epoch}`, timestamp: stamp(),
-        compactMetadata: { trigger: 'auto', preTokens: 120000, postTokens: 21000 } });
-      rows.push(user(visible.join('\n'), true));
-    } else rows.push({ timestamp: stamp(), type: 'compacted', payload: { message: visible.join('\n'), replacement_history: [] } });
+    const name = `oracle${copy ? '-' + copy : ''}.jsonl`, file = join(folder, agent === 'codex' ? `2026/01/01/rollout-${name}` : `orchard/${name}`);
+    mkdirSync(dirname(file), { recursive: true }); writeFileSync(file, rows.map(row => JSON.stringify(row)).join('\n') + '\n');
   }
-  const file = join(folder, agent === 'codex' ? '2026/01/01/rollout-oracle.jsonl' : 'orchard/oracle.jsonl');
-  mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(file, rows.map(row => JSON.stringify(row)).join('\n') + '\n');
-  return { sessions: 1, messages: typed.length, not_counted: notCounted, curve: curve.slice(0, 6) };
+  expected.curve = Array.from({ length: Math.min(6, Math.max(0, ...total.keys())) }, (_, i) => total.get(i + 1) ??
+    { age: i + 1, messages: 0, sessions: 0, kept: 0, reworded: 0, gone: 0 });
+  return expected;
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const base = mkdtempSync(join(tmpdir(), 'gf-oracle-'));

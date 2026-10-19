@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { generate, isolated } from '../scripts/oracle.mjs';
+import { generate, isolated, root, run } from '../scripts/oracle.mjs';
+import { firstFailure } from '../scripts/mutants.mjs';
 import { foldSession } from '../src/fold.mjs';
 import { combine, curve, measurable, span, bootstrap } from '../src/stats.mjs';
 import { prepare, score } from '../src/grade.mjs';
@@ -18,8 +19,6 @@ test('span uses exact ratios, both sample floors, numeric ages and failures beyo
   assert.equal(measurable(row(1, 30, 30)), false); assert.equal(measurable(row(1, 50, 50, 9)), false);
   assert.deepEqual(span(Array.from({ length: 12 }, (_, i) => row(i + 1))), { span: 12, censored: true, headlineAge: 12 });
   assert.deepEqual(span([row(1), row(3, 40)]), { span: 1, censored: false, headlineAge: 3 });
-  const ages = combine([{ ages: new Map([[6, { kept: 1, reworded: 0, gone: 0 }]]) }]);
-  assert.equal(curve(ages).length, 6); assert.equal(curve(ages)[5].messages, 1);
 });
 test('fold honours both character boundaries, opaque ages, later arrivals and reworded fates', () => {
   const lengths = [19, 20, 1500, 1501], typed = lengths.map(n => ({ epoch: 0, text: 'a'.repeat(n) }));
@@ -42,7 +41,7 @@ test('bootstrap samples whole unequal sessions, with the specified percentile ra
 });
 test('summaries and retained tails are not new turns; resumed histories count once', async () => {
   for (const agent of ['claude-code', 'codex']) {
-    const directory = join(sandbox, 'resumed', agent), wanted = generate(agent, 3, directory);
+    const directory = join(sandbox, 'resumed', agent), wanted = generate(agent, 3, directory, { sessions: 1 });
     const file = join(directory, agent === 'codex' ? '2026/01/01/rollout-oracle.jsonl' : 'orchard/oracle.jsonl');
     cpSync(file, file.replace('oracle.jsonl', 'oracle-resumed.jsonl'));
     const adapter = (await import(`../src/agents/${agent}.mjs`)).default;
@@ -59,4 +58,29 @@ test('summaries and retained tails are not new turns; resumed histories count on
   const adapter = (await import('../src/agents/claude-code.mjs')).default, sessions = [];
   for await (const s of adapter.sessions(await adapter.listFiles(directory), tally())) sessions.push(s);
   assert.equal(sessions[0].typed.length, 1); assert.ok(sessions[0].compactions[0].visible.includes(text));
+});
+test('a gap remains visible in retro JSON after an opaque first compaction', () => {
+  const directory = join(sandbox, 'gap/2026/01/01'), text = 'Keep the orchard files in plain text.'; mkdirSync(directory, { recursive: true });
+  const rows = [{ _synthetic: true }, { type: 'session_meta', payload: { id: 'gap', source: 'cli', cwd: '/srv/invented/gap' } },
+    { type: 'event_msg', timestamp: '2026-01-01T00:00:00Z', payload: { type: 'user_message', message: text } },
+    { type: 'compacted', payload: { message: '', replacement_history: [{ type: 'compaction', encrypted_content: 'opaque' }] } },
+    { type: 'compacted', payload: { message: text, replacement_history: [] } }];
+  writeFileSync(join(directory, 'rollout-gap.jsonl'), rows.map(r => JSON.stringify(r)).join('\n') + '\n');
+  const got = run([join(root, 'bin/goldfished.mjs'), 'retro', '--json', '--agent', 'codex', '--dir', join(sandbox, 'gap'), '--days', '0'], { env: { ...process.env }, cwd: sandbox });
+  assert.equal(got.status, 0, got.stderr);
+  assert.deepEqual(JSON.parse(got.stdout).agents[0].curve, [{ age: 1, messages: 0, sessions: 0, kept: 0, reworded: 0, gone: 0 },
+    { age: 2, messages: 1, sessions: 1, kept: 1, reworded: 0, gone: 0 }]);
+  const ages = combine([{ ages: new Map([[6, { kept: 1, reworded: 0, gone: 0 }]]) }]);
+  assert.equal(curve(ages).length, 6); assert.equal(curve(ages)[5].messages, 1);
+});
+test('the mutant harness accepts assertion failures and refuses syntax and import crashes', () => {
+  const directory = join(sandbox, 'harness'); mkdirSync(directory);
+  const file = join(directory, 'value.mjs'); writeFileSync(file, 'export const value = 1;\n');
+  writeFileSync(join(directory, 'probe.test.mjs'), "import test from 'node:test'; import assert from 'node:assert/strict'; import { value } from './value.mjs'; test('a counted assertion', () => assert.equal(value, 1));\n");
+  const probe = () => run(['--test', '--test-reporter=tap', 'probe.test.mjs'], { cwd: directory, env: { ...process.env } });
+  const baseline = probe(); assert.match(baseline.stdout, /ok 1 - a counted assertion/u); assert.equal(firstFailure(baseline), null);
+  writeFileSync(file, 'export const value = 2;\n'); assert.equal(firstFailure(probe()), 'a counted assertion');
+  for (const bad of ['export const value = ;', "import './missing.mjs'; export const value = 1;"]) {
+    writeFileSync(file, bad); const got = probe(); assert.notEqual(got.status, 0); assert.throws(() => firstFailure(got), /invalid mutant/u);
+  }
 });
