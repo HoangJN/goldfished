@@ -125,9 +125,10 @@ test('both agents retain exactly the fate counts through thirty compactions', { 
         checkRows(allRows, expected(resent), `${adapter.id} ${resent ? 'card' : 'plain'}`, t);
         if (resent) continue;
         const rows = curve(combined), wanted = expected(false);
-        checkRows(rows, wanted.slice(0, 6), `${adapter.id} curve`, t);
-        assert.equal(rows.length, 6);
-        assert.deepEqual(span(rows), expectedSpan(wanted.slice(0, 6)));
+        checkRows(rows, wanted.slice(0, 10), `${adapter.id} curve`, t);
+        assert.equal(rows.length, 10);
+        assert.deepEqual(span(rows), expectedSpan(wanted.slice(0, 10)));
+        assert.equal(span(rows).headlineAge, 10);
         assert.deepEqual(span(allRows), expectedSpan(wanted));
         assert.equal(measurable(allRows.find(row => row.age === 30)), false);
         t.diagnostic(`${adapter.id} plain kept: ` + [1, 2, 3, 6, 10, 20, 30]

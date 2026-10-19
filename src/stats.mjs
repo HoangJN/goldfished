@@ -16,7 +16,7 @@ export function combine(folds, key = 'ages') {
 }
 
 export function curve(ages) {
-  const highest = Math.min(6, Math.max(0, ...[...ages.total]
+  const highest = Math.min(10, Math.max(0, ...[...ages.total]
     .filter(([, c]) => messages(c) > 0).map(([age]) => age)));
   return Array.from({ length: highest }, (_, i) => {
     const age = i + 1, c = ages.total.get(age) ?? empty();
