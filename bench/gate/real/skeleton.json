@@ -1,0 +1,13 @@
+{
+ "_synthetic": true,
+ "files": {
+  "combwatch/alerts.py": "def check(rows, rules):\n    raised = []\n    for rule in rules:\n        raised.extend(rule(rows))\n    return raised\n",
+  "combwatch/parse.py": "FIELDS = [\"ts\", \"yard\", \"hive\", \"weight_g\", \"brood_c10\", \"battery_mv\", \"flag\"]\n\n\ndef parse_row(line, n):\n    parts = line.rstrip(\"\\n\").split(\",\")\n    if len(parts) != len(FIELDS):\n        raise ValueError(f\"line {n}: expected {len(FIELDS)} fields, got {len(parts)}\")\n    row = dict(zip(FIELDS, parts))\n    row[\"weight_g\"] = int(row[\"weight_g\"])\n    row[\"brood_c10\"] = int(row[\"brood_c10\"])\n    row[\"battery_mv\"] = int(row[\"battery_mv\"])\n    return row\n\n\ndef parse_file(path):\n    with open(path) as fh:\n        next(fh)\n        return [parse_row(l, n) for n, l in enumerate(fh, 2)]\n",
+  "combwatch/poll.py": "import os\nimport time\n\nSEEN = set()\n\n\ndef new_files(folder):\n    found = []\n    for root, _dirs, names in os.walk(folder):\n        for name in names:\n            path = os.path.join(root, name)\n            if path not in SEEN:\n                SEEN.add(path)\n                found.append(path)\n    return found\n\n\ndef run(folder, handle, every=60):\n    while True:\n        for path in new_files(folder):\n            handle(path)\n        time.sleep(every)\n",
+  "combwatch/store.py": "import csv\n\nCOLUMNS = [\"ts\", \"yard\", \"hive\", \"weight_g\", \"brood_c10\", \"battery_mv\", \"flag\"]\n\n\ndef append(rows, path):\n    with open(path, \"a\", newline=\"\") as fh:\n        writer = csv.DictWriter(fh, fieldnames=COLUMNS)\n        for row in rows:\n            writer.writerow(row)\n",
+  "combwatch/__init__.py": "",
+  "incoming/sample.json": "{\"_synthetic\": true, \"note\": \"one invented reading\", \"ts\": \"2026-04-03T00:00:00Z\", \"yard\": \"yard-01\", \"hive\": \"h01\", \"weight_g\": 26000, \"brood_c10\": 300, \"battery_mv\": 3500}\n",
+  "README.md": "# combwatch\n\nSmall service for a beekeeping co-op. Scales under the hives drop a reading file into `incoming/`. The service reads them, stores the rows and raises alerts.\n\nStatus: skeleton. Nothing here is wired together yet.\n\n- `combwatch/parse.py` turns one reading file into rows.\n- `combwatch/poll.py` looks for new files in `incoming/`.\n- `combwatch/store.py` writes rows to disk.\n- `combwatch/alerts.py` checks rows against the rules.\n- `rules/` is for alert rules.\n",
+  "rules/.keep": ""
+ }
+}
