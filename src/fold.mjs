@@ -11,7 +11,7 @@ export function foldSession(session, grader, { sampleSeed }) {
     typed: session.typed.length, labelled: 0, goneSamples: [], auditPool: [],
   };
   const counted = session.typed.filter(({ text }) => {
-    const length = [...text].length;
+    const length = Array.from(text).length;
     if (length < 20) { fold.notCounted.short++; return false; }
     if (length > 1500) { fold.notCounted.pasted++; return false; }
     return true;
