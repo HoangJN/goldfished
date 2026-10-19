@@ -19,6 +19,7 @@
   ],
   "scripts": {
     "test": "node --import ./test/no-network.mjs --test",
-    "gate": "node scripts/gate.mjs"
+    "gate": "node scripts/gate.mjs",
+    "coverage": "node --import ./test/no-network.mjs --experimental-test-coverage --test-coverage-lines=90 --test-coverage-branches=80 --test-coverage-include=\"src/**\" --test-coverage-include=\"bin/**\" --test-coverage-include=\"hooks/**\" --test-coverage-exclude=\"test/**\" --test-coverage-exclude=\"scripts/**\" --test-coverage-exclude=\"bench/**\" --test"
   }
 }
