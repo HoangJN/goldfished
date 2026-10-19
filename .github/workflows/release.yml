@@ -23,4 +23,5 @@ jobs:
       - run: npm run gate
       - name: Check release tag
         run: node -e "if (process.env.GITHUB_REF_NAME !== 'v' + require('./package.json').version) throw new Error('Release tag must match package version')"
-      - run: npm publish --provenance --access public
+      - run: npm stage --help > /dev/null
+      - run: npm stage publish --provenance --access public

@@ -4,6 +4,8 @@ Report a security problem through GitHub's private vulnerability reporting on th
 
 goldfished reads local agent session files to measure compaction. Card commands and hooks read the project's card, its instruction files and goldfished's local state. The software has zero runtime dependencies, no install scripts and no network code. The gate checks network imports, and the test suite blocks network modules.
 
+Releases are built by GitHub Actions from a version tag. GitHub can only stage a release on npm. It goes live when the maintainer approves it there with a security key, so a stolen GitHub session or a broken action cannot ship a version on its own.
+
 goldfished itself sends nothing. The card is handed to your agent, which sends it to its model like any other prompt.
 
 `retro` writes nothing unless you pass `--save`, which saves counts only. Default output contains no message text, paths below a root or project names. `--json` always contains counts only. `--show` and `--audit` deliberately display text: treat their output as private.
