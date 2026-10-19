@@ -1,0 +1,9 @@
+0
+out:
+goldfished probe: claude-code
+1. Start a new chat with claude-code in this project and ask it anything. Its reply should end with PELICAN.
+2. Make it compact: /compact.
+3. Ask it anything again.
+Then tell goldfished what you saw: goldfished probe claude-code --saw yes   (or --saw no)
+err:
+

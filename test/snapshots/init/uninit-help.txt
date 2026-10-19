@@ -1,0 +1,5 @@
+0
+out:
+goldfished uninit [--yes]
+err:
+

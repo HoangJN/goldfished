@@ -1,0 +1,5 @@
+1
+out:
+
+err:
+goldfished: unknown agent. Try: goldfished init --help

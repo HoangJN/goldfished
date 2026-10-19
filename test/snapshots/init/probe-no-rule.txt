@@ -1,0 +1,5 @@
+1
+out:
+
+err:
+goldfished: there is no probe rule on the card, so nothing was recorded.

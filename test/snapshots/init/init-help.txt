@@ -1,0 +1,5 @@
+0
+out:
+goldfished init [--agents <ids>] [--shared] [--commit] [--yes] [--dry-run]
+err:
+

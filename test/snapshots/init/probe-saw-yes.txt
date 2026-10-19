@@ -1,0 +1,5 @@
+0
+out:
+goldfished: noted. cursor kept your card after compaction (your test, 2026-10-19).
+err:
+

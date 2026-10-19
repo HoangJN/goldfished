@@ -1,0 +1,5 @@
+1
+out:
+
+err:
+goldfished: this card is not trusted on this machine (changed by hand since 2026-10-19), so nothing was changed. If the card is yours, run: goldfished trust
