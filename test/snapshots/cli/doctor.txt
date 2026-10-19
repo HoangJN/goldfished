@@ -4,6 +4,11 @@ Node: <version>
 Node path: <node>
 goldfished home: <project>/home
 Agents: claude-code, codex
+Hook node on PATH: <node>
+Claude Code: plugin not found
+Codex: missing
+Codex runs it only after you trust it once.
+goldfished cannot read Codex trust state without starting Codex.
 Card: none
 Pointer AGENTS.md: missing
 Probes: none

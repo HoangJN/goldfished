@@ -62,6 +62,10 @@ for (const [name, span, censored, expected] of [
   ['long', 4, false, 'Long memory. At least half your words survive 4 compactions.'],
   ['censored', 1, true, 'At least 1 compaction so far.'], ['no-span', null, false, 'Too early to say.'],
 ]) { const r = result(); Object.assign(r.agents[0], { span, censored }); snap(name, r, output => assert.ok(output.includes(expected))); }
+test('a stored Claude Code long verdict also carries the forced-run limit', () => {
+  const r = result(); r.agents[0].verdict = { id: 'long', line: 'Long memory.' };
+  assert.match(text(r).replace(/\n +/gu, ' '), /In our forced runs Claude Code kept every typed decision through 30 compactions; the card is insurance for the summary you did not read\./u);
+});
 const few = result(); Object.assign(few.agents[0], { span: null, headline: null, headlineAge: null, curve: [row(1, 12, 1, 7, 2), row(2, 0, 0, 0, 0)] });
 snap('too-few', few, output => { assert.match(output, /Too few to give a rate yet: 7 of 12 messages \(1 session\)/); assert.ok(!output.includes('\n2 ')); assert.match(output, /too few +too few +too few/); });
 const unlabelled = structuredClone(few); unlabelled.agents[0].curve = [];

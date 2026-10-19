@@ -115,6 +115,10 @@ test('all writes stay in the private home, card folder, previewed files or local
   generate('claude-code', 1, join(w.env.CLAUDE_CONFIG_DIR, 'projects'), { cwd: w.cwd, canary: 'Keep a local index.' });
   writeFileSync(join(w.env.HOME, 'sentinel'), 'Unrelated home file.\n');
   writeFileSync(join(w.cwd, 'sentinel'), 'Unrelated project file.\n');
+  const fakeBin = join(w.base, 'bin'), marker = join(w.base, 'claude-started'), pathKey = Object.keys(w.env).find(key => key.toLowerCase() === 'path') ?? 'PATH'; mkdirSync(fakeBin);
+  writeFileSync(join(fakeBin, process.platform === 'win32' ? 'claude.cmd' : 'claude'), process.platform === 'win32' ? '@echo off\r\necho started>"%B24_CLAUDE_MARKER%"\r\n' : '#!/bin/sh\nprintf started > "$B24_CLAUDE_MARKER"\n', { mode: 0o755 });
+  w.env[pathKey] = fakeBin + (process.platform === 'win32' ? ';' : ':') + (w.env[pathKey] ?? process.env.PATH); w.env.B24_CLAUDE_MARKER = marker;
+  const probe = spawnSync('claude', [], { cwd: w.cwd, env: w.env, shell: process.platform === 'win32', encoding: 'utf8' }); assert.equal(probe.status, 0, probe.stderr); assert.ok(existsSync(marker)); rmSync(marker);
   let before = listing(w.base), processBefore = listing(sandbox);
   const preview = w.cli('init', '--agents', 'claude-code,codex,cursor', '--dry-run');
   assert.equal(preview.status, 0, preview.stderr); assert.deepEqual(listing(w.base), before);
@@ -123,6 +127,7 @@ test('all writes stay in the private home, card folder, previewed files or local
   assert.ok(planned.includes(`${project}/AGENTS.md`) && planned.includes(`${project}/CLAUDE.md`));
   const directories = ['goldfished', `${project}/.goldfished`], files = [...planned, `${project}/.git/info/exclude`];
   const check = () => {
+    assert.ok(!existsSync(marker), 'Claude started without consent.');
     const after = listing(w.base);
     for (const name of new Set([...Object.keys(before), ...Object.keys(after)])) if (before[name] !== after[name]) {
       const permitted = directories.some(dir => name === dir || name.startsWith(dir + '/')) || files.includes(name) ||

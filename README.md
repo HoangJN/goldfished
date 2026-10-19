@@ -94,7 +94,9 @@ goldfished rule "Keep the index on this machine."
 goldfished out "Hosted search" --quote "Do not send the index to a hosted service."
 ```
 
-`init` ends by printing the hook step; `goldfished hooks <agent>` prints it again.
+`init` asks for your goal and offers to install the hook after a y/N. `doctor` tells you whether it is in place.
+
+For a ten-second test on a fresh card with your goal, type `rule: never push to main` in your agent, then `/compact`; you should see `goldfished: card re-sent after compaction: 1 goal, 1 rule, 0 ruled out.`
 
 Use `npx goldfished@latest <command>` for each command if goldfished is not installed. Card changes come from you, at a terminal or through the two chat prefixes; agents can only propose. You accept or reject their proposals. A changed file is not trusted until its fingerprint matches the one recorded on this machine.
 
@@ -107,9 +109,9 @@ These claims are backed by the fixture tests and live proofs in [TESTED.md](TEST
 | Agent | retro | What `init` gives it | Re-send after compaction | In-chat prefixes |
 | --- | --- | --- | --- | --- |
 | claude-code | curve | CLAUDE.md pointer if untracked or `--shared`; the plugin is the main route | plugin hook | `rule:`, `gf:` |
-| codex | curve, invented-file tests only; live transcript proof failed | AGENTS.md pointer | hook, after you trust it in Codex | `rule:`, `gf:` |
+| codex | curve; live proof CX4 | AGENTS.md pointer | hook, after you trust it in Codex | `rule:`, `gf:` |
 
-The live proofs record agent versions in TESTED.md. Interactive display has not been observed in those headless proofs. Claude Code's plugin uninstall can leave an orphaned cached copy; the failed residue proof records that limit. Codex's tested live transcript did not expose typed messages in the form the adapter reads, so its fixture curve is not a claim of working live retro support.
+The live proofs record agent versions in TESTED.md. Interactive display has not been observed in those headless proofs. Claude Code's plugin uninstall can leave an orphaned cached copy; the failed residue proof records that limit. CX4 shows Codex typed messages found and graded across seven real compactions.
 
 ## Commands
 

@@ -1,6 +1,7 @@
-import { existsSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, statSync } from 'node:fs';
+import { run } from '../git.mjs';
 import { homedir } from 'node:os';
-import { join, resolve, parse } from 'node:path';
+import { join, resolve, parse, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createInterface } from 'node:readline/promises';
 import { command, inHome } from './card.mjs';
@@ -28,14 +29,37 @@ async function read(adapter, roots, sinceMs) {
   return { tally, compactions };
 }
 const noArgs = (args, name) => { if (args.positional.length) throw new Error(`Unexpected arguments for ${name}.`); };
-export function hookStep(agent) {
+export function hookIO(io) {
+  io.run ??= (program, args) => run(program, args, { cwd: io.cwd, env: { ...process.env, ...io.env } });
+  io.read ??= file => { try { return readFileSync(file, 'utf8'); } catch (error) { if (error.code === 'ENOENT') return null; throw error; } };
+  io.write ??= (file, text) => { mkdirSync(dirname(file), { recursive: true }); writeFileSync(file, text); };
+  io.launcher ??= fileURLToPath(new URL('../../hooks/run.mjs', import.meta.url)).replaceAll('\\', '/');
+  return io;
+}
+export function claudePlugin(io) {
+  try { return Object.hasOwn(JSON.parse(io.read(join(io.env.CLAUDE_CONFIG_DIR || join(homedir(), '.claude'), 'plugins/installed_plugins.json')) ?? '{}')?.plugins ?? {}, 'goldfished@goldfished') ? 'plugin installed' : 'plugin not found'; } catch { return 'could not check'; }
+}
+export const codexFile = io => join(io.env.CODEX_HOME || join(homedir(), '.codex'), 'hooks.json');
+export function codexHooks(io) {
+  if (io.launcher.includes('_npx')) return null;
+  const hook = event => ({ type: 'command', command: `node "${io.launcher}" codex ${event}` });
+  return { SessionStart: [{ matcher: 'compact', hooks: [hook('session-start')] }], UserPromptSubmit: [{ hooks: [hook('prompt')] }] };
+}
+export function readHooks(io) {
+  const before = io.read(codexFile(io)), data = before === null ? {} : JSON.parse(before);
+  if (!data || Array.isArray(data) || typeof data !== 'object' || (data.hooks !== undefined && (!data.hooks || Array.isArray(data.hooks) || typeof data.hooks !== 'object')) ||
+    Object.values(data.hooks ?? {}).some(rows => !Array.isArray(rows))) throw new SyntaxError('Invalid hooks.json.');
+  return { before, data };
+}
+export const hasHooks = (data, wanted) => !!wanted && Object.entries(wanted).every(([event, rows]) => rows.every(row => data.hooks?.[event]?.some(item => item?.matcher === row.matcher && row.hooks.every(hook => item.hooks?.some(other => other?.type === hook.type && other.command === hook.command)))));
+export function hookStep(agent, io = {}) {
   if (agent === 'claude-code' && ['P1', 'P3', 'P5', 'P6', 'P6-auto', 'P10'].every(key => claude[key]))
     return ['claude plugin marketplace add HoangJN/goldfished\nclaude plugin install goldfished@goldfished'];
   if (agent === 'codex' && codex.CX1 && codex.CX2) {
-    const launcher = fileURLToPath(new URL('../../hooks/run.mjs', import.meta.url)).replaceAll('\\', '/');
-    const hook = event => ({ type: 'command', command: `node "${launcher}" codex ${event}` });
+    const hooks = codexHooks(hookIO(io));
+    if (!hooks) return ['The npx copy is temporary. Install a stable copy for the Codex hook:\nnpm install -g goldfished\ngoldfished init'];
     return ['npm install -g goldfished\nPut these entries in your Codex home\'s hooks.json.\nCodex asks you to trust a new hook once.',
-      JSON.stringify({ hooks: { SessionStart: [{ matcher: 'compact', hooks: [hook('session-start')] }], UserPromptSubmit: [{ hooks: [hook('prompt')] }] } }, null, 2)];
+      JSON.stringify({ hooks }, null, 2)];
   }
   return [];
 }
@@ -85,6 +109,18 @@ export const commands = {
     const top = project.topLevel(directory), dir = homePath(io);
     io.out(`Node: ${nodeVersion}\nNode path: ${process.execPath}\ngoldfished home: ${dir}`);
     io.out(`Agents: ${adapters.filter(adapter => adapter.roots(io.env, homedir()).some(existsSync)).map(adapter => adapter.id).join(', ') || 'none'}`);
+    hookIO(io);
+    const node = io.run('node', ['-p', 'process.execPath']);
+    io.out(node.status === 0 ? `Hook node on PATH: ${node.stdout.trim()}` : 'node not found on PATH: the hook will not run');
+    io.out(`Claude Code: ${claudePlugin(io)}`);
+    try {
+      const data = readHooks(io).data;
+      const launcher = data.hooks?.SessionStart?.flatMap(row => row?.hooks ?? []).map(hook => /^node "(.+\/hooks\/run\.mjs)" codex session-start$/u.exec(hook?.command)).find(Boolean)?.[1] ?? io.launcher;
+      io.out(`Codex: ${hasHooks(data, codexHooks({ launcher })) ? 'hook entries present' : 'missing'}`);
+    }
+    catch { io.out('Codex: could not check hooks.json'); }
+    io.out('Codex runs it only after you trust it once.');
+    io.out('goldfished cannot read Codex trust state without starting Codex.');
     return inHome(io, () => {
       const loaded = store.load(top), state = home.state(), settings = state.projects?.[top] ?? {};
       io.out(`Card: ${!existsSync(loaded.cardPath) ? 'none' : loaded.trusted ? 'trusted' : `not trusted: ${loaded.reason}`}`);
@@ -126,7 +162,7 @@ export const commands = {
   hooks: command('hooks', '<agent>', {}, (args, io) => {
     const [agent] = args.positional;
     if (args.positional.length !== 1 || !META[agent]) { io.err('goldfished: give a known agent. Try: goldfished hooks --help'); return 1; }
-    const steps = hookStep(agent);
+    const steps = hookStep(agent, io);
     if (steps.length) for (const text of steps) io.out(text);
     else io.out(`goldfished: ${agent} has no hook goldfished can use yet. ${META[agent].rulesFile ? 'init gives it an inline rules file' : 'init gives it a pointer to the card'}. Check what it receives with: goldfished card --agent ${agent}`);
     return 0;

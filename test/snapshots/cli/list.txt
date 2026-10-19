@@ -12,5 +12,7 @@ out:
 ## RULED OUT
 [x01 | 2026-10-18] Redis. User said: "Never use Redis here."
 trusted on this machine
+Earlier wording
+[r01 | 2026-10-18] Never push to main. (edited 2026-10-18)
 err:
 

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname, relative } from 'node:path';
 import { topLevel, commonDir, mainCheckout, exclude } from '../src/project.mjs';
@@ -26,6 +26,7 @@ test('no repo returns the supplied cwd', t => {
   const cwd = join(scratch(t), 'no repo');
   mkdirSync(cwd);
   assert.equal(topLevel(cwd), cwd);
+  assert.deepEqual(exclude(cwd, '.goldfished/'), { added: false }); assert.ok(!existsSync(join(cwd, '.git')));
 });
 
 for (const absolute of [false, true]) {

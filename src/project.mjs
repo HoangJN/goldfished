@@ -10,7 +10,7 @@ function read(file) {
   }
 }
 
-function gitDir(top) {
+export function gitDir(top) {
   const marker = join(top, '.git');
   try {
     if (statSync(marker).isDirectory()) return marker;
@@ -43,6 +43,7 @@ export function mainCheckout(top) {
 }
 
 export function exclude(top, line) {
+  if (!gitDir(top)) return { added: false };
   const info = join(commonDir(top), 'info');
   const file = join(info, 'exclude');
   const text = read(file) ?? '';

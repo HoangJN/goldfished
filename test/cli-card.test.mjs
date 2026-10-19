@@ -34,6 +34,8 @@ test('card commands use actions and keep the replies', async t => {
     ['drop', ['r01']], ['restore', ['r01']], ['list'], ['card'], ['card', [], { agent: 'codex' }], ['trust'],
   ];
   for (const [name, positional, flags] of cases) matchSnapshot('cli', name === 'card' && flags ? 'card-codex' : name, await s.run(name, positional, flags));
+  assert.match(await s.run('list'), /Earlier wording\n\[r01 \| 2026-10-18\] Never push to main\. \(edited 2026-10-18\)/u);
+  assert.ok(!(await s.run('card', [], { agent: 'codex' })).includes('Never push to main.'));
   writeFileSync(join(s.cwd, '.goldfished/card.md'), readFileSync(join(s.cwd, '.goldfished/card.md'), 'utf8') + '\n');
   assert.equal((await s.run('rule', ['Keep the gate shut.'])).startsWith('1\n'), true);
   assert.match(s.err.join(''), /not trusted/);

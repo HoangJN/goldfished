@@ -6,7 +6,9 @@ Memory span: 4 compactions
 23 in 100 of your messages were still in front of the agent after 3 compactions
 (95% range 16 to 32), 700 messages, 17 sessions, claude-code, 3 Apr 2025 to 27
   Apr 2025.
-Long memory. At least half your words survive 4 compactions.
+Long memory. At least half your words survive 4 compactions. In our forced runs
+  Claude Code kept every typed decision through 30 compactions; the card is
+  insurance for the summary you did not read.
 With the card re-sent after compaction (15 sessions): 79 in 100 kept after 3
   compactions.
 This counts your words in what the agent can still see (the summary and the

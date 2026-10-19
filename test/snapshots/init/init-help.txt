@@ -1,5 +1,5 @@
 0
 out:
-goldfished init [--agents <ids>] [--shared] [--commit] [--yes] [--dry-run]
+goldfished init [--agents <ids>] [--goal <text>] [--install-hook] [--shared] [--commit] [--yes] [--dry-run]
 err:
 

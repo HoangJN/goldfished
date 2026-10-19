@@ -1,5 +1,5 @@
 import { wrap, number, plural, per100, size, secs, date } from './wrap.mjs';
-import { FISH, verdict } from './fun.mjs';
+import { FISH, verdict, insurance } from './fun.mjs';
 import { measurable } from './stats.mjs';
 
 const span = a => a.span === null ? 'too few' : `${a.censored ? 'at least ' : ''}${number(a.span)}`;
@@ -31,7 +31,8 @@ export function text(r, { tty = false, noColor = false } = {}) {
       const last = [...a.curve].filter(row => row.messages).sort((x, y) => y.age - x.age)[0];
       if (last) add(`Too few to give a rate yet: ${number(last.kept)} of ${plural(last.messages, 'message')} (${plural(last.sessions, 'session')}) were still there after ${plural(last.age, 'compaction')}.`);
     }
-    add((a.verdict ?? verdict(a)).line);
+    const v = a.verdict ?? verdict(a);
+    add(v.line + (a.id === 'claude-code' && ['long', 'at_least'].includes(v.id) && !v.line.includes(insurance) ? ` ${insurance}` : ''));
     if (r.history?.[a.id]) add(`Span last time (${date(r.history[a.id].date)}): ${span(r.history[a.id])}. Now: ${span(a)}.`);
     if (a.card) add(a.card.keptPer100 === null ? `${plural(a.card.sessions, 'session')} had the card re-sent after compaction; they are counted apart.` : `With the card re-sent after compaction (${plural(a.card.sessions, 'session')}): ${number(a.card.keptPer100)} in 100 kept after ${plural(a.card.age, 'compaction')}.`);
     add('This counts your words in what the agent can still see (the summary and the recent messages it keeps), not whether it still acted on them.');
