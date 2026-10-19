@@ -1,5 +1,6 @@
 0
 out:
+Your goal, in a line (Enter to skip): 
 --- /dev/null
 +++ AGENTS.md
 @@ -0,0 +1,4 @@
@@ -40,5 +41,6 @@ out:
 +CONVENTIONS.md
 +.cursor/rules/goldfished.mdc
 Aider reads CONVENTIONS.md only if you start it with --read CONVENTIONS.md or add read: CONVENTIONS.md to .aider.conf.yml.
+Done. Test it now: type /compact in your agent. You should see: goldfished: card re-sent after compaction: 0 goals, 1 rule, 0 ruled out.
 err:
 

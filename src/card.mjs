@@ -72,7 +72,7 @@ export function edit(card, archive, id, text, today) {
   if (section === 'out' && !parts) return { refused: 'goldfished: give the ruled out entry a label and user quote.' };
   const entry = { id, date: today, ...(parts ? { label: parts[1], quote: parts[2] } : { text }) };
   const refused = cap(card, section, entry);
-  return refused || { card: { ...card, [section]: section === 'goal' ? entry : card[section].map(item => item.id === id ? entry : item) }, archive: [...archive] };
+  return refused || { card: { ...card, [section]: section === 'goal' ? entry : card[section].map(item => item.id === id ? entry : item) }, archive: [...archive, { section, entry: entries(card).find(item => item.id === id), reason: 'edited', date: today }] };
 }
 
 export function drop(card, archive, id, today) {
@@ -83,7 +83,8 @@ export function drop(card, archive, id, today) {
 }
 
 export function restore(card, archive, id, today) {
-  const saved = archive.find(item => item.entry.id === id);
+  const saved = archive.find(item => item.entry.id === id && item.reason !== 'edited') ?? archive.find(item => item.entry.id === id);
+  if (saved?.reason === 'edited') return { refused: `goldfished: ${id} is earlier wording, not a dropped entry. It cannot be restored.` };
   if (!saved || entries(card).some(item => item.id === id)) return { refused: `goldfished: ${id} cannot be restored.` };
   const { section, entry } = saved, refused = cap(card, section, entry, 1);
   if (refused) return refused;

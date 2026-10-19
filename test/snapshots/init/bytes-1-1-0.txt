@@ -36,5 +36,6 @@ out:
  # *.[oa]
  # *~
 +.goldfished/
+Done. Test it now: type /compact in your agent. You should see: goldfished: card re-sent after compaction: 0 goals, 0 rules, 0 ruled out.
 err:
 

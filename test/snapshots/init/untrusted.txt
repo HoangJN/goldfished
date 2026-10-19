@@ -4,6 +4,7 @@ out:
 [r01 | 2026-10-19] Keep the harbour open.
 
 This card was already here. If it is yours, run: goldfished trust
+Your goal, in a line (Enter to skip): 
 --- /dev/null
 +++ AGENTS.md
 @@ -0,0 +1,4 @@
@@ -23,5 +24,6 @@ This card was already here. If it is yours, run: goldfished trust
  # *~
 +.goldfished/
 +AGENTS.md
+Done. Test it now: type /compact in your agent. You should see: goldfished: card re-sent as project documentation, because it is not trusted on this machine. If it is yours, run: goldfished trust
 err:
 

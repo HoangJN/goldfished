@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, cpSync, writeFileSync, readdirSync, existsSync,
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { commands } from '../src/cli/misc.mjs';
+import { commands, codexHooks } from '../src/cli/misc.mjs';
 import { commands as card } from '../src/cli/card.mjs';
 import * as pointer from '../src/pointer.mjs';
 import { matchSnapshot } from './snapshot.mjs';
@@ -13,7 +13,8 @@ function setup(t) {
   const cwd = mkdtempSync(join(tmpdir(), 'gfm-')), out = [], err = [];
   t.after(() => rmSync(cwd, { recursive: true, force: true }));
   const io = { out: s => out.push(s), err: s => err.push(s), cwd, isTTY: false, today: '2026-10-18', nowMs: Date.now(),
-    env: { GOLDFISHED_HOME: join(cwd, 'home'), CLAUDE_CONFIG_DIR: join(cwd, 'claude'), CODEX_HOME: join(cwd, 'codex') } };
+    env: { GOLDFISHED_HOME: join(cwd, 'home'), CLAUDE_CONFIG_DIR: join(cwd, 'claude'), CODEX_HOME: join(cwd, 'codex') },
+    run: program => program === 'node' ? { status: 0, stdout: process.execPath } : { error: { code: 'ENOENT' }, status: null } };
   mkdirSync(join(cwd, 'claude/projects'), { recursive: true }); mkdirSync(join(cwd, 'codex'), { recursive: true });
   cpSync(new URL('./fixtures/claude-code', import.meta.url), join(cwd, 'claude/projects'), { recursive: true });
   cpSync(new URL('./fixtures/codex/sessions', import.meta.url), join(cwd, 'codex/sessions'), { recursive: true });
@@ -30,6 +31,21 @@ test('shapes tallies every fixture without exposing its messages or paths', asyn
   for (const flags of [{ dir: s.cwd }, { agent: 'all', dir: s.cwd }]) matchSnapshot('cli', 'shapes-dir-refused', await s.run('shapes', [], flags));
   assert.match(await s.run('shapes', [], { agent: 'unknown' }), /^1\n/u);
   assert.match(await s.run('shapes', [], { agent: 'claude-code', dir: 'claude/projects' }), /^0\n/u);
+});
+
+test('doctor checks plugin, hook entries and the hook node; hooks refuses npx paths', async t => {
+  const s = setup(t); s.io.launcher = '/installed/hooks/run.mjs';
+  for (const present of [false, true]) {
+    s.io.run = program => ({ status: present ? 0 : 1, stdout: program === 'node' ? '/path/node' : present ? 'goldfished@goldfished' : '' });
+    s.io.read = () => JSON.stringify({ hooks: present ? codexHooks(s.io) : {} });
+    const output = await s.run('doctor'); assert.ok(output.includes(present ? 'plugin installed' : 'plugin not found'));
+    assert.ok(output.includes(present ? 'hook entries present' : 'Codex: missing')); assert.ok(output.includes(present ? 'Hook node on PATH: /path/node' : 'node not found on PATH: the hook will not run'));
+    assert.ok(output.includes('Codex runs it only after you trust it once.'));
+  }
+  const installed = codexHooks(s.io); s.io.read = () => JSON.stringify({ hooks: installed });
+  s.io.launcher = '/cache/_npx/hooks/run.mjs'; assert.match(await s.run('doctor'), /hook entries present/u);
+  const output = await s.run('hooks', ['codex']);
+  assert.match(output, /npx copy is temporary/u); assert.ok(!output.includes('hooks.json')); assert.ok(!output.includes('/cache/'));
 });
 test('doctor, card and list keep the canary out of output', async t => {
   const s = setup(t);

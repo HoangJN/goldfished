@@ -20,7 +20,7 @@ function archiveText(archive) {
 }
 function archiveParse(source) {
   return [...source.replace(/\r\n/g, '\n').matchAll(/^\[([grx]\d{2,}) \| [^\n]+(?:\n  [^\n]*)*/gm)].map(([text, id]) => {
-    const end = / \((dropped|replaced) (\d{4}-\d{2}-\d{2})\)$/.exec(text), section = sections[id[0]];
+    const end = / \((dropped|replaced|edited) (\d{4}-\d{2}-\d{2})\)$/.exec(text), section = sections[id[0]];
     if (!end) throw new SyntaxError('Invalid archive entry.');
     const parsed = cardIO.parse(`## ${titles[section]}\n${text.slice(0, end.index)}\n`);
     if (parsed.errors.length) throw new SyntaxError('Invalid archive entry.');

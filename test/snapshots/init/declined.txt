@@ -1,5 +1,6 @@
 0
 out:
+Your goal, in a line (Enter to skip): 
 --- /dev/null
 +++ .goldfished/card.md
 @@ -0,0 +1,11 @@

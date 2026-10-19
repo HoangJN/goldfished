@@ -4,6 +4,7 @@ import * as project from '../project.mjs';
 import * as store from '../store.mjs';
 import * as proposals from '../proposals.mjs';
 import { adapters } from '../agents/index.mjs';
+import { mask } from '../mask.mjs';
 
 export function inHome(io, fn) {
   const previous = process.env.GOLDFISHED_HOME;
@@ -52,7 +53,13 @@ export const commands = Object.fromEntries(Object.entries(definitions).map(([nam
     if (name === 'accept' && args.flags.rule) values.push('--rule');
     const { cwd: directory } = io;
     const { code, reply } = inHome(io, () => actions.run(project.topLevel(directory), name, values, { today: io.today, via: 'cli' }));
-    io[code ? 'err' : 'out'](reply); return code;
+    io[code ? 'err' : 'out'](reply);
+    if (name === 'list' && !code) {
+      const archive = inHome(io, () => store.load(project.topLevel(directory)).archive);
+      if (archive.length) io.out(mask('Earlier wording\n' + archive.map(({ entry, reason, date }) =>
+        `[${entry.id} | ${entry.date}] ${entry.text ?? `${entry.label}. User said: "${entry.quote}"`} (${reason} ${date})`).join('\n'), 'display'));
+    }
+    return code;
   }, !['list', 'card'].includes(name)),
 ]));
 const normal = text => text.trim().replace(/\s+/gu, ' ').toLowerCase();

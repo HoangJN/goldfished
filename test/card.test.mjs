@@ -68,6 +68,9 @@ test('archive, replacements, edits, restores and ids stay immutable', () => {
   assert.ok(edit(restored.card, restored.archive, 'g01', 'a'.repeat(601), today).refused);
   assert.equal(serialise(restored.card), before); assert.equal(JSON.stringify(restored.archive), saved);
   assert.equal(edit(restored.card, restored.archive, 'g01', 'Changed', '2026-10-19').card.goal.date, '2026-10-19');
+  const edited = edit(restored.card, restored.archive, 'g01', 'Changed', '2026-10-19');
+  assert.deepEqual(edited.archive.at(-1), { section: 'goal', entry: restored.card.goal, reason: 'edited', date: '2026-10-19' });
+  assert.match(restore(empty(), [edited.archive.at(-1)], 'g01', today).refused, /earlier wording, not a dropped entry/u);
   assert.ok(drop(empty(), [], 'r01', today).refused); assert.ok(restore(empty(), [], 'r01', today).refused);
 });
 

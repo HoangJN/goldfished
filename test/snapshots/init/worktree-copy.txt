@@ -1,6 +1,7 @@
 0
 out:
 Copy the main checkout's card with this plan?
+Your goal, in a line (Enter to skip): 
 --- /dev/null
 +++ .goldfished/card.md
 @@ -0,0 +1,11 @@
@@ -27,5 +28,6 @@ Copy the main checkout's card with this plan?
 @@ -0,0 +1,2 @@
 +.goldfished/
 +AGENTS.md
+Done. Test it now: type /compact in your agent. You should see: goldfished: card re-sent after compaction: 0 goals, 1 rule, 0 ruled out.
 err:
 

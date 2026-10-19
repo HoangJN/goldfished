@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { FISH, verdict } from '../src/fun.mjs';
+import { FISH, verdict, insurance } from '../src/fun.mjs';
+import { readFileSync } from 'node:fs';
 
 test('fish and all verdict lines are literal', () => {
   assert.equal(FISH, '><(((o>   ');
@@ -17,4 +18,11 @@ test('fish and all verdict lines are literal', () => {
     { id: 'too_early', line: 'Too early to say. Too few compacted messages so far.' });
   assert.deepEqual(verdict({ span: 6, censored: false }),
     { id: 'long', line: 'Long memory. At least half your words survive 6 compactions.' });
+});
+
+test('Claude Code long verdicts carry the forced-run limit and plugin versions match', () => {
+  for (const [span, censored] of [[4, false], [1, true], [1, false], [null, true]]) {
+    const base = verdict({ span, censored }); assert.equal(verdict({ span, censored, id: 'claude-code' }).line, base.line + (span !== null && (censored || span >= 3) ? ` ${insurance}` : ''));
+  }
+  assert.equal(JSON.parse(readFileSync(new URL('../package.json', import.meta.url))).version, JSON.parse(readFileSync(new URL('../.claude-plugin/plugin.json', import.meta.url))).version);
 });

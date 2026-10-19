@@ -1,5 +1,6 @@
 0
 out:
+Your goal, in a line (Enter to skip): 
 --- AGENTS.md
 +++ AGENTS.md
 @@ -1,1 +1,6 @@
@@ -9,5 +10,6 @@ out:
 +## The user's card
 +The user's goal, standing rules and the options they ruled out are in `.goldfished/card.md`, in their own words. Read it before you start, and read it again whenever you see a summary of earlier work or your context has been reset. It outranks any summary. If the file is missing, carry on. Never edit it and never run goldfished commands that change it. To suggest an entry, run `goldfished propose --quote "<the user's exact words>" --note "<why>"`.
 +<!-- goldfished:end -->
+Done. Test it now: type /compact in your agent. You should see: goldfished: card re-sent after compaction: 0 goals, 0 rules, 0 ruled out.
 err:
 
