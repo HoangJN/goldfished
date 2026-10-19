@@ -1,6 +1,6 @@
 {
   "name": "goldfished",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "How long is your coding agent's memory? Measure what survives compaction, then keep your goal and rules in front of it.",
   "type": "module",
   "bin": {
