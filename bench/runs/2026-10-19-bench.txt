@@ -1,0 +1,39 @@
+machine Intel(R) Core(TM) Ultra 9 290HX Plus memory=63.46GiB win32 node=v24.19.0
+run claude-code warm-1 gib=6 bytes=6442450944 wall=11.214s cpu=12.624s peak=354.443MB
+run codex warm-1 gib=6 bytes=6442450944 wall=25.034s cpu=27.093s peak=335.938MB
+run claude-code warm-2 gib=6 bytes=6442450944 wall=11.397s cpu=13.796s peak=358.822MB
+run codex warm-2 gib=6 bytes=6442450944 wall=24.075s cpu=27.327s peak=367.604MB
+run claude-code warm-3 gib=6 bytes=6442450944 wall=10.540s cpu=12.812s peak=359.743MB
+run codex warm-3 gib=6 bytes=6442450944 wall=24.809s cpu=27.640s peak=370.614MB
+run claude-code warm-4 gib=6 bytes=6442450944 wall=10.488s cpu=12.327s peak=366.060MB
+run codex warm-4 gib=6 bytes=6442450944 wall=24.195s cpu=27.140s peak=368.071MB
+run claude-code warm-5 gib=6 bytes=6442450944 wall=10.464s cpu=12.233s peak=357.466MB
+run codex warm-5 gib=6 bytes=6442450944 wall=24.568s cpu=27.249s peak=367.219MB
+run claude-code scale-0.5-1 gib=0.5 bytes=536870912 wall=2.305s cpu=1.686s peak=273.895MB
+run codex scale-0.5-1 gib=0.5 bytes=536870912 wall=1.715s cpu=2.108s peak=349.573MB
+run claude-code scale-0.5-2 gib=0.5 bytes=536870912 wall=1.408s cpu=1.718s peak=279.458MB
+run codex scale-0.5-2 gib=0.5 bytes=536870912 wall=2.340s cpu=1.889s peak=345.719MB
+run claude-code scale-0.5-3 gib=0.5 bytes=536870912 wall=1.440s cpu=1.765s peak=285.106MB
+run codex scale-0.5-3 gib=0.5 bytes=536870912 wall=2.028s cpu=2.124s peak=337.523MB
+run claude-code scale-1-1 gib=1 bytes=1073741824 wall=2.741s cpu=2.577s peak=286.527MB
+run codex scale-1-1 gib=1 bytes=1073741824 wall=4.563s cpu=4.515s peak=375.226MB
+run claude-code scale-1-2 gib=1 bytes=1073741824 wall=2.674s cpu=2.858s peak=293.024MB
+run codex scale-1-2 gib=1 bytes=1073741824 wall=4.171s cpu=4.374s peak=366.973MB
+run claude-code scale-1-3 gib=1 bytes=1073741824 wall=2.245s cpu=2.703s peak=291.680MB
+run codex scale-1-3 gib=1 bytes=1073741824 wall=4.416s cpu=4.499s peak=367.337MB
+run claude-code scale-2-1 gib=2 bytes=2147483648 wall=4.756s cpu=5.186s peak=308.470MB
+run codex scale-2-1 gib=2 bytes=2147483648 wall=8.106s cpu=9.124s peak=364.876MB
+run claude-code scale-2-2 gib=2 bytes=2147483648 wall=5.028s cpu=5.093s peak=301.621MB
+run codex scale-2-2 gib=2 bytes=2147483648 wall=7.483s cpu=8.718s peak=364.950MB
+run claude-code scale-2-3 gib=2 bytes=2147483648 wall=4.117s cpu=4.390s peak=300.872MB
+run codex scale-2-3 gib=2 bytes=2147483648 wall=7.443s cpu=8.608s peak=364.306MB
+run claude-code fresh-1 gib=6 bytes=6442450944 wall=12.178s cpu=13.374s peak=349.901MB
+run codex fresh-1 gib=6 bytes=6442450944 wall=25.338s cpu=27.765s peak=374.161MB
+bar claude-code warm-median pass 10.540s <= 60s
+bar claude-code first-run pass 12.178s <= 90s
+bar claude-code peak-memory pass 366.060MB <= 400MB
+bar claude-code time-per-GiB pass 0.00% growth <= 20%; baseline=2.879s/GiB; medians=3
+bar codex warm-median pass 24.568s <= 60s
+bar codex first-run pass 25.338s <= 90s
+bar codex peak-memory pass 375.226MB <= 400MB
+bar codex time-per-GiB pass 8.87% growth <= 20%; baseline=4.056s/GiB; medians=3

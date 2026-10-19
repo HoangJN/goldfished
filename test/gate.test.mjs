@@ -158,6 +158,34 @@ test('a long mixed run is caught, a long plain word is not', () => {
   assert.equal(run('a.txt', `${'abcd'.repeat(9)}\n`).length, 0);
 });
 
+test('only the lowercase commit hash on a workflow uses line is exempt', () => {
+  const hash = 'ab12'.repeat(10);
+  const file = '.github/workflows/ci.yml';
+  for (const line of [
+    `uses: owner/repo@${hash}`,
+    `      - uses: owner/repo@${hash} # v1`,
+    `      - uses: owner/repo/path/to/action@${hash}\t# v1`,
+  ]) assert.deepEqual(run(file, line), [], line);
+
+  for (const line of [
+    `      - uses: owner/repo@${'Ab12'.repeat(10)}`,
+    `      - uses: owner/repo@${hash}a`,
+    `      - uses: owner/repo@${'gh12'.repeat(10)}`,
+    `      - uses: owner/repo@${hash} # ${'cd34'.repeat(10)}`,
+    `      - uses: owner/repo@${hash} # ${hash}`,
+    `      - uses: owner/repo@${hash} # ${'cd34'.repeat(8)}`,
+    `revision: ${hash}`,
+    `# uses: owner/repo@${hash}`,
+    `echo uses: owner/repo@${hash}`,
+    `uses: owner@${hash}`,
+    `uses: owner/repo@${hash}#v1`,
+  ]) {
+    assert.deepEqual(run(file, line).map(hit => hit.reason),
+      ['secret shape: long mixed letters and digits'], line);
+  }
+  assert.equal(run(file, `uses: owner/repo@${hash} # ${ANT_KEY}`).length, 1);
+});
+
 test('the allow marker exempts its own line only', () => {
   const found = run('a.txt', `${ANT_KEY} gate-allow\n${ANT_KEY}\nbroken ${EM} gate-allow\n`);
   assert.deepEqual(found.map((f) => f.line), [2]);
