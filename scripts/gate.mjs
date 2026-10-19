@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
 import { existsSync, lstatSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fieldNames } from '../src/agents/claude-code.dialect.mjs';
+import { META } from '../src/agents/meta.mjs';
 
 export const MARKER = 'gate-allow';
 const DASHES = new RegExp('[' + String.fromCharCode(0x2014, 0x2015) + ']');
@@ -234,11 +235,44 @@ export function checkFields(file, text) {
   return out;
 }
 
+export function checkHookKeys(file, text) {
+  if (!file.startsWith('src/') || file.endsWith('.hookio.mjs')) return [];
+  const out = [];
+  for (const key of ['hookSpecificOutput', 'hookEventName', 'additionalContext', 'systemMessage', 'hook_event_name']) {
+    const pattern = new RegExp('([\'"`])' + key + '\\1|\\.\\s*' + key + '(?![\\w$])', 'gu');
+    for (const match of text.matchAll(pattern)) out.push({ line: text.slice(0, match.index).split(/\r?\n/u).length, reason: `hook key ${key} outside hookio` });
+  }
+  return out;
+}
+
+export function checkHookGraph(root) {
+  const seen = new Set(), out = [];
+  const adapters = new Set(['src/agents/index.mjs', ...Object.keys(META).map(id => `src/agents/${id}.mjs`)]);
+  function visit(file) {
+    if (seen.has(file)) return;
+    seen.add(file);
+    if (/^src\/(?:fold|grade|stats)\.mjs$/.test(file) || file.endsWith('.dialect.mjs') || adapters.has(file)) {
+      out.push({ file, line: 0, reason: 'hook import graph reaches forbidden module' }); return;
+    }
+    let text;
+    try { text = readFileSync(join(root, file), 'utf8'); }
+    catch { out.push({ file, line: 0, reason: 'cannot read hook import' }); return; }
+    const imports = /\b(?:import|export)\s+(?:[^'";]*?\s+from\s*)?['"]([^'"]+)['"]|\bimport\s*\(\s*['"`]([^'"`]+)['"`]/g;
+    for (const match of text.matchAll(imports)) {
+      const target = match[1] ?? match[2];
+      if (target.startsWith('.')) visit(posix.normalize(posix.join(posix.dirname(file), target)));
+    }
+  }
+  if (existsSync(join(root, 'src/hook.mjs'))) visit('src/hook.mjs');
+  return out;
+}
+
 export function checkFile({ file, text, denylist = [] }) {
   const found = [];
   const add = (check, list) => list.forEach((f) => found.push({ check, file, ...f }));
   const fixture = file.startsWith('test/fixtures/');
   add('dialect-fields', checkFields(file, text));
+  add('hook-keys', checkHookKeys(file, text));
 
   add('em-dash', checkEmDash(text));
   add('denylist', checkDenylist(text, denylist));
@@ -369,6 +403,7 @@ function main() {
 
   for (const reason of checkHistory(root, denylist)) fail('history', '', 0, reason);
   for (const reason of checkLabels(root)) fail('labels', 'test/labels', 0, reason);
+  for (const f of checkHookGraph(root)) fail('hook-imports', f.file, f.line, f.reason);
 
   for (const f of failures) {
     console.log(f.check === 'history' ? `FAIL history: ${f.reason}` : `FAIL ${f.check}: ${f.file}:${f.line} ${f.reason}`);

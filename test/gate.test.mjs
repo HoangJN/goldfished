@@ -8,6 +8,7 @@ import {
   checkBinaryMarkers,
   checkFile,
   checkHistory,
+  checkHookGraph,
   checkLabels,
   checkImageMetadata,
   checkInvisible,
@@ -19,6 +20,33 @@ const scratch = mkdtempSync(join(tmpdir(), 'goldfished-gate-'));
 after(() => rmSync(scratch, { recursive: true, force: true }));
 
 const EM = String.fromCharCode(0x2014);
+
+test('hook keys belong only in hookio, including optional and bracket access', () => {
+  for (const key of ['hookSpecificOutput', 'hookEventName', 'additionalContext', 'systemMessage', 'hook_event_name']) {
+    for (const body of [`'${key}'`, `x.${key}`, `x?.\n${key}`, `x["${key}"]`, '`' + key + '`']) {
+      for (const file of ['src/a.mjs', 'src/a.dialect.mjs']) assert.ok(run(file, body).some(f => f.check === 'hook-keys'));
+      assert.equal(run('src/a.hookio.mjs', body).length, 0);
+    }
+    assert.equal(run('src/a.mjs', `x.${key}Suffix`).length, 0);
+    assert.ok(run('src/a.mjs', `'${key}'; // gate-allow`).some(f => f.check === 'hook-keys'));
+  }
+});
+
+test('T11 hook imports are followed through static, dynamic and re-export edges', () => {
+  const root = mkdtempSync(join(scratch, 'graph-'));
+  mkdirSync(join(root, 'src/agents'), { recursive: true });
+  for (const target of ['agents/index.mjs', 'agents/claude-code.mjs', 'agents/codex.mjs', 'agents/x.dialect.mjs', 'fold.mjs', 'grade.mjs', 'stats.mjs']) {
+    writeFileSync(join(root, 'src/hook.mjs'), "import './middle.mjs';");
+    writeFileSync(join(root, 'src/middle.mjs'), `export * from './last.mjs';`);
+    for (const edge of [`import './${target}';`, `import {x} from './${target}';`, `await import('./${target}');`, 'await import(`./' + target + '`);', `export * from './${target}';`]) {
+      writeFileSync(join(root, 'src/last.mjs'), edge);
+      assert.deepEqual(checkHookGraph(root).map(f => f.file), ['src/' + target]);
+    }
+  }
+  writeFileSync(join(root, 'src/last.mjs'), "import './hook.mjs'; import 'node:fs';");
+  assert.deepEqual(checkHookGraph(root), []);
+  assert.deepEqual(checkHookGraph(process.cwd()), []);
+});
 const ANT_KEY = ['sk', 'ant', 'x'.repeat(12)].join('-');
 
 function run(file, body, denylist = []) {
