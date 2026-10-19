@@ -1,0 +1,9 @@
+goldfished bug report (counts only)
+goldfished <version>
+node <major>
+platform <platform>
+claude-code: files 31, compaction records understood 58 of 58, malformed lines 1, drift no, rejects meta 1, not_user 137, origin_sdk 1, origin_sdk_legacy 1, summary 29, tool_result 1, wrapper 3
+codex: no folder
+card: trusted
+probe results: 0
+Paste this into a new issue: https://github.com/HoangJN/goldfished/issues/new/choose

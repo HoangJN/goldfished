@@ -140,4 +140,8 @@ The benchmark read 6 GiB in 10.540 s for Claude Code and 24.568 s for Codex, on 
 
 The [raw run logs](bench/runs/) are committed. `node scripts/readme-numbers.mjs` is a presence check: every README number appears in a committed log, TESTED.md or the short list in the script. It also compares the example byte for byte with a fresh demo.
 
+## Contributing
+
+goldfished is tested on Claude Code and Codex. Other agents are welcome: if you use one, your reports and your code are how it gets supported. To report a bug, run `npx goldfished bug` and paste the output into an issue; it prints counts and fixed words only, never session text, a path or a project name. [CONTRIBUTING.md](CONTRIBUTING.md) covers format changes, probing an agent, adding one, and what the checks expect of a pull request.
+
 [MIT licence](LICENSE).
