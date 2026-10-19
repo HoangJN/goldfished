@@ -1,0 +1,43 @@
+name: Bug report
+description: Something goldfished did wrong, or failed to do.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Run `npx goldfished bug` and paste its output below. It prints counts and fixed words only.
+        Do not paste session text, paths or names anywhere in this form.
+  - type: textarea
+    id: ran
+    attributes:
+      label: What you ran
+      description: The command, with any flags.
+      placeholder: npx goldfished retro --days 7
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: The goldfished bug output
+      render: text
+    validations:
+      required: true
+  - type: checkboxes
+    id: clean
+    attributes:
+      label: Privacy
+      options:
+        - label: I have pasted no session text, paths or names
+          required: true

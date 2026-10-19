@@ -1,0 +1,41 @@
+name: Agent report
+description: What goldfished does with an agent other than Claude Code or Codex.
+labels: ["agent"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A probe result is your own observation. It is not a claim the project makes.
+        Do not paste session text, paths or names anywhere in this form.
+  - type: input
+    id: agent
+    attributes:
+      label: Agent and version
+      placeholder: the agent's name, and its version as it reports it
+    validations:
+      required: true
+  - type: textarea
+    id: probe
+    attributes:
+      label: What goldfished probe showed
+      description: Whether the agent kept the card after compaction, and anything odd you saw.
+    validations:
+      required: true
+  - type: dropdown
+    id: finds
+    attributes:
+      label: Does goldfished find this agent's sessions
+      description: Run `npx goldfished bug --agent <id>` to see.
+      options:
+        - "Yes"
+        - "No"
+        - "Not sure"
+    validations:
+      required: true
+  - type: checkboxes
+    id: clean
+    attributes:
+      label: Privacy
+      options:
+        - label: I have pasted no session text, paths or names
+          required: true

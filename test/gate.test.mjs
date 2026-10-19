@@ -460,15 +460,65 @@ test('history: a denylist pattern in a message is refused', () => {
   assert.match(found[0], /message matches denylist pattern "BadWord"$/);
 });
 
-test('history: a different author or committer is refused', () => {
+test('history: another person, as author or committer, is let in', () => {
   const dir = tempRepo();
   commit(dir, '-m', 'Other author', '--author', 'Other <o@example.invalid>');
   const other = { GIT_COMMITTER_NAME: 'Other', GIT_COMMITTER_EMAIL: 'o@example.invalid' };
   git(dir, other, 'commit', '-q', '--allow-empty', '-m', 'Other committer');
+  assert.deepEqual(checkHistory(dir), []);
+});
+
+test('history: a GitHub web committer is let in', () => {
+  const dir = tempRepo();
+  const web = { GIT_COMMITTER_NAME: 'GitHub', GIT_COMMITTER_EMAIL: 'noreply@github.com' };
+  git(dir, web, 'commit', '-q', '--allow-empty', '-m', 'Merged on the web', '--author', 'Other <o@example.invalid>');
+  assert.deepEqual(checkHistory(dir), []);
+});
+
+test('history: the repo email under another name is refused, as author and as committer', () => {
+  const dir = tempRepo();
+  commit(dir, '-m', 'Wrong author name', '--author', 'Someone Else <test@example.invalid>');
+  const other = { GIT_COMMITTER_NAME: 'Someone Else', GIT_COMMITTER_EMAIL: 'TEST@example.invalid' };
+  git(dir, other, 'commit', '-q', '--allow-empty', '-m', 'Wrong committer name');
   const found = checkHistory(dir);
   assert.equal(found.length, 2);
-  assert.match(found[0], /committer Other <o@example.invalid> is not the repo identity$/);
-  assert.match(found[1], /author Other <o@example.invalid> is not the repo identity$/);
+  assert.match(found[0], /committer Someone Else <TEST@example.invalid> uses the repo identity email under another name$/);
+  assert.match(found[1], /author Someone Else <test@example.invalid> uses the repo identity email under another name$/);
+});
+
+test('history: an AI vendor address or a bot name is refused', () => {
+  const dir = tempRepo();
+  commit(dir, '-m', 'Vendor author', '--author', 'Somebody <somebody@anthropic.com>');
+  commit(dir, '-m', 'Other vendor author', '--author', 'Somebody <somebody@OpenAI.com>');
+  const bot = { GIT_COMMITTER_NAME: 'helper[bot]', GIT_COMMITTER_EMAIL: 'bot@example.invalid' };
+  git(dir, bot, 'commit', '-q', '--allow-empty', '-m', 'Bot committer');
+  const found = checkHistory(dir);
+  assert.equal(found.length, 3);
+  assert.match(found[0], /committer helper\[bot\] <bot@example.invalid> is an AI or bot identity$/);
+  assert.match(found[1], /author Somebody <somebody@OpenAI.com> is an AI or bot identity$/);
+  assert.match(found[2], /author Somebody <somebody@anthropic.com> is an AI or bot identity$/);
+});
+
+test('history: where a denylist is loaded, another person matching it is refused', () => {
+  const dir = tempRepo();
+  commit(dir, '-m', 'Named author', '--author', 'Badword Smith <s@example.invalid>');
+  commit(dir, '-m', 'Mailed author', '--author', 'Fine Person <badword@example.invalid>');
+  commit(dir, '-m', 'Clean author', '--author', 'Fine Person <fine@example.invalid>');
+  assert.deepEqual(checkHistory(dir), []);
+  const found = checkHistory(dir, parseDenylist('BadWord\n'));
+  assert.equal(found.length, 2);
+  assert.match(found[0], /author Fine Person <badword@example.invalid> matches the denylist$/);
+  assert.match(found[1], /author Badword Smith <s@example.invalid> matches the denylist$/);
+});
+
+test('history: a trailer or footer is refused on another person\'s commit too', () => {
+  const dir = tempRepo();
+  commit(dir, '-m', 'Other work', '-m', 'Co-Authored-By: Tool <t@example.invalid>', '--author', 'Other <o@example.invalid>'); // gate-allow
+  commit(dir, '-m', 'More work', '-m', 'Generated with a tool', '--author', 'Other <o@example.invalid>'); // gate-allow
+  const found = checkHistory(dir);
+  assert.equal(found.length, 2);
+  assert.match(found[0], /message carries a generated-by footer$/);
+  assert.match(found[1], /message carries a co-author trailer$/);
 });
 
 test('history: git notes are refused', () => {
@@ -499,11 +549,16 @@ test('history: a tag carrying a trailer, a denylist word or another tagger is re
   const other = { GIT_COMMITTER_NAME: 'Other', GIT_COMMITTER_EMAIL: 'o@example.invalid' };
   git(dir, other, 'tag', '-a', 'v3', '-m', 'Fine words');
   git(dir, {}, 'tag', 'v4');
+  const wrong = { GIT_COMMITTER_NAME: 'Someone Else', GIT_COMMITTER_EMAIL: 'test@example.invalid' };
+  git(dir, wrong, 'tag', '-a', 'v5', '-m', 'Fine words');
+  const bot = { GIT_COMMITTER_NAME: 'helper[bot]', GIT_COMMITTER_EMAIL: 'bot@example.invalid' };
+  git(dir, bot, 'tag', '-a', 'v6', '-m', 'Fine words');
   const found = checkHistory(dir, parseDenylist('BadWord\n'));
   assert.deepEqual(found, [
     'tag v1 message carries a co-author trailer',
     'tag v2 message matches denylist pattern "BadWord"',
-    'tag v3 tagger Other <o@example.invalid> is not the repo identity',
+    'tag v5 tagger Someone Else <test@example.invalid> uses the repo identity email under another name',
+    'tag v6 tagger helper[bot] <bot@example.invalid> is an AI or bot identity',
   ]);
 });
 
@@ -527,7 +582,7 @@ test('history: a pinned identity stands in for git config', () => {
   process.env.GIT_CONFIG_NOSYSTEM = '1';
   try {
     assert.deepEqual(checkHistory(dir), ['config git user.name or user.email is not set']);
-    process.env.GOLDFISHED_IDENTITY = 'Someone Else <else@example.invalid>';
+    process.env.GOLDFISHED_IDENTITY = 'Someone Else <test@example.invalid>';
     assert.equal(checkHistory(dir).length, 2);
     process.env.GOLDFISHED_IDENTITY = 'Test Person <test@example.invalid>';
     assert.deepEqual(checkHistory(dir), []);

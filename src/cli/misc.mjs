@@ -14,6 +14,15 @@ import * as project from '../project.mjs';
 import * as pointer from '../pointer.mjs';
 
 const homePath = io => resolve(io.env.GOLDFISHED_HOME || join(homedir(), '.goldfished'));
+const version = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')).version;
+const pick = id => adapters.filter(adapter => !id || id === 'all' || adapter.id === id);
+async function read(adapter, roots, sinceMs) {
+  const tally = { files: 0, bytes: 0, lines: 0, malformed: 0, skippedLong: 0, types: new Map(), rejects: new Map(), compactLike: 0, understood: 0, lineBuckets: [] };
+  const files = (await Promise.all(roots.map(root => adapter.listFiles(root, { sinceMs })))).flat();
+  let compactions = 0;
+  for await (const session of adapter.sessions(files, tally)) compactions += session.compactions.length;
+  return { tally, compactions };
+}
 const noArgs = (args, name) => { if (args.positional.length) throw new Error(`Unexpected arguments for ${name}.`); };
 export const commands = {
   shapes: command('shapes', '[--agent <id>] [--dir <path>]', { agent: 'string', dir: 'string' }, async (args, io) => {
@@ -22,18 +31,41 @@ export const commands = {
     if (args.flags.dir && (!args.flags.agent || args.flags.agent === 'all')) {
       io.err('goldfished: --dir needs --agent, because each agent keeps its files somewhere different.'); return 1;
     }
-    const chosen = adapters.filter(adapter => !args.flags.agent || args.flags.agent === 'all' || adapter.id === args.flags.agent);
+    const chosen = pick(args.flags.agent);
     if (!chosen.length) { io.err(`goldfished: unknown agent "${args.flags.agent}".`); return 1; }
     for (const adapter of chosen) {
-      const tally = { files: 0, bytes: 0, lines: 0, malformed: 0, skippedLong: 0, types: new Map(), rejects: new Map(), compactLike: 0, understood: 0, lineBuckets: [] };
       const roots = args.flags.dir ? [resolve(directory, args.flags.dir)] : adapter.roots(io.env, homedir());
-      const files = (await Promise.all(roots.map(root => adapter.listFiles(root, {})))).flat();
-      let compactions = 0;
-      for await (const session of adapter.sessions(files, tally)) compactions += session.compactions.length;
+      const { tally, compactions } = await read(adapter, roots, 0);
       io.out(JSON.stringify({ agent: adapter.id, ...tally, types: Object.fromEntries([...tally.types].sort()),
         rejects: Object.fromEntries([...tally.rejects].sort()), compactions, drift: adapter.driftCheck(tally),
         lineBuckets: Array.from(tally.lineBuckets, (count, power) => ({ power, count: count ?? 0 })) }, null, 2));
     }
+    return 0;
+  }),
+  bug: command('bug', '[--agent <id>]', { agent: 'string' }, async (args, io) => {
+    noArgs(args, 'bug');
+    const chosen = pick(args.flags.agent);
+    if (!chosen.length) { io.err(`goldfished: unknown agent "${args.flags.agent}".`); return 1; }
+    const lines = ['goldfished bug report (counts only)', `goldfished ${version}`, `node ${process.versions.node.split('.')[0]}`,
+      `platform ${process.platform} ${process.arch}`];
+    for (const adapter of chosen) {
+      const roots = adapter.roots(io.env, homedir());
+      if (!roots.some(existsSync)) { lines.push(`${adapter.id}: no folder`); continue; }
+      const { tally } = await read(adapter, roots, io.nowMs - 30 * 86400000), reasons = new Map();
+      for (const [reason, count] of tally.rejects) {
+        const word = /^[a-z_]{1,24}$/u.test(reason) ? reason : 'other';
+        reasons.set(word, (reasons.get(word) ?? 0) + count);
+      }
+      const rejects = [...reasons].sort(([a], [b]) => (a < b ? -1 : 1)).map(([reason, count]) => `${reason} ${count}`).join(', ') || 'none';
+      lines.push(`${adapter.id}: files ${tally.files}, compaction records understood ${tally.understood} of ${tally.compactLike}, ` +
+        `malformed lines ${tally.malformed}, drift ${adapter.driftCheck(tally).ok ? 'no' : 'yes'}, rejects ${rejects}`);
+    }
+    const [card, probes] = inHome(io, () => {
+      const top = project.topLevel(io.cwd), loaded = store.load(top), state = home.state(), list = state.projects?.[top]?.probes ?? state.probes ?? {};
+      return [!existsSync(loaded.cardPath) ? 'none' : loaded.trusted ? 'trusted' : 'not trusted',
+        Object.entries(list).filter(([key, probe]) => META[probe.agent ?? key] && typeof probe.kept === 'boolean').length];
+    });
+    io.out([...lines, `card: ${card}`, `probe results: ${probes}`, 'Paste this into a new issue: https://github.com/HoangJN/goldfished/issues/new/choose'].join('\n'));
     return 0;
   }),
   doctor: command('doctor', '', {}, (args, io) => {

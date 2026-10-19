@@ -1,0 +1,4 @@
+- [ ] `npm test` and `npm run gate` are green.
+- [ ] British English, no em-dash character, no network imports, no dependencies or install scripts.
+- [ ] Any fixture is invented and marked `"_synthetic": true`; no real session text, paths or names.
+- [ ] My commit messages have no tool co-author trailer and no generated-by footer.

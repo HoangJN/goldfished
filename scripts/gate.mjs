@@ -300,7 +300,9 @@ function git(args, cwd) {
 
 const nul = (out) => out.split('\0').filter(Boolean);
 
-// Every commit reachable from HEAD, judged against the repo's own identity. Notes are history too.
+const AI_EMAIL = /@(?:anthropic|openai)\.com$/i;
+
+// Every commit reachable from HEAD. Anyone may write one. The repo's own identity is held to its name, and no AI or bot identity gets in. Notes are history too.
 export function checkHistory(root, denylist = []) {
   const run = (args) => spawnSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 1 << 28 });
   // CI has no identity of its own. The workflow pins the one that counts.
@@ -309,6 +311,12 @@ export function checkHistory(root, denylist = []) {
   const email = pinned ? pinned[2] : run(['config', 'user.email']).stdout.trim();
   if (!name || !email) return ['config git user.name or user.email is not set'];
 
+  const problem = (who, mail) => {
+    if (mail.toLowerCase() === email.toLowerCase() && who !== name) return 'uses the repo identity email under another name';
+    if (AI_EMAIL.test(mail) || /\[bot\]$/i.test(who)) return 'is an AI or bot identity';
+    if (denylist.some((p) => p.re.test(who) || p.re.test(mail))) return 'matches the denylist';
+    return null;
+  };
   const out = [];
   if (run(['rev-parse', '--verify', '--quiet', 'HEAD']).status === 0) {
     const log = run(['log', '--format=%H%x00%an%x00%ae%x00%cn%x00%ce%x00%B%x1e']);
@@ -319,8 +327,9 @@ export function checkHistory(root, denylist = []) {
       const short = sha.slice(0, 7);
       const message = rest.join('\0');
       const flag = (why) => out.push(`${short} ${why}`);
-      if (an !== name || ae !== email) flag(`author ${an} <${ae}> is not the repo identity`);
-      if (cn !== name || ce !== email) flag(`committer ${cn} <${ce}> is not the repo identity`);
+      const author = problem(an, ae), committer = problem(cn, ce);
+      if (author) flag(`author ${an} <${ae}> ${author}`);
+      if (committer) flag(`committer ${cn} <${ce}> ${committer}`);
       if (/^\s*co-authored-by:/im.test(message)) flag('message carries a co-author trailer'); // gate-allow
       if (/generated with/i.test(message)) flag('message carries a generated-by footer'); // gate-allow
       for (const p of denylist) if (p.re.test(message)) flag(`message matches denylist pattern "${p.raw}"`);
@@ -332,7 +341,8 @@ export function checkHistory(root, denylist = []) {
     if (!tag) continue;
     const message = rest.join('\0');
     const flag = (why) => out.push(`tag ${tag} ${why}`);
-    if (tn && (tn !== name || te !== `<${email}>`)) flag(`tagger ${tn} ${te} is not the repo identity`);
+    const tagger = tn ? problem(tn, te.replace(/^<|>$/g, '')) : null;
+    if (tagger) flag(`tagger ${tn} ${te} ${tagger}`);
     if (/^\s*co-authored-by:/im.test(message)) flag('message carries a co-author trailer'); // gate-allow
     if (/generated with/i.test(message)) flag('message carries a generated-by footer'); // gate-allow
     for (const p of denylist) if (p.re.test(message)) flag(`message matches denylist pattern "${p.raw}"`);

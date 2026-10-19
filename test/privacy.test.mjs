@@ -43,9 +43,9 @@ test('invented canaries stay out of output; opt-in samples are masked; JSON cont
   const { commands } = await import('../src/cli/card.mjs');
   assert.equal(await commands.goal({ positional: ['Keep the invented orchard open.'], flags: {} },
     { env: w.env, cwd: w.cwd, isTTY: true, today: '2026-10-19', out() {}, err: assert.fail }), 0);
-  for (const args of [['retro', '--days', '0'], ['retro', '--days', '0', '--json'], ['shapes'], ['doctor'], ['card'], ['list']]) {
+  for (const args of [['retro', '--days', '0'], ['retro', '--days', '0', '--json'], ['shapes'], ['bug'], ['doctor'], ['card'], ['list']]) {
     const got = w.cli(...args); assert.equal(got.status, 0, got.stderr); clean(got.stdout + got.stderr);
-    if (args[0] === 'retro') privateText(got.stdout + got.stderr, w);
+    if (['retro', 'bug'].includes(args[0])) privateText(got.stdout + got.stderr, w);
     if (args.includes('--json')) { const json = JSON.parse(got.stdout); hygiene(json, '', w); assert.equal(json.agents.length, 2); assert.ok(json.agents.every(a => a.messages > 0)); }
   }
   for (const flag of ['--show', '--audit']) {
@@ -141,7 +141,7 @@ test('all writes stay in the private home, card folder, previewed files or local
   }
   assert.ok(readFileSync(join(w.cwd, '.goldfished/proposed.md'), 'utf8').includes('Keep a local index.'));
   for (const args of [['retro', '--days', '0'], ['retro', '--days', '0', '--show'], ['retro', '--days', '0', '--audit'],
-    ['shapes'], ['doctor'], ['retro', '--days', '0', '--save'], ['list'], ['card']]) {
+    ['shapes'], ['bug'], ['doctor'], ['retro', '--days', '0', '--save'], ['list'], ['card']]) {
     const got = w.cli(...args); assert.equal(got.status, 0, got.stderr); check();
   }
   for (const agent of ['claude-code', 'codex']) for (const launcher of ['bin', 'hook']) for (const event of ['prompt', 'session-start']) {
