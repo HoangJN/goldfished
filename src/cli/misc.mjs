@@ -28,6 +28,17 @@ async function read(adapter, roots, sinceMs) {
   return { tally, compactions };
 }
 const noArgs = (args, name) => { if (args.positional.length) throw new Error(`Unexpected arguments for ${name}.`); };
+export function hookStep(agent) {
+  if (agent === 'claude-code' && ['P1', 'P3', 'P5', 'P6', 'P6-auto', 'P10'].every(key => claude[key]))
+    return ['claude plugin marketplace add HoangJN/goldfished\nclaude plugin install goldfished@goldfished'];
+  if (agent === 'codex' && codex.CX1 && codex.CX2) {
+    const launcher = fileURLToPath(new URL('../../hooks/run.mjs', import.meta.url)).replaceAll('\\', '/');
+    const hook = event => ({ type: 'command', command: `node "${launcher}" codex ${event}` });
+    return ['npm install -g goldfished\nPut these entries in your Codex home\'s hooks.json.\nCodex asks you to trust a new hook once.',
+      JSON.stringify({ hooks: { SessionStart: [{ matcher: 'compact', hooks: [hook('session-start')] }], UserPromptSubmit: [{ hooks: [hook('prompt')] }] } }, null, 2)];
+  }
+  return [];
+}
 export const commands = {
   shapes: command('shapes', '[--agent <id>] [--dir <path>]', { agent: 'string', dir: 'string' }, async (args, io) => {
     noArgs(args, 'shapes');
@@ -115,14 +126,9 @@ export const commands = {
   hooks: command('hooks', '<agent>', {}, (args, io) => {
     const [agent] = args.positional;
     if (args.positional.length !== 1 || !META[agent]) { io.err('goldfished: give a known agent. Try: goldfished hooks --help'); return 1; }
-    if (agent === 'claude-code' && ['P1', 'P3', 'P5', 'P6', 'P6-auto', 'P10'].every(key => claude[key]))
-      io.out('claude plugin marketplace add HoangJN/goldfished\nclaude plugin install goldfished@goldfished');
-    else if (agent === 'codex' && codex.CX1 && codex.CX2) {
-      const launcher = fileURLToPath(new URL('../../hooks/run.mjs', import.meta.url)).replaceAll('\\', '/');
-      const hook = event => ({ type: 'command', command: `node "${launcher}" codex ${event}` });
-      io.out('npm install -g goldfished\nPut these entries in your Codex home\'s hooks.json.\nCodex asks you to trust a new hook once.');
-      io.out(JSON.stringify({ hooks: { SessionStart: [{ matcher: 'compact', hooks: [hook('session-start')] }], UserPromptSubmit: [{ hooks: [hook('prompt')] }] } }, null, 2));
-    } else io.out(`goldfished: ${agent} has no hook goldfished can use yet. ${META[agent].rulesFile ? 'init gives it an inline rules file' : 'init gives it a pointer to the card'}. Check what it receives with: goldfished card --agent ${agent}`);
+    const steps = hookStep(agent);
+    if (steps.length) for (const text of steps) io.out(text);
+    else io.out(`goldfished: ${agent} has no hook goldfished can use yet. ${META[agent].rulesFile ? 'init gives it an inline rules file' : 'init gives it a pointer to the card'}. Check what it receives with: goldfished card --agent ${agent}`);
     return 0;
   }),
 };

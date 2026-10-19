@@ -1,12 +1,23 @@
-<img src="assets/banner.png" width="640" alt="goldfished">
+<img src="assets/banner.png" width="640" alt="goldfished: Say it once. It comes back.">
 
 # goldfished
 
-How long is your coding agent's memory? Measured from your own sessions.
+**Your goal and rules, handed back to your coding agent when it compacts.**
+
+Run an agent for days, as an orchestrator or one long thread of work that matters, and it will compact many times: it swaps the chat for a summary it writes itself, to make room. Your goal, a rule, an option you already ruled out, can fall out of that summary.
+
+goldfished keeps them in a card, a plain file in your project, in your own words. On Claude Code and Codex a hook hands the card back after compaction; Codex asks you to trust it once. Other agents get a pointer to it in their rules file. Agents can only propose changes. You accept them.
+
+Not sure yours loses anything? On Claude Code, `retro` counts it from your own session files, offline and read-only.
 
 ```sh
+npx goldfished@latest init
 npx goldfished@latest retro
 ```
+
+## What it measures
+
+This is what `retro` prints:
 
 ```text
 Invented example, not real data.
@@ -47,8 +58,6 @@ Offline. Reads your own local session files. Nothing leaves your machine. goldfi
 
 Claude Code's `cleanupPeriodDays` setting defaults to 30 days, so older session files may no longer be there.
 
-## What it measures
-
 Coding agents compact long conversations by replacing them with a summary they write themselves. Things you said can fall out. goldfished reads the local session files and measures how much of your wording remains in what the agent can still see: the summary and any recent messages it keeps.
 
 - **Memory span** is how many compactions your messages survive with at least half still kept at every measurable age up to that point. An age is the number of compactions a message has been through. "At least" means the measured rows have not yet fallen below half.
@@ -84,6 +93,8 @@ goldfished goal "Make the local search usable without a server."
 goldfished rule "Keep the index on this machine."
 goldfished out "Hosted search" --quote "Do not send the index to a hosted service."
 ```
+
+`init` ends by printing the hook step; `goldfished hooks <agent>` prints it again.
 
 Use `npx goldfished@latest <command>` for each command if goldfished is not installed. Card changes come from you, at a terminal or through the two chat prefixes; agents can only propose. You accept or reject their proposals. A changed file is not trusted until its fingerprint matches the one recorded on this machine.
 

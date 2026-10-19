@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { createInterface } from 'node:readline/promises';
 import { command, inHome } from './card.mjs';
+import { hookStep } from './misc.mjs';
 import * as pointer from '../pointer.mjs';
 import * as store from '../store.mjs';
 import * as project from '../project.mjs';
@@ -91,7 +92,13 @@ export const commands = Object.fromEntries(['init', 'uninit'].map(name => [name,
       diff(io, '<git common dir>/info/exclude', excludeBefore, exclude);
       if (name === 'init' && changes.some(change => change.path === 'CONVENTIONS.md'))
         io.out('Aider reads CONVENTIONS.md only if you start it with --read CONVENTIONS.md or add read: CONVENTIONS.md to .aider.conf.yml.');
-      if (!await yes(io, flags)) return 0;
+      const showHooks = () => {
+        if (name === 'init') for (const agent of new Set(agents)) {
+          const steps = hookStep(agent);
+          if (steps.length) { io.out('To bring the card back after compaction, run:'); for (const text of steps) io.out(text); }
+        }
+      };
+      if (!await yes(io, flags)) { if (flags['dry-run']) showHooks(); return 0; }
       const reports = pointer.apply(changes), failed = new Set(reports.map(report => report.path));
       for (const { left } of reports) io.out(left);
       for (const change of changes) if (!change.skipped && !change.left && !failed.has(change.path)) {
@@ -105,6 +112,7 @@ export const commands = Object.fromEntries(['init', 'uninit'].map(name => [name,
         if (name === 'init' && source === null) store.save(top, { ...store.load(top), card });
       });
       for (const line of exclusions) project.exclude(top, line);
+      showHooks();
       return reports.length ? 1 : 0;
     }),
 ]));
