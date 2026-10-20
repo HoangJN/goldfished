@@ -46,6 +46,9 @@ test('saw without a probe rule records nothing', async t => {
 test('probe never trusts a card edited by hand', async t => {
   const s = setup(t); await s.run();
   const file = join(s.cwd, '.goldfished/card.md'), edited = s.read('.goldfished/card.md') + '\n'; writeFileSync(file, edited);
+  const trustFile = join(s.io.env.GOLDFISHED_HOME, 'trust.json'), records = JSON.parse(readFileSync(trustFile, 'utf8'));
+  for (const record of Object.values(records)) record.date = '2026-10-19T00:00:00.000Z';
+  writeFileSync(trustFile, JSON.stringify(records));
   const state = s.read('home/state.json');
   snapshot('untrusted-start', await s.run()); snapshot('untrusted-saw', await s.run([fixture.agent], { saw: 'no' }));
   assert.equal(s.read('.goldfished/card.md'), edited); assert.equal(s.read('home/state.json'), state);
